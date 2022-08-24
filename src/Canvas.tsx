@@ -43,6 +43,15 @@ function clipToScale(value: number, scale: number) {
     return Math.floor(value/scale) * scale;
 }
 
+// Resets any negative width or height
+function santizeElement(element: Rectangle) {
+    return {
+        ...element,
+        width: Math.abs(element.width),
+        height: Math.abs(element.height)
+    }
+}
+
 function Canvas(): JSX.Element {
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
@@ -110,7 +119,7 @@ function Canvas(): JSX.Element {
                 setEditingElement(newRectangle(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE), 2, 2));
             }}
             onMouseUp={(e) => {
-                editingElement && setElements([...elements, editingElement]);
+                editingElement && setElements([...elements, santizeElement(editingElement)]);
                 setEditingElement(null);
             }}
             onMouseMove={(e) => {
@@ -120,21 +129,32 @@ function Canvas(): JSX.Element {
                     mouseAccX += e.clientX - mousePreviousX;
                     mouseAccY += e.clientY - mousePreviousY;
 
-                    const widthIncr = Math.floor(mouseAccX/X_SCALE);
-                    const heightIncr = Math.floor(mouseAccY/Y_SCALE);
+                    const widthIncr = mouseAccX > 0 ? Math.floor(mouseAccX/X_SCALE) : Math.ceil(mouseAccX/X_SCALE);
+                    const heightIncr = mouseAccY > 0 ? Math.floor(mouseAccY/Y_SCALE) : Math.ceil(mouseAccY/Y_SCALE);
 
                     mouseAccX = mouseAccX % X_SCALE;
                     mouseAccY = mouseAccY % Y_SCALE;
 
-                    const {width, height} = editingElement;
-                    const newWidth = width + widthIncr; 
-                    const newHeight = height + heightIncr;
-                    console.log("x",newWidth, newHeight);
+                    let {x, y, width, height} = editingElement;
+                    width = width + widthIncr;
+                    height = height + heightIncr;
+
+                    if (width < 0) {
+                        x = x + widthIncr * X_SCALE;
+                    }
+
+                    if (height < 0) {
+                        y = y + heightIncr * Y_SCALE;
+                    }
+
+                    // Editing element can temporarily have negative width and height
                     setEditingElement({
                         ...editingElement,
-                        width: newWidth,
-                        height: newHeight,
-                        shape: g.rectangle(newWidth, newHeight)
+                        x,
+                        y,
+                        width,
+                        height,
+                        shape: g.rectangle(Math.abs(width), Math.abs(height))
                     })
                 }
                 mousePreviousX = e.clientX;
