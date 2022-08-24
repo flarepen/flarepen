@@ -139,6 +139,24 @@ function Canvas(): JSX.Element {
                     width = width + widthIncr;
                     height = height + heightIncr;
 
+                    // Min width and height is 2.
+                    // We need to skip 1,0 and -1 to any kind of jumpiness when moving from positive to negative or vice versa
+                    if (width <= 1 && width >= -1) {
+                        if (widthIncr < 0) { // if decreasing
+                            width = -3
+                        } else {
+                            width = 3;
+                        }
+                    }
+
+                    if (height <= 1 && height >= -1) {
+                        if (heightIncr < 0) { // if decreasing
+                            height = -3
+                        } else {
+                            height = 3;
+                        }
+                    }
+
                     if (width < 0) {
                         x = x + widthIncr * X_SCALE;
                     }
