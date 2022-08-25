@@ -253,13 +253,15 @@ function Canvas({tool}: CanvasProps): JSX.Element {
                                     editingElement.len += widthIncr;
                                     break;
                                 case ArrowDirection.Left:
-                                    editingElement.len += widthIncr;
+                                    editingElement.x = editingElement.x + widthIncr * X_SCALE;
+                                    editingElement.len -= widthIncr;
                                     break;
                                 case ArrowDirection.Down:
                                     editingElement.len += heightIncr;
                                     break;
                                 case ArrowDirection.Up:
-                                    editingElement.len += heightIncr;
+                                    editingElement.y = editingElement.y + heightIncr * Y_SCALE;
+                                    editingElement.len -= heightIncr;
                                     break;
                             }
 
