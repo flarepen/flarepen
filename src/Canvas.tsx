@@ -34,6 +34,9 @@ let mouseAccX = 0;
 let mouseAccY = 0;
 let mousePreviousX = 0;
 let mousePreviousY = 0;
+
+// Scales are just an approximation for now.
+// TODO: Need to move to better pixel measurement for the font.
 let X_SCALE = 14;
 let Y_SCALE = 20;
 
@@ -88,8 +91,8 @@ function inVicinity(p: Point, element: Element): boolean {
             return (
                 inLinearVicinity(p, point(x, y), width, true) ||
                 inLinearVicinity(p, point(x, y), height, false) ||
-                inLinearVicinity(p, point(x, y + height), width, true) ||
-                inLinearVicinity(p, point(x + width, y), height, false)
+                inLinearVicinity(p, point(x, y + height * Y_SCALE), width, true) ||
+                inLinearVicinity(p, point(x + width * X_SCALE, y), height, false)
             );
         case ElementType.Line:
             return inLinearVicinity(p, {x: element.x, y: element.y}, element.len, element.direction === LineDirection.Horizontal)
