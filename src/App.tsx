@@ -5,6 +5,7 @@ import Canvas from './Canvas';
 export enum Tool {
     Rectangle = "Rectangle",
     Line = "Line",
+    Arrow = "Arrow",
 }
 
 interface ToolProps {
@@ -30,6 +31,7 @@ function App() {
                 <legend>Select Tool</legend>
                 <ToolInput tool={Tool.Rectangle} selected={selected} onClick={setSelected}/>
                 <ToolInput tool={Tool.Line} selected={selected} onClick={setSelected}/>
+                <ToolInput tool={Tool.Arrow} selected={selected} onClick={setSelected}/>
             </fieldset>
             <Canvas tool={selected}></Canvas>
         </div>
