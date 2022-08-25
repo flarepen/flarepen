@@ -39,3 +39,10 @@ export function rectangle(width: number, height: number): Shape {
     )
     return shape
 }
+
+export function line(len: number, horizontal: boolean): Shape {
+    if (horizontal) {
+        return [SYMBOLS.HORIZONTAL.repeat(len)];
+    }
+    return Array(len).fill(SYMBOLS.VERTICAL);
+}

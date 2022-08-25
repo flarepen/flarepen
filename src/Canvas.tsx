@@ -1,26 +1,51 @@
 import { useEffect, useRef, useState } from "react";
 import { debounce  } from "lodash";
 import * as g from "./geometry" ;
+import { Tool } from "./App";
 
-interface Element {
+enum ElementType {
+    Rectangle = "rectangle",
+    Line = "line",
+}
+interface ElementCommons {
     x: number,
     y: number,
-    shape: g.Shape,
+    shape: g.Shape
 }
 
-interface Rectangle extends Element {
+interface Rectangle extends ElementCommons {
     width: number,
     height: number,
+    type: ElementType.Rectangle
 }
+
+enum LineDirection {
+    Horizontal,
+    Vertical,
+    Undecided
+}
+
+interface Line extends ElementCommons {
+    len: number,
+    direction: LineDirection,
+    type: ElementType.Line
+}
+
+type Element = Rectangle | Line;
 
 function newRectangle(x: number, y: number, width: number, height: number): Rectangle {
-    return { x, y, width, height, shape: g.rectangle(width, height) };
+    return { x, y, width, height, shape: g.rectangle(width, height), type: ElementType.Rectangle };
 }
 
-function drawRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle) {
-    let x = rectangle.x;
-    let y = rectangle.y;
-    rectangle.shape.forEach(row => {
+function newLine(x: number, y: number, len: number): Line {
+    // We can figure out line direction only after it starts moving
+    return { x, y, len: len, direction: LineDirection.Undecided, shape: [""], type: ElementType.Line };
+}
+
+function drawElement(ctx: CanvasRenderingContext2D, element: Element) {
+    let x = element.x;
+    let y = element.y;
+    element.shape.forEach(row => {
         ctx.fillText(row, x, y);
         y = y + 20;
     })
@@ -44,22 +69,30 @@ function clipToScale(value: number, scale: number) {
 }
 
 // Resets any negative width or height
-function santizeElement(element: Rectangle) {
-    return {
-        ...element,
-        width: Math.abs(element.width),
-        height: Math.abs(element.height)
+function santizeElement(element: Element) {
+    if (element.type === ElementType.Rectangle) {
+        return {
+            ...element,
+            width: Math.abs(element.width),
+            height: Math.abs(element.height)
+        }
+    } else {
+        return element;
     }
 }
 
-function Canvas(): JSX.Element {
+interface CanvasProps {
+    tool: Tool
+}
+
+function Canvas({tool}: CanvasProps): JSX.Element {
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
     });
     const [ctx, setCtx] = useState<null|CanvasRenderingContext2D>(null);
-    const [elements, setElements] = useState<Rectangle[]>([]);
-    const [editingElement, setEditingElement] = useState<null|Rectangle>(null);
+    const [elements, setElements] = useState<Element[]>([]);
+    const [editingElement, setEditingElement] = useState<null|Element>(null);
 
     const scale = window.devicePixelRatio;
 
@@ -94,6 +127,7 @@ function Canvas(): JSX.Element {
         }
     });
 
+    // Refresh scene
     useEffect(() => {
         draw();
     }, [elements, editingElement, dimensions])
@@ -102,9 +136,9 @@ function Canvas(): JSX.Element {
         if (ctx) {
             ctx.clearRect(0, 0, dimensions.width, dimensions.height);
             elements.forEach(element => {
-                drawRectangle(ctx, element);
+                drawElement(ctx, element);
             })
-            editingElement && drawRectangle(ctx, editingElement);
+            editingElement && drawElement(ctx, editingElement);
         }
     }
 
@@ -116,14 +150,21 @@ function Canvas(): JSX.Element {
             style={styles}
             aria-label="ascii canvas"
             onMouseDown={(e) => {
-                setEditingElement(newRectangle(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE), 2, 2));
+                let newElement;
+                if (tool == Tool.Rectangle) {
+                    newElement = newRectangle(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE), 2, 2)
+                } else {
+                    newElement = newLine(clipToScale(e.clientX, X_SCALE),  clipToScale(e.clientY, Y_SCALE), 1);
+                }
+                setEditingElement(newElement);
             }}
             onMouseUp={(e) => {
                 editingElement && setElements([...elements, santizeElement(editingElement)]);
                 setEditingElement(null);
             }}
+            // TODO: Need to clean this up
             onMouseMove={(e) => {
-                if (editingElement) {
+                if (editingElement && editingElement.type === ElementType.Rectangle) {
                     // Accumulate mouse movement into batches of scale
                     // TODO: How to handle this for different screen resolutions?
                     mouseAccX += e.clientX - mousePreviousX;
@@ -174,7 +215,44 @@ function Canvas(): JSX.Element {
                         height,
                         shape: g.rectangle(Math.abs(width), Math.abs(height))
                     })
+                } else if (editingElement) { // Line
+                    mouseAccX += e.clientX - mousePreviousX;
+                    mouseAccY += e.clientY - mousePreviousY;
+
+                    const widthIncr = mouseAccX > 0 ? Math.floor(mouseAccX/X_SCALE) : Math.ceil(mouseAccX/X_SCALE);
+                    const heightIncr = mouseAccY > 0 ? Math.floor(mouseAccY/Y_SCALE) : Math.ceil(mouseAccY/Y_SCALE);
+
+                    mouseAccX = mouseAccX % X_SCALE;
+                    mouseAccY = mouseAccY % Y_SCALE;
+
+                    // Decide direction if not present
+                    if (editingElement.direction === LineDirection.Undecided) {
+                        if (widthIncr !== 0) {
+                            editingElement.direction = LineDirection.Horizontal;
+                        }
+                        if (heightIncr !== 0) {
+                            editingElement.direction = LineDirection.Vertical;
+                        }
+                    }
+
+                    // Start drawing if we only know the direction
+                    if (editingElement.direction != LineDirection.Undecided) {
+                        switch (editingElement.direction) {
+                            case LineDirection.Horizontal:
+                                editingElement.len += widthIncr;
+                                break;
+                            case LineDirection.Vertical:
+                                editingElement.len += heightIncr;
+                                break;
+                        }
+
+                        setEditingElement({
+                            ...editingElement,
+                            shape: g.line(editingElement.len, editingElement.direction === LineDirection.Horizontal)
+                        });
+                    }
                 }
+
                 mousePreviousX = e.clientX;
                 mousePreviousY = e.clientY;
             }}
