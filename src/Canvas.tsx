@@ -56,6 +56,49 @@ function santizeElement(element: Element) {
     }
 }
 
+// TODO: Use it instead of x,y in other places
+interface Point {
+    x: number,
+    y: number,
+}
+
+function point(x: number, y: number): Point {
+    return {x, y};
+}
+
+function getLinearBounding(origin: Point, len: number, horizontal: boolean): { xMin: number, xMax: number, yMin: number, yMax: number } {
+    const xMin = origin.x - X_SCALE;
+    const xMax = horizontal ? (origin.x + X_SCALE + len * X_SCALE) : (origin.x + X_SCALE);
+    const yMin = origin.y - Y_SCALE;
+    const yMax = horizontal ? (origin.y + Y_SCALE) : (origin.y + Y_SCALE + len * Y_SCALE);
+
+    return { xMin, xMax, yMin, yMax };
+}
+
+function inLinearVicinity(p: Point, origin: Point, len: number, horizontal: boolean): boolean {
+    const { xMin, xMax, yMin, yMax } = getLinearBounding(origin, len, horizontal);
+
+    return (p.x >= xMin && p.x <= xMax) && (p.y >= yMin && p.y <= yMax);
+}
+
+function inVicinity(p: Point, element: Element): boolean {
+    switch (element.type) {
+        case ElementType.Rectangle:
+            const {x, y, width, height} = element;
+            return (
+                inLinearVicinity(p, point(x, y), width, true) ||
+                inLinearVicinity(p, point(x, y), height, false) ||
+                inLinearVicinity(p, point(x, y + height), width, true) ||
+                inLinearVicinity(p, point(x + width, y), height, false)
+            );
+        case ElementType.Line:
+            return inLinearVicinity(p, {x: element.x, y: element.y}, element.len, element.direction === LineDirection.Horizontal)
+        case ElementType.Arrow:
+            return inLinearVicinity(p, {x: element.x, y: element.y}, element.len,
+                element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right );
+    }
+}
+
 interface CanvasProps {
     tool: Tool
 }
@@ -68,6 +111,7 @@ function Canvas({tool}: CanvasProps): JSX.Element {
     const [ctx, setCtx] = useState<null|CanvasRenderingContext2D>(null);
     const [elements, setElements] = useState<Element[]>([]);
     const [editingElement, setEditingElement] = useState<null|Element>(null);
+    const [selectedElement, setSelectedElement] = useState<null|Element>(null);
 
     const scale = window.devicePixelRatio;
 
@@ -105,17 +149,76 @@ function Canvas({tool}: CanvasProps): JSX.Element {
     // Refresh scene
     useEffect(() => {
         draw();
-    }, [elements, editingElement, dimensions])
+    }, [elements, editingElement, dimensions, selectedElement])
 
     function draw() {
         if (ctx) {
+            // Clear scene
             ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+
+            // First draw all elements created till now
             elements.forEach(element => {
                 drawElement(ctx, element);
-            })
+            });
+
+            // draw current editing element
             editingElement && drawElement(ctx, editingElement);
+
+            // draw selection indicator
+            if (selectedElement) {
+                switch (selectedElement.type) {
+                    case ElementType.Rectangle:
+                        drawRectangleOutline(ctx, selectedElement);
+                        break;
+                    case ElementType.Line:
+                        drawLineOutline(ctx, selectedElement);
+                        break;
+                    case ElementType.Arrow:
+                        drawArrowOutline(ctx, selectedElement);
+                        break;
+                }
+            }
         }
     }
+
+    function drawRectangleOutline(ctx: CanvasRenderingContext2D, rectangle: Rectangle) {
+        const x = rectangle.x - X_SCALE;
+        const y = rectangle.y - Y_SCALE;
+
+        drawDashedRect(ctx, x, y, rectangle.width*X_SCALE + X_SCALE, rectangle.height * Y_SCALE + Y_SCALE);
+    }
+
+    function drawLineOutline(ctx: CanvasRenderingContext2D, line: Line) {
+        const { xMin, xMax, yMin, yMax } = getLinearBounding(
+            { x : line.x, y: line.y },
+            line.len,
+            line.direction === LineDirection.Horizontal
+        );
+        drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
+    }
+
+    function drawArrowOutline(ctx: CanvasRenderingContext2D, arrow: Arrow) {
+        const { xMin, xMax, yMin, yMax } = getLinearBounding(
+            { x : arrow.x, y: arrow.y },
+            arrow.len,
+            arrow.direction === ArrowDirection.Left || arrow.direction === ArrowDirection.Right
+        );
+        drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
+    }
+
+    function drawDashedRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
+        const lineDash = ctx.getLineDash();
+        ctx.setLineDash([8, 4]);
+        ctx.strokeRect(x, y, width, height);
+        ctx.setLineDash(lineDash);
+    }
+
+    // Reset Select
+    useEffect(() => {
+        if (selectedElement && tool !== Tool.Select) {
+            setSelectedElement(null);
+        }
+    }, [tool]);
 
     return (
         <canvas id="canvas"
@@ -136,12 +239,20 @@ function Canvas({tool}: CanvasProps): JSX.Element {
                     case Tool.Arrow:
                         newElement = newArrow(clipToScale(e.clientX, X_SCALE),  clipToScale(e.clientY, Y_SCALE), 2);
                         break;
+                    case Tool.Select:
+                        const selected = elements.find(element => inVicinity({x: e.clientX, y: e.clientY}, element));
+                        if (selected) {
+                            setSelectedElement(selected);
+                        }
+                        break;
                 }
-                setEditingElement(newElement);
+                newElement && setEditingElement(newElement);
             }}
             onMouseUp={(e) => {
-                editingElement && setElements([...elements, santizeElement(editingElement)]);
-                setEditingElement(null);
+                if (tool !== Tool.Select) {
+                    editingElement && setElements([...elements, santizeElement(editingElement)]);
+                    setEditingElement(null);
+                }
             }}
             // TODO: Need to clean this up
             onMouseMove={(e) => {
@@ -154,7 +265,6 @@ function Canvas({tool}: CanvasProps): JSX.Element {
 
                 // Accumulate mouse movement into batches of scale
                 // TODO: How to handle this for different screen resolutions?
-                console.log("acc", mouseAccX, mouseAccY);
                 mouseAccX += e.clientX - mousePreviousX;
                 mouseAccY += e.clientY - mousePreviousY;
 
@@ -236,8 +346,6 @@ function Canvas({tool}: CanvasProps): JSX.Element {
 
                         break;
                     case ElementType.Arrow:
-                        console.log(editingElement);
-                        console.log(widthIncr, heightIncr);
                         // Decide direction if not present
                         if (editingElement.direction === ArrowDirection.Undecided) {
                             widthIncr > 0 && (editingElement.direction = ArrowDirection.Right);
