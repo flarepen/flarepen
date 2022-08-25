@@ -115,6 +115,7 @@ function Canvas({tool}: CanvasProps): JSX.Element {
     const [elements, setElements] = useState<Element[]>([]);
     const [editingElement, setEditingElement] = useState<null|Element>(null);
     const [selectedElement, setSelectedElement] = useState<null|Element>(null);
+    const [dragging, setDragging] = useState(false);
 
     const scale = window.devicePixelRatio;
 
@@ -246,6 +247,7 @@ function Canvas({tool}: CanvasProps): JSX.Element {
                         const selected = elements.find(element => inVicinity({x: e.clientX, y: e.clientY}, element));
                         if (selected) {
                             setSelectedElement(selected);
+                            setDragging(true); // GTK: Does these calls get batched in React??
                         }
                         break;
                 }
@@ -255,17 +257,12 @@ function Canvas({tool}: CanvasProps): JSX.Element {
                 if (tool !== Tool.Select) {
                     editingElement && setElements([...elements, santizeElement(editingElement)]);
                     setEditingElement(null);
+                } else {
+                    setDragging(false);
                 }
             }}
             // TODO: Need to clean this up
             onMouseMove={(e) => {
-                // Do nothing if we are not editing an element;
-                if (!editingElement) {
-                    mousePreviousX = e.clientX;
-                    mousePreviousY = e.clientY;
-                    return null;
-                }
-
                 // Accumulate mouse movement into batches of scale
                 // TODO: How to handle this for different screen resolutions?
                 mouseAccX += e.clientX - mousePreviousX;
@@ -274,115 +271,124 @@ function Canvas({tool}: CanvasProps): JSX.Element {
                 const widthIncr = mouseAccX > 0 ? Math.floor(mouseAccX/X_SCALE) : Math.ceil(mouseAccX/X_SCALE);
                 const heightIncr = mouseAccY > 0 ? Math.floor(mouseAccY/Y_SCALE) : Math.ceil(mouseAccY/Y_SCALE);
 
+                if (editingElement) {
+                    switch (editingElement.type) {
+                        case ElementType.Rectangle:
+                            let {x, y, width, height} = editingElement;
+                            width = width + widthIncr;
+                            height = height + heightIncr;
+    
+                            // Min width and height is 2.
+                            // We need to skip 1,0 and -1 to any kind of jumpiness when moving from positive to negative or vice versa
+                            if (width <= 1 && width >= -1) {
+                                if (widthIncr < 0) { // if decreasing
+                                    width = -3
+                                } else {
+                                    width = 3;
+                                }
+                            }
+    
+                            if (height <= 1 && height >= -1) {
+                                if (heightIncr < 0) { // if decreasing
+                                    height = -3
+                                } else {
+                                    height = 3;
+                                }
+                            }
+    
+                            if (width < 0) {
+                                x = x + widthIncr * X_SCALE;
+                            }
+    
+                            if (height < 0) {
+                                y = y + heightIncr * Y_SCALE;
+                            }
+    
+                            // Editing element can temporarily have negative width and height
+                            setEditingElement({
+                                ...editingElement,
+                                x,
+                                y,
+                                width,
+                                height,
+                                shape: g.rectangle(Math.abs(width), Math.abs(height))
+                            });
+                            break;
+                        case ElementType.Line:
+                            // Decide direction if not present
+                            if (editingElement.direction === LineDirection.Undecided) {
+                                if (widthIncr !== 0) {
+                                    editingElement.direction = LineDirection.Horizontal;
+                                }
+                                if (heightIncr !== 0) {
+                                    editingElement.direction = LineDirection.Vertical;
+                                }
+                            }
+        
+                            // Start drawing if we only know the direction
+                            if (editingElement.direction !== LineDirection.Undecided) {
+                                switch (editingElement.direction) {
+                                    case LineDirection.Horizontal:
+                                        editingElement.len += widthIncr;
+                                        break;
+                                    case LineDirection.Vertical:
+                                        editingElement.len += heightIncr;
+                                        break;
+                                }
+        
+                                setEditingElement({
+                                    ...editingElement,
+                                    shape: g.line(editingElement.len, editingElement.direction === LineDirection.Horizontal)
+                                });
+                            }
+    
+                            break;
+                        case ElementType.Arrow:
+                            // Decide direction if not present
+                            if (editingElement.direction === ArrowDirection.Undecided) {
+                                widthIncr > 0 && (editingElement.direction = ArrowDirection.Right);
+                                widthIncr < 0 && (editingElement.direction = ArrowDirection.Left);
+                                heightIncr > 0 && (editingElement.direction = ArrowDirection.Down);
+                                heightIncr < 0 && (editingElement.direction = ArrowDirection.Up);
+                            }
+    
+                            // Start drawing if we only know the direction
+                            if (editingElement.direction !== ArrowDirection.Undecided) {
+                                switch (editingElement.direction) {
+                                    case ArrowDirection.Right:
+                                        editingElement.len += widthIncr;
+                                        break;
+                                    case ArrowDirection.Left:
+                                        editingElement.x = editingElement.x + widthIncr * X_SCALE;
+                                        editingElement.len -= widthIncr;
+                                        break;
+                                    case ArrowDirection.Down:
+                                        editingElement.len += heightIncr;
+                                        break;
+                                    case ArrowDirection.Up:
+                                        editingElement.y = editingElement.y + heightIncr * Y_SCALE;
+                                        editingElement.len -= heightIncr;
+                                        break;
+                                }
+    
+                                setEditingElement({
+                                    ...editingElement,
+                                    shape: g.arrow(editingElement.len, editingElement.direction)
+                                });
+                            }
+                            break;
+                    }
+                } else {
+                    // TODO: Remove direct mutation and manual draw
+                    if (dragging && selectedElement) {
+                        selectedElement.x = selectedElement.x + e.clientX - mousePreviousX;
+                        selectedElement.y = selectedElement.y + e.clientY - mousePreviousY;
+                        draw();
+                    }
+                }
+
                 mouseAccX = mouseAccX % X_SCALE;
                 mouseAccY = mouseAccY % Y_SCALE;
-
-                switch (editingElement.type) {
-                    case ElementType.Rectangle:
-                        let {x, y, width, height} = editingElement;
-                        width = width + widthIncr;
-                        height = height + heightIncr;
-
-                        // Min width and height is 2.
-                        // We need to skip 1,0 and -1 to any kind of jumpiness when moving from positive to negative or vice versa
-                        if (width <= 1 && width >= -1) {
-                            if (widthIncr < 0) { // if decreasing
-                                width = -3
-                            } else {
-                                width = 3;
-                            }
-                        }
-
-                        if (height <= 1 && height >= -1) {
-                            if (heightIncr < 0) { // if decreasing
-                                height = -3
-                            } else {
-                                height = 3;
-                            }
-                        }
-
-                        if (width < 0) {
-                            x = x + widthIncr * X_SCALE;
-                        }
-
-                        if (height < 0) {
-                            y = y + heightIncr * Y_SCALE;
-                        }
-
-                        // Editing element can temporarily have negative width and height
-                        setEditingElement({
-                            ...editingElement,
-                            x,
-                            y,
-                            width,
-                            height,
-                            shape: g.rectangle(Math.abs(width), Math.abs(height))
-                        });
-                        break;
-                    case ElementType.Line:
-                        // Decide direction if not present
-                        if (editingElement.direction === LineDirection.Undecided) {
-                            if (widthIncr !== 0) {
-                                editingElement.direction = LineDirection.Horizontal;
-                            }
-                            if (heightIncr !== 0) {
-                                editingElement.direction = LineDirection.Vertical;
-                            }
-                        }
-    
-                        // Start drawing if we only know the direction
-                        if (editingElement.direction !== LineDirection.Undecided) {
-                            switch (editingElement.direction) {
-                                case LineDirection.Horizontal:
-                                    editingElement.len += widthIncr;
-                                    break;
-                                case LineDirection.Vertical:
-                                    editingElement.len += heightIncr;
-                                    break;
-                            }
-    
-                            setEditingElement({
-                                ...editingElement,
-                                shape: g.line(editingElement.len, editingElement.direction === LineDirection.Horizontal)
-                            });
-                        }
-
-                        break;
-                    case ElementType.Arrow:
-                        // Decide direction if not present
-                        if (editingElement.direction === ArrowDirection.Undecided) {
-                            widthIncr > 0 && (editingElement.direction = ArrowDirection.Right);
-                            widthIncr < 0 && (editingElement.direction = ArrowDirection.Left);
-                            heightIncr > 0 && (editingElement.direction = ArrowDirection.Down);
-                            heightIncr < 0 && (editingElement.direction = ArrowDirection.Up);
-                        }
-
-                        // Start drawing if we only know the direction
-                        if (editingElement.direction !== ArrowDirection.Undecided) {
-                            switch (editingElement.direction) {
-                                case ArrowDirection.Right:
-                                    editingElement.len += widthIncr;
-                                    break;
-                                case ArrowDirection.Left:
-                                    editingElement.x = editingElement.x + widthIncr * X_SCALE;
-                                    editingElement.len -= widthIncr;
-                                    break;
-                                case ArrowDirection.Down:
-                                    editingElement.len += heightIncr;
-                                    break;
-                                case ArrowDirection.Up:
-                                    editingElement.y = editingElement.y + heightIncr * Y_SCALE;
-                                    editingElement.len -= heightIncr;
-                                    break;
-                            }
-
-                            setEditingElement({
-                                ...editingElement,
-                                shape: g.arrow(editingElement.len, editingElement.direction)
-                            });
-                        }
-                        break;
-                }
 
                 mousePreviousX = e.clientX;
                 mousePreviousY = e.clientY;
