@@ -1,7 +1,7 @@
 interface ElementCommons {
-  x: number
-  y: number
-  shape: string[]
+  x: number;
+  y: number;
+  shape: string[];
 }
 
 export enum ElementType {
@@ -13,9 +13,9 @@ export enum ElementType {
 // Rectangle
 
 export interface Rectangle extends ElementCommons {
-  width: number
-  height: number
-  type: ElementType.Rectangle
+  width: number;
+  height: number;
+  type: ElementType.Rectangle;
 }
 
 // Line
@@ -27,9 +27,9 @@ export enum LineDirection {
 }
 
 export interface Line extends ElementCommons {
-  len: number
-  direction: LineDirection
-  type: ElementType.Line
+  len: number;
+  direction: LineDirection;
+  type: ElementType.Line;
 }
 
 // Arrow
@@ -43,11 +43,11 @@ export enum ArrowDirection {
 }
 
 export interface Arrow extends ElementCommons {
-  len: number
-  direction: ArrowDirection
-  type: ElementType.Arrow
+  len: number;
+  direction: ArrowDirection;
+  type: ElementType.Arrow;
 }
 
 // Supported Elements
 
-export type Element = Rectangle | Line | Arrow
+export type Element = Rectangle | Line | Arrow;

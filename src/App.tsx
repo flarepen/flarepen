@@ -1,6 +1,6 @@
-import './App.css'
-import { useState } from 'react'
-import Canvas from './Canvas'
+import './App.css';
+import { useState } from 'react';
+import Canvas from './Canvas';
 
 export enum Tool {
   Rectangle = 'Rectangle',
@@ -10,9 +10,9 @@ export enum Tool {
 }
 
 interface ToolProps {
-  tool: Tool
-  selected: Tool
-  onClick: Function
+  tool: Tool;
+  selected: Tool;
+  onClick: Function;
 }
 
 function ToolInput({ tool, selected, onClick }: ToolProps) {
@@ -26,11 +26,11 @@ function ToolInput({ tool, selected, onClick }: ToolProps) {
       ></input>
       <label htmlFor={tool}>{tool}</label>
     </>
-  )
+  );
 }
 
 function App() {
-  const [selected, setSelected] = useState<Tool>(Tool.Rectangle)
+  const [selected, setSelected] = useState<Tool>(Tool.Rectangle);
   return (
     <div className="App">
       <div style={{ float: 'left', position: 'absolute' }}>
@@ -45,7 +45,7 @@ function App() {
       </div>
       <Canvas tool={selected}></Canvas>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
