@@ -71,8 +71,12 @@ export function arrow(len: number, direction: ArrowDirection): Shape {
   }
 }
 
+export function text(content: string): Shape {
+  return [content];
+}
+
 // TODO: Where to keep this implementation?
-function getWidth(element: Element) {
+function getWidth(element: Element): number {
   switch (element.type) {
     case ElementType.Rectangle:
       return element.width;
@@ -82,10 +86,12 @@ function getWidth(element: Element) {
       return element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right
         ? element.len
         : 1;
+    case ElementType.Text:
+      return element.content.length;
   }
 }
 
-function getHeight(element: Element) {
+function getHeight(element: Element): number {
   switch (element.type) {
     case ElementType.Rectangle:
       return element.height;
@@ -95,6 +101,8 @@ function getHeight(element: Element) {
       return element.direction === ArrowDirection.Up || element.direction === ArrowDirection.Down
         ? element.len
         : 1;
+    case ElementType.Text:
+      return 1;
   }
 }
 
@@ -128,6 +136,7 @@ export function scene(elements: Element[]): string {
   }
 
   // Fill the array
+  console.log(elements);
   elements.forEach((element) => {
     writeToScene(point(xMin, yMin), sceneArr, element);
   });

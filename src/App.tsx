@@ -8,6 +8,7 @@ export enum Tool {
   Rectangle = 'Rectangle',
   Line = 'Line',
   Arrow = 'Arrow',
+  Text = 'Text',
   Select = 'Select',
 }
 
@@ -50,6 +51,7 @@ function App() {
           <ToolInput tool={Tool.Line} selected={selected} onClick={setSelected} />
           <ToolInput tool={Tool.Arrow} selected={selected} onClick={setSelected} />
           <ToolInput tool={Tool.Select} selected={selected} onClick={setSelected} />
+          <ToolInput tool={Tool.Text} selected={selected} onClick={setSelected} />
         </fieldset>
         <button style={{ display: 'inline' }} onClick={() => copyToClipboard(scene(elements))}>
           Copy

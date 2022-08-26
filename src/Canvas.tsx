@@ -9,6 +9,7 @@ import {
   Line,
   ArrowDirection,
   Arrow,
+  Text,
   Element,
   Point,
   point,
@@ -16,17 +17,28 @@ import {
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
 
-function newRectangle(x: number, y: number, width: number, height: number): Rectangle {
-  return { x, y, width, height, shape: g.rectangle(width, height), type: ElementType.Rectangle };
+function newRectangle(x: number, y: number): Rectangle {
+  return { x, y, width: 2, height: 2, shape: g.rectangle(2, 2), type: ElementType.Rectangle };
 }
 
-function newLine(x: number, y: number, len: number): Line {
+function newLine(x: number, y: number): Line {
   // We can figure out line direction only after it starts moving
-  return { x, y, len, direction: LineDirection.Undecided, shape: [''], type: ElementType.Line };
+  return { x, y, len: 1, direction: LineDirection.Undecided, shape: [''], type: ElementType.Line };
 }
 
-function newArrow(x: number, y: number, len: number): Arrow {
-  return { x, y, len, direction: ArrowDirection.Undecided, shape: [''], type: ElementType.Arrow };
+function newArrow(x: number, y: number): Arrow {
+  return {
+    x,
+    y,
+    len: 2,
+    direction: ArrowDirection.Undecided,
+    shape: [''],
+    type: ElementType.Arrow,
+  };
+}
+
+function newText(x: number, y: number): Text {
+  return { x, y, content: '', shape: [''], type: ElementType.Text };
 }
 
 function drawElement(ctx: CanvasRenderingContext2D, element: Element) {
@@ -109,6 +121,8 @@ function inVicinity(p: Point, element: Element): boolean {
         element.len,
         element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right
       );
+    case ElementType.Text:
+      return inLinearVicinity(p, { x: element.x, y: element.y }, element.content.length, true);
   }
 }
 
@@ -192,6 +206,9 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
           case ElementType.Arrow:
             drawArrowOutline(ctx, selectedElement);
             break;
+          case ElementType.Text:
+            drawTextOutline(ctx, selectedElement);
+            break;
         }
       }
     }
@@ -228,6 +245,15 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
     drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
   }
 
+  function drawTextOutline(ctx: CanvasRenderingContext2D, text: Text) {
+    const { xMin, xMax, yMin, yMax } = getLinearBounding(
+      { x: text.x, y: text.y },
+      text.content.length,
+      true
+    );
+    drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
+  }
+
   function drawDashedRect(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -257,29 +283,29 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
       style={styles}
       aria-label="ascii canvas"
       onMouseDown={(e) => {
+        // Handle Text Element
+        if (editingElement) {
+          setElements([...elements, santizeElement(editingElement)]);
+          setEditingElement(null);
+          return null;
+        }
+
         let newElement;
         switch (tool) {
           case Tool.Rectangle:
             newElement = newRectangle(
               clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE),
-              2,
-              2
+              clipToScale(e.clientY, Y_SCALE)
             );
             break;
           case Tool.Line:
-            newElement = newLine(
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE),
-              1
-            );
+            newElement = newLine(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE));
             break;
           case Tool.Arrow:
-            newElement = newArrow(
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE),
-              2
-            );
+            newElement = newArrow(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE));
+            break;
+          case Tool.Text:
+            newElement = newText(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE));
             break;
           case Tool.Select:
             const selected = elements.find((element) =>
@@ -295,8 +321,10 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
       }}
       onMouseUp={(e) => {
         if (tool !== Tool.Select) {
-          editingElement && setElements([...elements, santizeElement(editingElement)]);
-          setEditingElement(null);
+          if (editingElement && editingElement.type !== ElementType.Text) {
+            setElements([...elements, santizeElement(editingElement)]);
+            setEditingElement(null);
+          }
         } else {
           setDragging(false);
         }
@@ -439,6 +467,13 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
         mousePreviousX = e.clientX;
         mousePreviousY = e.clientY;
+      }}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (editingElement && editingElement.type === ElementType.Text) {
+          const content = editingElement.content + e.key;
+          setEditingElement({ ...editingElement, content, shape: g.text(content) });
+        }
       }}
     >
       <div>Test</div>

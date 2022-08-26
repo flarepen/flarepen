@@ -17,7 +17,8 @@ interface ElementCommons {
 export enum ElementType {
   Rectangle = 'rectangle',
   Line = 'line',
-  Arrow = 'Arrow',
+  Arrow = 'arrow',
+  Text = 'text,',
 }
 
 // Rectangle
@@ -58,6 +59,13 @@ export interface Arrow extends ElementCommons {
   type: ElementType.Arrow;
 }
 
+// Text
+
+export interface Text extends ElementCommons {
+  content: string;
+  type: ElementType.Text;
+}
+
 // Supported Elements
 
-export type Element = Rectangle | Line | Arrow;
+export type Element = Rectangle | Line | Arrow | Text;
