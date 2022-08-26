@@ -33,13 +33,16 @@ function App() {
   const [selected, setSelected] = useState<Tool>(Tool.Rectangle)
   return (
     <div className="App">
-      <fieldset style={{ float: 'left', position: 'absolute' }}>
-        <legend>Select Tool</legend>
-        <ToolInput tool={Tool.Rectangle} selected={selected} onClick={setSelected} />
-        <ToolInput tool={Tool.Line} selected={selected} onClick={setSelected} />
-        <ToolInput tool={Tool.Arrow} selected={selected} onClick={setSelected} />
-        <ToolInput tool={Tool.Select} selected={selected} onClick={setSelected} />
-      </fieldset>
+      <div style={{ float: 'left', position: 'absolute' }}>
+        <fieldset style={{ display: 'inline' }}>
+          <legend>Select Tool</legend>
+          <ToolInput tool={Tool.Rectangle} selected={selected} onClick={setSelected} />
+          <ToolInput tool={Tool.Line} selected={selected} onClick={setSelected} />
+          <ToolInput tool={Tool.Arrow} selected={selected} onClick={setSelected} />
+          <ToolInput tool={Tool.Select} selected={selected} onClick={setSelected} />
+        </fieldset>
+        <button style={{ display: 'inline' }}>Copy</button>
+      </div>
       <Canvas tool={selected}></Canvas>
     </div>
   )

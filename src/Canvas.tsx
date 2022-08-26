@@ -11,6 +11,7 @@ import {
   Arrow,
   Element,
 } from './element'
+import { useStore } from './state'
 
 function newRectangle(x: number, y: number, width: number, height: number): Rectangle {
   return { x, y, width, height, shape: g.rectangle(width, height), type: ElementType.Rectangle }
@@ -133,10 +134,12 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
     height: window.innerHeight,
   })
   const [ctx, setCtx] = useState<null | CanvasRenderingContext2D>(null)
-  const [elements, setElements] = useState<Element[]>([])
   const [editingElement, setEditingElement] = useState<null | Element>(null)
   const [selectedElement, setSelectedElement] = useState<null | Element>(null)
   const [dragging, setDragging] = useState(false)
+
+  const elements = useStore((state) => state.elements)
+  const setElements = useStore((state) => state.setElements)
 
   const scale = window.devicePixelRatio
 
