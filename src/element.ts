@@ -1,3 +1,13 @@
+// TODO: Use it instead of x,y in other places
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export function point(x: number, y: number): Point {
+  return { x, y };
+}
+
 interface ElementCommons {
   x: number;
   y: number;

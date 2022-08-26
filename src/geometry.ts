@@ -1,4 +1,6 @@
-import { ArrowDirection } from './element';
+import { ArrowDirection, Element, ElementType, LineDirection, point, Point } from './element';
+import _ from 'lodash';
+import { X_SCALE, Y_SCALE } from './constants';
 
 export type Row = string;
 export type Shape = Row[];
@@ -67,4 +69,69 @@ export function arrow(len: number, direction: ArrowDirection): Shape {
     case ArrowDirection.Undecided:
       return [''];
   }
+}
+
+// TODO: Where to keep this implementation?
+function getWidth(element: Element) {
+  switch (element.type) {
+    case ElementType.Rectangle:
+      return element.width;
+    case ElementType.Line:
+      return element.direction === LineDirection.Horizontal ? element.len : 1;
+    case ElementType.Arrow:
+      return element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right
+        ? element.len
+        : 1;
+  }
+}
+
+function getHeight(element: Element) {
+  switch (element.type) {
+    case ElementType.Rectangle:
+      return element.height;
+    case ElementType.Line:
+      return element.direction === LineDirection.Vertical ? element.len : 1;
+    case ElementType.Arrow:
+      return element.direction === ArrowDirection.Up || element.direction === ArrowDirection.Down
+        ? element.len
+        : 1;
+  }
+}
+
+function writeToScene(origin: Point, sceneArr: string[][], element: Element) {
+  const offsetX = (element.x - origin.x) / X_SCALE;
+  const offsetY = (element.y - origin.y) / Y_SCALE;
+
+  const shape: string[][] = _.map(element.shape, (row) => row.split(''));
+
+  shape.forEach((row, rowNum) => {
+    row.forEach((s, colNum) => {
+      sceneArr[rowNum + offsetY][colNum + offsetX] = s;
+    });
+  });
+}
+
+export function scene(elements: Element[]): string {
+  // Find boundaries
+  const xMin = _.min(_.map(elements, (element) => element.x)) || 0;
+  const xMax = _.max(_.map(elements, (element) => element.x + getWidth(element) * X_SCALE)) || 0;
+  const yMin = _.min(_.map(elements, (element) => element.y)) || 0;
+  const yMax = _.max(_.map(elements, (element) => element.y + getHeight(element) * Y_SCALE)) || 0;
+
+  const width = Math.floor((xMax - xMin) / X_SCALE);
+  const height = Math.floor((yMax - yMin) / Y_SCALE);
+
+  // Create a 2D array
+  let sceneArr: string[][] = [];
+  for (let i = 0; i < height; i++) {
+    sceneArr.push(new Array(width).fill(' '));
+  }
+
+  // Fill the array
+  elements.forEach((element) => {
+    writeToScene(point(xMin, yMin), sceneArr, element);
+  });
+
+  // Merge everything
+  return _.map(sceneArr, (row) => row.join('')).join('\n');
 }

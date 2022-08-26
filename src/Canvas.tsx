@@ -10,8 +10,11 @@ import {
   ArrowDirection,
   Arrow,
   Element,
+  Point,
+  point,
 } from './element';
 import { useStore } from './state';
+import { X_SCALE, Y_SCALE } from './constants';
 
 function newRectangle(x: number, y: number, width: number, height: number): Rectangle {
   return { x, y, width, height, shape: g.rectangle(width, height), type: ElementType.Rectangle };
@@ -44,11 +47,6 @@ let mouseAccY = 0;
 let mousePreviousX = 0;
 let mousePreviousY = 0;
 
-// Scales are just an approximation for now.
-// TODO: Need to move to better pixel measurement for the font.
-let X_SCALE = 14;
-let Y_SCALE = 20;
-
 // We cant allow any x and y since everything is ASCII.
 // Instead x and y should be multiples of respective scale values.
 function clipToScale(value: number, scale: number) {
@@ -66,16 +64,6 @@ function santizeElement(element: Element) {
   } else {
     return element;
   }
-}
-
-// TODO: Use it instead of x,y in other places
-interface Point {
-  x: number;
-  y: number;
-}
-
-function point(x: number, y: number): Point {
-  return { x, y };
 }
 
 function getLinearBounding(
