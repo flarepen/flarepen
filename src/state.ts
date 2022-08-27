@@ -1,4 +1,5 @@
 import create from 'zustand';
+import { Tool } from './tools';
 import { Element } from './element';
 
 export interface AppState {
@@ -6,6 +7,8 @@ export interface AppState {
   setElements: (elements: Element[]) => void;
   selectedElement: null | Element;
   setSelectedElement: (element: null | Element) => void;
+  tool: Tool;
+  setTool: (tool: Tool) => void;
 }
 
 export const useStore = create<AppState>()((set) => ({
@@ -13,4 +16,6 @@ export const useStore = create<AppState>()((set) => ({
   setElements: (elements) => set((_state) => ({ elements })),
   selectedElement: null,
   setSelectedElement: (element) => set((_state) => ({ selectedElement: element })),
+  tool: Tool.Rectangle,
+  setTool: (tool) => set((_state) => ({ tool })),
 }));

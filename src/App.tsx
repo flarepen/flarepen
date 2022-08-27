@@ -1,17 +1,9 @@
 import './App.css';
-import { useState } from 'react';
 import Canvas from './Canvas';
 import { useStore } from './state';
 import { scene } from './geometry';
 import _ from 'lodash';
-
-export enum Tool {
-  Rectangle = 'Rectangle',
-  Line = 'Line',
-  Arrow = 'Arrow',
-  Text = 'Text',
-  Select = 'Select',
-}
+import { Tool, TOOL_SHORTCUTS } from './tools';
 
 interface ToolProps {
   tool: Tool;
@@ -28,13 +20,16 @@ function ToolInput({ tool, selected, onClick }: ToolProps) {
         checked={selected === tool}
         onChange={() => onClick(tool)}
       ></input>
-      <label htmlFor={tool}>{tool}</label>
+      <label htmlFor={tool}>
+        {tool} ({TOOL_SHORTCUTS[tool]})
+      </label>
     </>
   );
 }
 
 function App() {
-  const [selected, setSelected] = useState<Tool>(Tool.Rectangle);
+  const selected = useStore((state) => state.tool);
+  const setSelected = useStore((state) => state.setTool);
 
   const elements = useStore((state) => state.elements);
   const setElements = useStore((state) => state.setElements);

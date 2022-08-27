@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import * as g from './geometry';
-import { Tool } from './App';
+import { SHORTCUT_TO_TOOL, Tool } from './tools';
 import {
   ElementType,
   Rectangle,
@@ -163,6 +163,8 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
   const selectedElement = useStore((state) => state.selectedElement);
   const setSelectedElement = useStore((state) => state.setSelectedElement);
+
+  const setTool = useStore((state) => state.setTool);
 
   const scale = window.devicePixelRatio;
 
@@ -494,13 +496,20 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
         if (editingElement && editingElement.type === ElementType.Text) {
           const content = editingElement.content + e.key;
           setEditingElement({ ...editingElement, content, shape: g.text(content) });
-        } else if (selectedElement && e.key === 'Backspace') {
+          return null;
+        }
+
+        if (selectedElement && e.key === 'Backspace') {
           const index = _.findIndex(elements, (element) => element.id === selectedElement.id);
           if (index > -1) {
             elements.splice(index, 1);
             setElements(elements);
             setSelectedElement(null);
           }
+        }
+
+        if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
+          setTool(SHORTCUT_TO_TOOL[e.key]);
         }
       }}
     >
