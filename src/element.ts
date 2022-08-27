@@ -9,6 +9,7 @@ export function point(x: number, y: number): Point {
 }
 
 interface ElementCommons {
+  id: number;
   x: number;
   y: number;
   shape: string[];

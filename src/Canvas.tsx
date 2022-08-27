@@ -16,18 +16,36 @@ import {
 } from './element';
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
+import { getNextID } from './id';
 
 function newRectangle(x: number, y: number): Rectangle {
-  return { x, y, width: 2, height: 2, shape: g.rectangle(2, 2), type: ElementType.Rectangle };
+  return {
+    id: getNextID(),
+    x,
+    y,
+    width: 2,
+    height: 2,
+    shape: g.rectangle(2, 2),
+    type: ElementType.Rectangle,
+  };
 }
 
 function newLine(x: number, y: number): Line {
   // We can figure out line direction only after it starts moving
-  return { x, y, len: 1, direction: LineDirection.Undecided, shape: [''], type: ElementType.Line };
+  return {
+    id: getNextID(),
+    x,
+    y,
+    len: 1,
+    direction: LineDirection.Undecided,
+    shape: [''],
+    type: ElementType.Line,
+  };
 }
 
 function newArrow(x: number, y: number): Arrow {
   return {
+    id: getNextID(),
     x,
     y,
     len: 2,
@@ -38,7 +56,7 @@ function newArrow(x: number, y: number): Arrow {
 }
 
 function newText(x: number, y: number): Text {
-  return { x, y, content: '', shape: [''], type: ElementType.Text };
+  return { id: getNextID(), x, y, content: '', shape: [''], type: ElementType.Text };
 }
 
 function drawElement(ctx: CanvasRenderingContext2D, element: Element) {
