@@ -17,6 +17,7 @@ import {
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
 import { getNextID } from './id';
+import _ from 'lodash';
 
 function newRectangle(x: number, y: number): Rectangle {
   return {
@@ -493,6 +494,13 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
         if (editingElement && editingElement.type === ElementType.Text) {
           const content = editingElement.content + e.key;
           setEditingElement({ ...editingElement, content, shape: g.text(content) });
+        } else if (selectedElement && e.key === 'Backspace') {
+          const index = _.findIndex(elements, (element) => element.id === selectedElement.id);
+          if (index > -1) {
+            elements.splice(index, 1);
+            setElements(elements);
+            setSelectedElement(null);
+          }
         }
       }}
     >
