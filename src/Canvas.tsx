@@ -356,6 +356,9 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
             if (selected) {
               setSelectedElement(selected);
               setDragging(true); // GTK: Does these calls get batched in React??
+            } else {
+              setSelectedElement(null);
+              setDragging(false);
             }
             break;
         }
