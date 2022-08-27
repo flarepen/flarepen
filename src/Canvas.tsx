@@ -193,7 +193,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
     if (canvasRef.current) {
       const canvas: HTMLCanvasElement = canvasRef.current;
       const ctx = canvas.getContext('2d')!;
-      ctx.font = '22px Monaco';
+      ctx.font = '22px Cascadia';
       ctx.scale(scale, scale);
       setCtx(ctx);
     }
