@@ -155,11 +155,13 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   });
   const [ctx, setCtx] = useState<null | CanvasRenderingContext2D>(null);
   const [editingElement, setEditingElement] = useState<null | Element>(null);
-  const [selectedElement, setSelectedElement] = useState<null | Element>(null);
   const [dragging, setDragging] = useState(false);
 
   const elements = useStore((state) => state.elements);
   const setElements = useStore((state) => state.setElements);
+
+  const selectedElement = useStore((state) => state.selectedElement);
+  const setSelectedElement = useStore((state) => state.setSelectedElement);
 
   const scale = window.devicePixelRatio;
 
