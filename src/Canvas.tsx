@@ -89,11 +89,17 @@ function santizeElement(element: Element) {
   if (element.type === ElementType.Rectangle) {
     return {
       ...element,
+      x: clipToScale(element.x, X_SCALE),
+      y: clipToScale(element.y, Y_SCALE),
       width: Math.abs(element.width),
       height: Math.abs(element.height),
     };
   } else {
-    return element;
+    return {
+      ...element,
+      x: clipToScale(element.x, X_SCALE),
+      y: clipToScale(element.y, Y_SCALE),
+    };
   }
 }
 
@@ -363,6 +369,12 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
           }
         } else {
           setDragging(false);
+          // TODO: Remove direct mutation and manual draw
+          if (selectedElement) {
+            selectedElement.x = clipToScale(selectedElement.x, X_SCALE);
+            selectedElement.y = clipToScale(selectedElement.y, Y_SCALE);
+            draw();
+          }
         }
       }}
       // TODO: Need to clean this up
