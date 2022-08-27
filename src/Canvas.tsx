@@ -154,7 +154,6 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const [ctx, setCtx] = useState<null | CanvasRenderingContext2D>(null);
   const [editingElement, setEditingElement] = useState<null | Element>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -164,11 +163,12 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   const selectedElement = useStore((state) => state.selectedElement);
   const setSelectedElement = useStore((state) => state.setSelectedElement);
 
+  const ctx = useStore((state) => state.canvasCtx);
+  const setCtx = useStore((state) => state.setCanvasCtx);
+
   const setTool = useStore((state) => state.setTool);
 
   const scale = window.devicePixelRatio;
-
-  const styles = { display: 'block', width: '100vw', height: '100vh' };
 
   // Handle Resize
   useEffect(() => {
@@ -188,16 +188,31 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
   const canvasRef = useRef(null);
 
-  // Get Context. TODO: Possibly a new hook?
-  useEffect(() => {
+  function setupCanvas() {
     if (canvasRef.current) {
       const canvas: HTMLCanvasElement = canvasRef.current;
+      canvas.width = dimensions.width * scale;
+      canvas.height = dimensions.height * scale;
+
+      canvas.style.width = canvas.width / window.devicePixelRatio + 'px';
+      canvas.style.height = canvas.height / window.devicePixelRatio + 'px';
+
       const ctx = canvas.getContext('2d')!;
       ctx.font = '22px Cascadia';
       ctx.scale(scale, scale);
       setCtx(ctx);
     }
-  });
+  }
+
+  // Setup Canvas on initial load
+  useEffect(() => {
+    setupCanvas();
+  }, []);
+
+  // Fix Canvas on resize
+  useEffect(() => {
+    setupCanvas();
+  }, [dimensions]);
 
   // Refresh scene
   useEffect(() => {
@@ -301,9 +316,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
     <canvas
       id="canvas"
       ref={canvasRef}
-      width={dimensions.width * scale}
-      height={dimensions.height * scale}
-      style={styles}
+      style={{ display: 'block' }}
       aria-label="ascii canvas"
       onMouseDown={(e) => {
         // Handle Text Element

@@ -1,12 +1,12 @@
 @font-face {
   font-family: 'Cascadia';
-  src: local('Cascadia'), url(./fonts/Cascadia.woff2) format('opentype');
+  src: local('Cascadia'), url(./fonts/Cascadia.woff2) format('woff');
 }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif, 'Cascadia';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
