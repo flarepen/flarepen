@@ -65,7 +65,7 @@ function drawElement(ctx: CanvasRenderingContext2D, element: Element) {
   let y = element.y;
   element.shape.forEach((row) => {
     ctx.fillText(row, x, y);
-    y = y + 20;
+    y = y + Y_SCALE;
   });
 }
 
