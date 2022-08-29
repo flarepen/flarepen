@@ -63,11 +63,11 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   moveToEdit: function (line, mouseMove, callback) {
-    const widthIncr =
+    let widthIncr =
       mouseMove.accX > 0
         ? Math.floor(mouseMove.accX / X_SCALE)
         : Math.ceil(mouseMove.accX / X_SCALE);
-    const heightIncr =
+    let heightIncr =
       mouseMove.accY > 0
         ? Math.floor(mouseMove.accY / Y_SCALE)
         : Math.ceil(mouseMove.accY / Y_SCALE);
@@ -78,6 +78,34 @@ export const LineUtils: ElementUtils<Line> = {
       widthIncr < 0 && (line.direction = LineDirection.Left);
       heightIncr > 0 && (line.direction = LineDirection.Down);
       heightIncr < 0 && (line.direction = LineDirection.Up);
+    }
+
+    // Swap Direction
+    if (line.direction !== LineDirection.Undecided) {
+      if (line.direction === LineDirection.Right && line.len + widthIncr < 0) {
+        line.direction = LineDirection.Left;
+        // Reset line length
+        widthIncr = widthIncr + line.len;
+        line.len = 1;
+      }
+      if (line.direction === LineDirection.Left && line.len - widthIncr <= 0) {
+        line.direction = LineDirection.Right;
+        // Reset line length
+        widthIncr = widthIncr - line.len;
+        line.len = 1;
+      }
+      if (line.direction === LineDirection.Down && line.len + heightIncr < 0) {
+        line.direction = LineDirection.Up;
+        // Reset line length
+        heightIncr = heightIncr + line.len;
+        line.len = 1;
+      }
+      if (line.direction === LineDirection.Up && line.len - heightIncr <= 0) {
+        line.direction = LineDirection.Down;
+        // Reset line length
+        heightIncr = heightIncr - line.len;
+        line.len = 1;
+      }
     }
 
     // Start drawing if we only know the direction
