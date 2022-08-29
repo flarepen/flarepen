@@ -4,61 +4,19 @@ import * as g from './geometry';
 import { SHORTCUT_TO_TOOL, Tool } from './tools';
 import {
   ElementType,
-  Rectangle,
   LineDirection,
-  Line,
   ArrowDirection,
-  Arrow,
-  Text,
   Element,
   Point,
   point,
+  createElement,
+  getLinearBounding,
+  IBounds,
+  ElementUtilsMap,
 } from './element';
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
-import { getNextID } from './id';
 import _ from 'lodash';
-
-function newRectangle(x: number, y: number): Rectangle {
-  return {
-    id: getNextID(),
-    x,
-    y,
-    width: 2,
-    height: 2,
-    shape: g.rectangle(2, 2),
-    type: ElementType.Rectangle,
-  };
-}
-
-function newLine(x: number, y: number): Line {
-  // We can figure out line direction only after it starts moving
-  return {
-    id: getNextID(),
-    x,
-    y,
-    len: 1,
-    direction: LineDirection.Undecided,
-    shape: [''],
-    type: ElementType.Line,
-  };
-}
-
-function newArrow(x: number, y: number): Arrow {
-  return {
-    id: getNextID(),
-    x,
-    y,
-    len: 2,
-    direction: ArrowDirection.Undecided,
-    shape: [''],
-    type: ElementType.Arrow,
-  };
-}
-
-function newText(x: number, y: number): Text {
-  return { id: getNextID(), x, y, content: '', shape: [''], type: ElementType.Text };
-}
 
 function drawElement(ctx: CanvasRenderingContext2D, element: Element) {
   let x = element.x;
@@ -101,19 +59,6 @@ function santizeElement(element: Element) {
       y: clipToScale(element.y, Y_SCALE),
     };
   }
-}
-
-function getLinearBounding(
-  origin: Point,
-  len: number,
-  horizontal: boolean
-): { xMin: number; xMax: number; yMin: number; yMax: number } {
-  const xMin = origin.x - X_SCALE;
-  const xMax = horizontal ? origin.x + X_SCALE + len * X_SCALE : origin.x + X_SCALE;
-  const yMin = origin.y - Y_SCALE;
-  const yMax = horizontal ? origin.y + Y_SCALE : origin.y + Y_SCALE + len * Y_SCALE;
-
-  return { xMin, xMax, yMin, yMax };
 }
 
 function inLinearVicinity(p: Point, origin: Point, len: number, horizontal: boolean): boolean {
@@ -240,74 +185,15 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
       // draw selection indicator
       if (selectedElement) {
-        switch (selectedElement.type) {
-          case ElementType.Rectangle:
-            drawRectangleOutline(ctx, selectedElement);
-            break;
-          case ElementType.Line:
-            drawLineOutline(ctx, selectedElement);
-            break;
-          case ElementType.Arrow:
-            drawArrowOutline(ctx, selectedElement);
-            break;
-          case ElementType.Text:
-            drawTextOutline(ctx, selectedElement);
-            break;
-        }
+        drawDashedRect(ctx, ElementUtilsMap[selectedElement.type]!.outlineBounds(selectedElement));
       }
     }
   }
 
-  function drawRectangleOutline(ctx: CanvasRenderingContext2D, rectangle: Rectangle) {
-    const x = rectangle.x - X_SCALE;
-    const y = rectangle.y - Y_SCALE;
-
-    drawDashedRect(
-      ctx,
-      x,
-      y,
-      rectangle.width * X_SCALE + X_SCALE,
-      rectangle.height * Y_SCALE + Y_SCALE
-    );
-  }
-
-  function drawLineOutline(ctx: CanvasRenderingContext2D, line: Line) {
-    const { xMin, xMax, yMin, yMax } = getLinearBounding(
-      { x: line.x, y: line.y },
-      line.len,
-      line.direction === LineDirection.Horizontal
-    );
-    drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
-  }
-
-  function drawArrowOutline(ctx: CanvasRenderingContext2D, arrow: Arrow) {
-    const { xMin, xMax, yMin, yMax } = getLinearBounding(
-      { x: arrow.x, y: arrow.y },
-      arrow.len,
-      arrow.direction === ArrowDirection.Left || arrow.direction === ArrowDirection.Right
-    );
-    drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
-  }
-
-  function drawTextOutline(ctx: CanvasRenderingContext2D, text: Text) {
-    const { xMin, xMax, yMin, yMax } = getLinearBounding(
-      { x: text.x, y: text.y },
-      text.content.length,
-      true
-    );
-    drawDashedRect(ctx, xMin, yMin, xMax - xMin, yMax - yMin);
-  }
-
-  function drawDashedRect(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ) {
+  function drawDashedRect(ctx: CanvasRenderingContext2D, bounds: IBounds) {
     const lineDash = ctx.getLineDash();
     ctx.setLineDash([8, 4]);
-    ctx.strokeRect(x, y, width, height);
+    ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     ctx.setLineDash(lineDash);
   }
 
@@ -335,19 +221,32 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
         let newElement;
         switch (tool) {
           case Tool.Rectangle:
-            newElement = newRectangle(
+            newElement = createElement(
+              ElementType.Rectangle,
               clipToScale(e.clientX, X_SCALE),
               clipToScale(e.clientY, Y_SCALE)
             );
             break;
           case Tool.Line:
-            newElement = newLine(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE));
+            newElement = createElement(
+              ElementType.Line,
+              clipToScale(e.clientX, X_SCALE),
+              clipToScale(e.clientY, Y_SCALE)
+            );
             break;
           case Tool.Arrow:
-            newElement = newArrow(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE));
+            newElement = createElement(
+              ElementType.Arrow,
+              clipToScale(e.clientX, X_SCALE),
+              clipToScale(e.clientY, Y_SCALE)
+            );
             break;
           case Tool.Text:
-            newElement = newText(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE));
+            newElement = createElement(
+              ElementType.Text,
+              clipToScale(e.clientX, X_SCALE),
+              clipToScale(e.clientY, Y_SCALE)
+            );
             break;
           case Tool.Select:
             const selected = elements.find((element) =>
