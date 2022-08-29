@@ -13,8 +13,10 @@ import { X_SCALE, Y_SCALE } from '../constants';
 import * as g from '../geometry';
 
 export enum LineDirection {
-  Horizontal,
-  Vertical,
+  Up,
+  Down,
+  Left,
+  Right,
   Undecided,
 }
 
@@ -22,6 +24,10 @@ export interface Line extends ElementCommons {
   len: number;
   direction: LineDirection;
   type: ElementType.Line;
+}
+
+export function isHorizontalLine(line: Line): boolean {
+  return line.direction === LineDirection.Left || line.direction === LineDirection.Right;
 }
 
 export const LineUtils: ElementUtils<Line> = {
@@ -41,7 +47,7 @@ export const LineUtils: ElementUtils<Line> = {
     const { xMin, xMax, yMin, yMax } = getLinearBounding(
       point(line.x, line.y),
       line.len,
-      line.direction === LineDirection.Horizontal
+      isHorizontalLine(line)
     );
 
     return {
@@ -53,12 +59,7 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   inVicinity: function (line: Line, p: Point) {
-    return inLinearVicinity(
-      p,
-      point(line.x, line.y),
-      line.len,
-      line.direction === LineDirection.Horizontal
-    );
+    return inLinearVicinity(p, point(line.x, line.y), line.len, isHorizontalLine(line));
   },
 
   moveToEdit: function (line, mouseMove, callback) {
@@ -73,28 +74,34 @@ export const LineUtils: ElementUtils<Line> = {
 
     // Decide direction if not present
     if (line.direction === LineDirection.Undecided) {
-      if (widthIncr !== 0) {
-        line.direction = LineDirection.Horizontal;
-      }
-      if (heightIncr !== 0) {
-        line.direction = LineDirection.Vertical;
-      }
+      widthIncr > 0 && (line.direction = LineDirection.Right);
+      widthIncr < 0 && (line.direction = LineDirection.Left);
+      heightIncr > 0 && (line.direction = LineDirection.Down);
+      heightIncr < 0 && (line.direction = LineDirection.Up);
     }
 
     // Start drawing if we only know the direction
     if (line.direction !== LineDirection.Undecided) {
       switch (line.direction) {
-        case LineDirection.Horizontal:
+        case LineDirection.Right:
           line.len += widthIncr;
           break;
-        case LineDirection.Vertical:
+        case LineDirection.Left:
+          line.x = line.x + widthIncr * X_SCALE;
+          line.len -= widthIncr;
+          break;
+        case LineDirection.Down:
           line.len += heightIncr;
+          break;
+        case LineDirection.Up:
+          line.y = line.y + heightIncr * Y_SCALE;
+          line.len -= heightIncr;
           break;
       }
 
       callback({
         ...line,
-        shape: g.line(line.len, line.direction === LineDirection.Horizontal),
+        shape: g.line(line.len, isHorizontalLine(line)),
       });
     }
   },

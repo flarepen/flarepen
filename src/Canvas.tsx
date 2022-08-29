@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import * as g from './geometry';
 import { SHORTCUT_TO_TOOL, Tool } from './tools';
-import { ElementType, Element, Point, createElement, ElementUtilsMap } from './element';
+import {
+  ElementType,
+  Element,
+  Point,
+  createElement,
+  ElementUtilsMap,
+  ElementUtils,
+} from './element';
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
 import _ from 'lodash';
@@ -18,6 +25,10 @@ const ElementTypeForTool: { [t in Tool]?: ElementType } = {
 
 function consoleShape(shape: g.Shape) {
   console.log(shape.join('\n'));
+}
+
+function utilFor(element: Element): ElementUtils<any> {
+  return ElementUtilsMap[element.type]!;
 }
 
 // We cant allow any x and y since everything is ASCII.
@@ -46,15 +57,10 @@ function santizeElement(element: Element) {
 }
 
 function inVicinity(p: Point, element: Element): boolean {
-  return ElementUtilsMap[element.type]!.inVicinity(element, p);
+  return utilFor(element).inVicinity(element, p);
 }
 
-let mouseMove: IMouseMove = {
-  accX: 0,
-  accY: 0,
-  currentEvent: null,
-  previousEvent: null,
-};
+let mouseMove = new IMouseMove();
 
 interface CanvasProps {
   tool: Tool;
@@ -145,7 +151,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
       // draw selection indicator
       if (selectedElement) {
-        draw.dashedRect(ctx, ElementUtilsMap[selectedElement.type]!.outlineBounds(selectedElement));
+        draw.dashedRect(ctx, utilFor(selectedElement).outlineBounds(selectedElement));
       }
     }
   }
@@ -171,13 +177,14 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
           return null;
         }
 
-        let newElement;
         if (ElementTypeForTool[tool]) {
-          newElement = createElement(
+          const newElement = createElement(
             ElementTypeForTool[tool]!,
             clipToScale(e.clientX, X_SCALE),
             clipToScale(e.clientY, Y_SCALE)
           );
+
+          setEditingElement(newElement);
         } else if (tool === Tool.Select) {
           const selected = elements.find((element) =>
             inVicinity({ x: e.clientX, y: e.clientY }, element)
@@ -190,8 +197,6 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
             setDragging(false);
           }
         }
-
-        newElement && setEditingElement(newElement);
       }}
       onMouseUp={(e) => {
         if (tool !== Tool.Select) {
@@ -213,21 +218,17 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
       onMouseMove={(e) => {
         // Accumulate mouse movement into batches of scale
         // TODO: How to handle this for different screen resolutions?
-        mouseMove.accX +=
-          e.clientX - (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
-        mouseMove.accY +=
-          e.clientY - (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
-
         mouseMove.currentEvent = e;
+        mouseMove.acc();
 
-        if (editingElement && ElementUtilsMap[editingElement.type]) {
-          ElementUtilsMap[editingElement.type].moveToEdit(editingElement, mouseMove, (updated) => {
+        if (editingElement) {
+          utilFor(editingElement).moveToEdit(editingElement, mouseMove, (updated) => {
             setEditingElement(updated);
           });
         } else {
           // TODO: Remove direct mutation and manual draw
           if (dragging && selectedElement) {
-            ElementUtilsMap[selectedElement.type].drag(selectedElement, mouseMove, (updated) => {
+            utilFor(selectedElement).drag(selectedElement, mouseMove, (updated) => {
               selectedElement.x = updated.x;
               selectedElement.y = updated.y;
               drawScene();
@@ -235,9 +236,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
           }
         }
 
-        mouseMove.accX = mouseMove.accX % X_SCALE;
-        mouseMove.accY = mouseMove.accY % Y_SCALE;
-
+        mouseMove.flushAcc();
         mouseMove.previousEvent = e;
       }}
       tabIndex={0}

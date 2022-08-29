@@ -1,4 +1,12 @@
-import { ArrowDirection, Element, ElementType, LineDirection, point, Point } from './element';
+import {
+  ArrowDirection,
+  Element,
+  ElementType,
+  isHorizontalLine,
+  LineDirection,
+  point,
+  Point,
+} from './element';
 import _ from 'lodash';
 import { X_SCALE, Y_SCALE } from './constants';
 
@@ -81,7 +89,7 @@ function getWidth(element: Element): number {
     case ElementType.Rectangle:
       return element.width;
     case ElementType.Line:
-      return element.direction === LineDirection.Horizontal ? element.len : 1;
+      return isHorizontalLine(element) ? element.len : 1;
     case ElementType.Arrow:
       return element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right
         ? element.len
@@ -96,7 +104,7 @@ function getHeight(element: Element): number {
     case ElementType.Rectangle:
       return element.height;
     case ElementType.Line:
-      return element.direction === LineDirection.Vertical ? element.len : 1;
+      return isHorizontalLine(element) ? 1 : element.len;
     case ElementType.Arrow:
       return element.direction === ArrowDirection.Up || element.direction === ArrowDirection.Down
         ? element.len

@@ -56,6 +56,7 @@ export function inLinearVicinity(
   return p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax;
 }
 
+// TODO: Change to class?
 export interface ElementUtils<T extends ElementCommons> {
   new: (x: number, y: number) => T;
   outlineBounds: (t: T) => IBounds;
