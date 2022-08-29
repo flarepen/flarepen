@@ -2,39 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import * as g from './geometry';
 import { SHORTCUT_TO_TOOL, Tool } from './tools';
-import {
-  ElementType,
-  LineDirection,
-  ArrowDirection,
-  Element,
-  Point,
-  point,
-  createElement,
-  getLinearBounding,
-  IBounds,
-  ElementUtilsMap,
-} from './element';
+import { ElementType, Element, Point, createElement, ElementUtilsMap } from './element';
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
 import _ from 'lodash';
+import { IMouseMove } from './types';
+import draw from './draw';
 
-function drawElement(ctx: CanvasRenderingContext2D, element: Element) {
-  let x = element.x;
-  let y = element.y;
-  element.shape.forEach((row) => {
-    ctx.fillText(row, x, y);
-    y = y + Y_SCALE;
-  });
-}
+const ElementTypeForTool: { [t in Tool]?: ElementType } = {
+  [Tool.Rectangle]: ElementType.Rectangle,
+  [Tool.Line]: ElementType.Line,
+  [Tool.Arrow]: ElementType.Arrow,
+  [Tool.Text]: ElementType.Text,
+};
 
 function consoleShape(shape: g.Shape) {
   console.log(shape.join('\n'));
 }
-
-let mouseAccX = 0;
-let mouseAccY = 0;
-let mousePreviousX = 0;
-let mousePreviousY = 0;
 
 // We cant allow any x and y since everything is ASCII.
 // Instead x and y should be multiples of respective scale values.
@@ -61,40 +45,16 @@ function santizeElement(element: Element) {
   }
 }
 
-function inLinearVicinity(p: Point, origin: Point, len: number, horizontal: boolean): boolean {
-  const { xMin, xMax, yMin, yMax } = getLinearBounding(origin, len, horizontal);
-
-  return p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax;
-}
-
 function inVicinity(p: Point, element: Element): boolean {
-  switch (element.type) {
-    case ElementType.Rectangle:
-      const { x, y, width, height } = element;
-      return (
-        inLinearVicinity(p, point(x, y), width, true) ||
-        inLinearVicinity(p, point(x, y), height, false) ||
-        inLinearVicinity(p, point(x, y + height * Y_SCALE), width, true) ||
-        inLinearVicinity(p, point(x + width * X_SCALE, y), height, false)
-      );
-    case ElementType.Line:
-      return inLinearVicinity(
-        p,
-        { x: element.x, y: element.y },
-        element.len,
-        element.direction === LineDirection.Horizontal
-      );
-    case ElementType.Arrow:
-      return inLinearVicinity(
-        p,
-        { x: element.x, y: element.y },
-        element.len,
-        element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right
-      );
-    case ElementType.Text:
-      return inLinearVicinity(p, { x: element.x, y: element.y }, element.content.length, true);
-  }
+  return ElementUtilsMap[element.type]!.inVicinity(element, p);
 }
+
+let mouseMove: IMouseMove = {
+  accX: 0,
+  accY: 0,
+  currentEvent: null,
+  previousEvent: null,
+};
 
 interface CanvasProps {
   tool: Tool;
@@ -167,34 +127,27 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
   // Refresh scene
   useEffect(() => {
-    draw();
+    drawScene();
   }, [elements, editingElement, dimensions, selectedElement]);
 
-  function draw() {
+  function drawScene() {
     if (ctx) {
       // Clear scene
       ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
       // First draw all elements created till now
       elements.forEach((element) => {
-        drawElement(ctx, element);
+        draw.element(ctx, element);
       });
 
       // draw current editing element
-      editingElement && drawElement(ctx, editingElement);
+      editingElement && draw.element(ctx, editingElement);
 
       // draw selection indicator
       if (selectedElement) {
-        drawDashedRect(ctx, ElementUtilsMap[selectedElement.type]!.outlineBounds(selectedElement));
+        draw.dashedRect(ctx, ElementUtilsMap[selectedElement.type]!.outlineBounds(selectedElement));
       }
     }
-  }
-
-  function drawDashedRect(ctx: CanvasRenderingContext2D, bounds: IBounds) {
-    const lineDash = ctx.getLineDash();
-    ctx.setLineDash([8, 4]);
-    ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    ctx.setLineDash(lineDash);
   }
 
   // Reset Select
@@ -219,48 +172,25 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
         }
 
         let newElement;
-        switch (tool) {
-          case Tool.Rectangle:
-            newElement = createElement(
-              ElementType.Rectangle,
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE)
-            );
-            break;
-          case Tool.Line:
-            newElement = createElement(
-              ElementType.Line,
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE)
-            );
-            break;
-          case Tool.Arrow:
-            newElement = createElement(
-              ElementType.Arrow,
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE)
-            );
-            break;
-          case Tool.Text:
-            newElement = createElement(
-              ElementType.Text,
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE)
-            );
-            break;
-          case Tool.Select:
-            const selected = elements.find((element) =>
-              inVicinity({ x: e.clientX, y: e.clientY }, element)
-            );
-            if (selected) {
-              setSelectedElement(selected);
-              setDragging(true); // GTK: Does these calls get batched in React??
-            } else {
-              setSelectedElement(null);
-              setDragging(false);
-            }
-            break;
+        if (ElementTypeForTool[tool]) {
+          newElement = createElement(
+            ElementTypeForTool[tool]!,
+            clipToScale(e.clientX, X_SCALE),
+            clipToScale(e.clientY, Y_SCALE)
+          );
+        } else if (tool === Tool.Select) {
+          const selected = elements.find((element) =>
+            inVicinity({ x: e.clientX, y: e.clientY }, element)
+          );
+          if (selected) {
+            setSelectedElement(selected);
+            setDragging(true); // GTK: Does these calls get batched in React??
+          } else {
+            setSelectedElement(null);
+            setDragging(false);
+          }
         }
+
         newElement && setEditingElement(newElement);
       }}
       onMouseUp={(e) => {
@@ -275,7 +205,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
           if (selectedElement) {
             selectedElement.x = clipToScale(selectedElement.x, X_SCALE);
             selectedElement.y = clipToScale(selectedElement.y, Y_SCALE);
-            draw();
+            drawScene();
           }
         }
       }}
@@ -283,140 +213,32 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
       onMouseMove={(e) => {
         // Accumulate mouse movement into batches of scale
         // TODO: How to handle this for different screen resolutions?
-        mouseAccX += e.clientX - mousePreviousX;
-        mouseAccY += e.clientY - mousePreviousY;
+        mouseMove.accX +=
+          e.clientX - (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
+        mouseMove.accY +=
+          e.clientY - (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
 
-        const widthIncr =
-          mouseAccX > 0 ? Math.floor(mouseAccX / X_SCALE) : Math.ceil(mouseAccX / X_SCALE);
-        const heightIncr =
-          mouseAccY > 0 ? Math.floor(mouseAccY / Y_SCALE) : Math.ceil(mouseAccY / Y_SCALE);
+        mouseMove.currentEvent = e;
 
-        if (editingElement) {
-          switch (editingElement.type) {
-            case ElementType.Rectangle:
-              let { x, y, width, height } = editingElement;
-              width = width + widthIncr;
-              height = height + heightIncr;
-
-              // Min width and height is 2.
-              // We need to skip 1,0 and -1 to any kind of jumpiness when moving from positive to negative or vice versa
-              if (width <= 1 && width >= -1) {
-                if (widthIncr < 0) {
-                  // if decreasing
-                  width = -3;
-                } else {
-                  width = 3;
-                }
-              }
-
-              if (height <= 1 && height >= -1) {
-                if (heightIncr < 0) {
-                  // if decreasing
-                  height = -3;
-                } else {
-                  height = 3;
-                }
-              }
-
-              if (width < 0) {
-                x = x + widthIncr * X_SCALE;
-              }
-
-              if (height < 0) {
-                y = y + heightIncr * Y_SCALE;
-              }
-
-              // Editing element can temporarily have negative width and height
-              setEditingElement({
-                ...editingElement,
-                x,
-                y,
-                width,
-                height,
-                shape: g.rectangle(Math.abs(width), Math.abs(height)),
-              });
-              break;
-            case ElementType.Line:
-              // Decide direction if not present
-              if (editingElement.direction === LineDirection.Undecided) {
-                if (widthIncr !== 0) {
-                  editingElement.direction = LineDirection.Horizontal;
-                }
-                if (heightIncr !== 0) {
-                  editingElement.direction = LineDirection.Vertical;
-                }
-              }
-
-              // Start drawing if we only know the direction
-              if (editingElement.direction !== LineDirection.Undecided) {
-                switch (editingElement.direction) {
-                  case LineDirection.Horizontal:
-                    editingElement.len += widthIncr;
-                    break;
-                  case LineDirection.Vertical:
-                    editingElement.len += heightIncr;
-                    break;
-                }
-
-                setEditingElement({
-                  ...editingElement,
-                  shape: g.line(
-                    editingElement.len,
-                    editingElement.direction === LineDirection.Horizontal
-                  ),
-                });
-              }
-
-              break;
-            case ElementType.Arrow:
-              // Decide direction if not present
-              if (editingElement.direction === ArrowDirection.Undecided) {
-                widthIncr > 0 && (editingElement.direction = ArrowDirection.Right);
-                widthIncr < 0 && (editingElement.direction = ArrowDirection.Left);
-                heightIncr > 0 && (editingElement.direction = ArrowDirection.Down);
-                heightIncr < 0 && (editingElement.direction = ArrowDirection.Up);
-              }
-
-              // Start drawing if we only know the direction
-              if (editingElement.direction !== ArrowDirection.Undecided) {
-                switch (editingElement.direction) {
-                  case ArrowDirection.Right:
-                    editingElement.len += widthIncr;
-                    break;
-                  case ArrowDirection.Left:
-                    editingElement.x = editingElement.x + widthIncr * X_SCALE;
-                    editingElement.len -= widthIncr;
-                    break;
-                  case ArrowDirection.Down:
-                    editingElement.len += heightIncr;
-                    break;
-                  case ArrowDirection.Up:
-                    editingElement.y = editingElement.y + heightIncr * Y_SCALE;
-                    editingElement.len -= heightIncr;
-                    break;
-                }
-
-                setEditingElement({
-                  ...editingElement,
-                  shape: g.arrow(editingElement.len, editingElement.direction),
-                });
-              }
-              break;
-          }
+        if (editingElement && ElementUtilsMap[editingElement.type]) {
+          ElementUtilsMap[editingElement.type].moveToEdit(editingElement, mouseMove, (updated) => {
+            setEditingElement(updated);
+          });
         } else {
           // TODO: Remove direct mutation and manual draw
           if (dragging && selectedElement) {
-            selectedElement.x = selectedElement.x + e.clientX - mousePreviousX;
-            selectedElement.y = selectedElement.y + e.clientY - mousePreviousY;
-            draw();
+            ElementUtilsMap[selectedElement.type].drag(selectedElement, mouseMove, (updated) => {
+              selectedElement.x = updated.x;
+              selectedElement.y = updated.y;
+              drawScene();
+            });
           }
         }
 
-        mouseAccX = mouseAccX % X_SCALE;
-        mouseAccY = mouseAccY % Y_SCALE;
+        mouseMove.accX = mouseMove.accX % X_SCALE;
+        mouseMove.accY = mouseMove.accY % Y_SCALE;
 
-        mousePreviousX = e.clientX;
-        mousePreviousY = e.clientY;
+        mouseMove.previousEvent = e;
       }}
       tabIndex={0}
       onKeyDown={(e) => {

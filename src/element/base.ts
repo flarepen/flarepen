@@ -1,4 +1,5 @@
 import { X_SCALE, Y_SCALE } from '../constants';
+import { IMouseMove } from '../types';
 
 // TODO: Use it instead of x,y in other places
 export interface Point {
@@ -44,7 +45,37 @@ export function getLinearBounding(
   return { xMin, xMax, yMin, yMax };
 }
 
+export function inLinearVicinity(
+  p: Point,
+  origin: Point,
+  len: number,
+  horizontal: boolean
+): boolean {
+  const { xMin, xMax, yMin, yMax } = getLinearBounding(origin, len, horizontal);
+
+  return p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax;
+}
+
 export interface ElementUtils<T extends ElementCommons> {
   new: (x: number, y: number) => T;
   outlineBounds: (t: T) => IBounds;
+  inVicinity: (t: T, p: Point) => boolean;
+  moveToEdit: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
+  drag: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
+}
+
+export function defaultDrag<T extends ElementCommons>(
+  t: T,
+  mouseMove: IMouseMove,
+  callback: (newT: T) => void
+) {
+  const x =
+    t.x +
+    mouseMove.currentEvent!.clientX -
+    (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
+  const y =
+    t.y +
+    mouseMove.currentEvent!.clientY -
+    (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
+  callback({ ...t, x, y });
 }
