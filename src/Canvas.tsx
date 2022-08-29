@@ -9,12 +9,15 @@ import {
   createElement,
   ElementUtilsMap,
   ElementUtils,
+  Text,
+  TextUtils,
 } from './element';
 import { useStore } from './state';
 import { X_SCALE, Y_SCALE } from './constants';
 import _ from 'lodash';
 import { IMouseMove } from './types';
 import draw from './draw';
+import { TextInput } from './components/TextInput';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -73,6 +76,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   });
   const [editingElement, setEditingElement] = useState<null | Element>(null);
   const [dragging, setDragging] = useState(false);
+  const [editingText, setEditingText] = useState<null | Text>(null);
 
   const elements = useStore((state) => state.elements);
   const setElements = useStore((state) => state.setElements);
@@ -164,105 +168,121 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   }, [tool]);
 
   return (
-    <canvas
-      id="canvas"
-      ref={canvasRef}
-      style={{ display: 'block' }}
-      aria-label="ascii canvas"
-      onMouseDown={(e) => {
-        // Handle Text Element
-        if (editingElement) {
-          setElements([...elements, santizeElement(editingElement)]);
-          setEditingElement(null);
-          return null;
-        }
+    <>
+      <canvas
+        id="canvas"
+        ref={canvasRef}
+        style={{ display: 'block' }}
+        aria-label="ascii canvas"
+        onMouseDown={(e) => {
+          // Handle Text Element
+          if (tool === Tool.Text) {
+            if (editingText) {
+              setElements([...elements, santizeElement(editingText)]);
+              setEditingText(null);
+              return null;
+            } else {
+              setEditingText(
+                TextUtils.new(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE))
+              );
+              return null;
+            }
+          }
 
-        if (ElementTypeForTool[tool]) {
-          const newElement = createElement(
-            ElementTypeForTool[tool]!,
-            clipToScale(e.clientX, X_SCALE),
-            clipToScale(e.clientY, Y_SCALE)
-          );
+          if (ElementTypeForTool[tool]) {
+            const newElement = createElement(
+              ElementTypeForTool[tool]!,
+              clipToScale(e.clientX, X_SCALE),
+              clipToScale(e.clientY, Y_SCALE)
+            );
 
-          setEditingElement(newElement);
-        } else if (tool === Tool.Select) {
-          const selected = elements.find((element) =>
-            inVicinity({ x: e.clientX, y: e.clientY }, element)
-          );
-          if (selected) {
-            setSelectedElement(selected);
-            setDragging(true); // GTK: Does these calls get batched in React??
+            setEditingElement(newElement);
+          } else if (tool === Tool.Select) {
+            const selected = elements.find((element) =>
+              inVicinity({ x: e.clientX, y: e.clientY }, element)
+            );
+            if (selected) {
+              setSelectedElement(selected);
+              setDragging(true); // GTK: Does these calls get batched in React??
+            } else {
+              setSelectedElement(null);
+              setDragging(false);
+            }
+          }
+        }}
+        onMouseUp={(e) => {
+          if (tool !== Tool.Select) {
+            if (editingElement && editingElement.type !== ElementType.Text) {
+              setElements([...elements, santizeElement(editingElement)]);
+              setEditingElement(null);
+            }
           } else {
-            setSelectedElement(null);
             setDragging(false);
-          }
-        }
-      }}
-      onMouseUp={(e) => {
-        if (tool !== Tool.Select) {
-          if (editingElement && editingElement.type !== ElementType.Text) {
-            setElements([...elements, santizeElement(editingElement)]);
-            setEditingElement(null);
-          }
-        } else {
-          setDragging(false);
-          // TODO: Remove direct mutation and manual draw
-          if (selectedElement) {
-            selectedElement.x = clipToScale(selectedElement.x, X_SCALE);
-            selectedElement.y = clipToScale(selectedElement.y, Y_SCALE);
-            drawScene();
-          }
-        }
-      }}
-      // TODO: Need to clean this up
-      onMouseMove={(e) => {
-        // Accumulate mouse movement into batches of scale
-        // TODO: How to handle this for different screen resolutions?
-        mouseMove.currentEvent = e;
-        mouseMove.acc();
-
-        if (editingElement) {
-          utilFor(editingElement).moveToEdit(editingElement, mouseMove, (updated) => {
-            setEditingElement(updated);
-          });
-        } else {
-          // TODO: Remove direct mutation and manual draw
-          if (dragging && selectedElement) {
-            utilFor(selectedElement).drag(selectedElement, mouseMove, (updated) => {
-              selectedElement.x = updated.x;
-              selectedElement.y = updated.y;
+            // TODO: Remove direct mutation and manual draw
+            if (selectedElement) {
+              selectedElement.x = clipToScale(selectedElement.x, X_SCALE);
+              selectedElement.y = clipToScale(selectedElement.y, Y_SCALE);
               drawScene();
+            }
+          }
+        }}
+        // TODO: Need to clean this up
+        onMouseMove={(e) => {
+          // Accumulate mouse movement into batches of scale
+          // TODO: How to handle this for different screen resolutions?
+          mouseMove.currentEvent = e;
+          mouseMove.acc();
+
+          if (editingElement) {
+            utilFor(editingElement).moveToEdit(editingElement, mouseMove, (updated) => {
+              setEditingElement(updated);
             });
+          } else {
+            // TODO: Remove direct mutation and manual draw
+            if (dragging && selectedElement) {
+              utilFor(selectedElement).drag(selectedElement, mouseMove, (updated) => {
+                selectedElement.x = updated.x;
+                selectedElement.y = updated.y;
+                drawScene();
+              });
+            }
           }
-        }
 
-        mouseMove.flushAcc();
-        mouseMove.previousEvent = e;
-      }}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (editingElement && editingElement.type === ElementType.Text) {
-          const content = editingElement.content + e.key;
-          setEditingElement({ ...editingElement, content, shape: g.text(content) });
-          return null;
-        }
-
-        if (selectedElement && e.key === 'Backspace') {
-          const index = _.findIndex(elements, (element) => element.id === selectedElement.id);
-          if (index > -1) {
-            elements.splice(index, 1);
-            setElements(elements);
-            setSelectedElement(null);
+          mouseMove.flushAcc();
+          mouseMove.previousEvent = e;
+        }}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (selectedElement && e.key === 'Backspace') {
+            const index = _.findIndex(elements, (element) => element.id === selectedElement.id);
+            if (index > -1) {
+              elements.splice(index, 1);
+              setElements(elements);
+              setSelectedElement(null);
+            }
           }
-        }
 
-        if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
-          setTool(SHORTCUT_TO_TOOL[e.key]);
-        }
-      }}
-    >
-      <div>Test</div>
-    </canvas>
+          if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
+            setTool(SHORTCUT_TO_TOOL[e.key]);
+          }
+        }}
+      >
+        <div>Test</div>
+      </canvas>
+      {editingText && (
+        <TextInput
+          x={editingText.x}
+          y={editingText.y}
+          onInput={(e) => {
+            setEditingText({
+              ...editingText,
+              shape: g.text(e.currentTarget.textContent || ''),
+              content: e.currentTarget.textContent || '',
+            });
+          }}
+        />
+      )}
+    </>
   );
 }
 
