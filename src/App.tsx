@@ -44,6 +44,9 @@ function App() {
   const undo = useStore((state) => state.undo);
   const redo = useStore((state) => state.redo);
 
+  const canRedo = future.length > 0;
+  const canUndo = past.length > 0;
+
   function copyToClipboard(text: string) {
     console.log('past', past);
     navigator.clipboard.writeText(text).then(
@@ -62,7 +65,19 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div
+      className="App"
+      onKeyDown={(e) => {
+        if (e.ctrlKey) {
+          if ((e.key === 'z' || e.key === 'Z') && canUndo) {
+            undo();
+          }
+          if ((e.key === 'y' || e.key === 'Y') && canRedo) {
+            redo();
+          }
+        }
+      }}
+    >
       <div style={{ float: 'left', position: 'absolute' }}>
         <fieldset style={{ display: 'inline' }}>
           <legend>Select Tool</legend>
@@ -81,7 +96,7 @@ function App() {
           </button>
         )}
       </div>
-      <UndoRedo canRedo={future.length > 0} canUndo={past.length > 0} undo={undo} redo={redo} />
+      <UndoRedo canRedo={canRedo} canUndo={canUndo} undo={undo} redo={redo} />
       <Canvas tool={selected}></Canvas>
     </div>
   );

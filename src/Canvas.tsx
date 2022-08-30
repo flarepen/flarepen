@@ -90,15 +90,6 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   const setCtx = useStore((state) => state.setCanvasCtx);
 
   const setTool = useStore((state) => state.setTool);
-
-  const past = useStore((state) => state.past);
-  const future = useStore((state) => state.future);
-  const redo = useStore((state) => state.redo);
-  const undo = useStore((state) => state.undo);
-
-  const canRedo = future.length > 0;
-  const canUndo = past.length > 0;
-
   const scale = window.devicePixelRatio;
 
   // Handle Resize
@@ -263,20 +254,12 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
         onKeyDown={(e) => {
           if (selectedId && e.key === 'Backspace') {
             deleteElement(selectedId);
-            setSelectedId(null);
+            setSelectedId(null, false);
           }
 
+          // TODO: Move to App div level
           if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
             setTool(SHORTCUT_TO_TOOL[e.key]);
-          }
-
-          if (e.ctrlKey) {
-            if (e.key === 'z' && canUndo) {
-              undo();
-            }
-            if (e.key === 'y' && canRedo) {
-              redo();
-            }
           }
         }}
       >

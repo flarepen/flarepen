@@ -12,7 +12,7 @@ interface AppSlice {
 
   setElements: (elements: Element[], snapshot?: boolean) => void;
   updateElement: (id: number, update: (element: Element) => void) => void;
-  deleteElement: (id: number) => void;
+  deleteElement: (id: number, snapshot?: boolean) => void;
   setSelectedId: (id: null | number, snapshot?: boolean) => void;
 
   setTool: (tool: Tool) => void;
@@ -40,7 +40,9 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
         }
       })
     ),
-  deleteElement: (id) =>
+  deleteElement: (id, snapshot = true) => {
+    snapshot && get().snapshot();
+
     set(
       produce((state) => {
         const index = state.elements.findIndex((elem: Element) => elem.id === id);
@@ -48,11 +50,15 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
           state.elements.splice(index, 1);
         }
       })
-    ),
+    );
+  },
   setSelectedId: (id, snapshot = true) => {
-    if (snapshot) {
-      get().snapshot();
+    if (id == get().selectedId) {
+      return null;
     }
+
+    snapshot && get().snapshot();
+
     set((_state) => ({ selectedId: id }));
   },
 
