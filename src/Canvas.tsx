@@ -80,9 +80,11 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
 
   const elements = useStore((state) => state.elements);
   const setElements = useStore((state) => state.setElements);
+  const updateElement = useStore((state) => state.updateElement);
+  const deleteElement = useStore((state) => state.deleteElement);
 
-  const selectedElement = useStore((state) => state.selectedElement);
-  const setSelectedElement = useStore((state) => state.setSelectedElement);
+  const selectedId = useStore((state) => state.selectedId);
+  const setSelectedId = useStore((state) => state.setSelectedId);
 
   const ctx = useStore((state) => state.canvasCtx);
   const setCtx = useStore((state) => state.setCanvasCtx);
@@ -138,7 +140,7 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, editingElement, dimensions, selectedElement]);
+  }, [elements, editingElement, dimensions, selectedId]);
 
   function drawScene() {
     if (ctx) {
@@ -154,16 +156,17 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
       editingElement && draw.element(ctx, editingElement);
 
       // draw selection indicator
-      if (selectedElement) {
-        draw.dashedRect(ctx, utilFor(selectedElement).outlineBounds(selectedElement));
+      if (selectedId) {
+        const element = _.find(elements, (elem) => elem.id === selectedId);
+        element && draw.dashedRect(ctx, utilFor(element).outlineBounds(element));
       }
     }
   }
 
   // Reset Select
   useEffect(() => {
-    if (selectedElement && tool !== Tool.Select) {
-      setSelectedElement(null);
+    if (selectedId && tool !== Tool.Select) {
+      setSelectedId(null);
     }
   }, [tool]);
 
@@ -202,10 +205,10 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
               inVicinity({ x: e.clientX, y: e.clientY }, element)
             );
             if (selected) {
-              setSelectedElement(selected);
+              setSelectedId(selected.id);
               setDragging(true); // GTK: Does these calls get batched in React??
             } else {
-              setSelectedElement(null);
+              setSelectedId(null);
               setDragging(false);
             }
           }
@@ -219,10 +222,11 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
           } else {
             setDragging(false);
             // TODO: Remove direct mutation and manual draw
-            if (selectedElement) {
-              selectedElement.x = clipToScale(selectedElement.x, X_SCALE);
-              selectedElement.y = clipToScale(selectedElement.y, Y_SCALE);
-              drawScene();
+            if (selectedId) {
+              updateElement(selectedId, (elem: Element) => {
+                elem.x = clipToScale(elem.x, X_SCALE);
+                elem.y = clipToScale(elem.y, Y_SCALE);
+              });
             }
           }
         }}
@@ -238,13 +242,9 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
               setEditingElement(updated);
             });
           } else {
-            // TODO: Remove direct mutation and manual draw
-            if (dragging && selectedElement) {
-              utilFor(selectedElement).drag(selectedElement, mouseMove, (updated) => {
-                selectedElement.x = updated.x;
-                selectedElement.y = updated.y;
-                drawScene();
-              });
+            if (dragging && selectedId) {
+              const selectedElement = _.find(elements, (elem) => elem.id === selectedId)!;
+              utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
             }
           }
 
@@ -253,13 +253,9 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
         }}
         tabIndex={0}
         onKeyDown={(e) => {
-          if (selectedElement && e.key === 'Backspace') {
-            const index = _.findIndex(elements, (element) => element.id === selectedElement.id);
-            if (index > -1) {
-              elements.splice(index, 1);
-              setElements(elements);
-              setSelectedElement(null);
-            }
+          if (selectedId && e.key === 'Backspace') {
+            deleteElement(selectedId);
+            setSelectedId(null);
           }
 
           if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {

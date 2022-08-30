@@ -62,13 +62,17 @@ export interface ElementUtils<T extends ElementCommons> {
   outlineBounds: (t: T) => IBounds;
   inVicinity: (t: T, p: Point) => boolean;
   moveToEdit: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
-  drag: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
+  drag: (
+    t: T,
+    mouseMove: IMouseMove,
+    updateElement: (id: number, update: (element: T) => void) => void
+  ) => void;
 }
 
 export function defaultDrag<T extends ElementCommons>(
   t: T,
   mouseMove: IMouseMove,
-  callback: (newT: T) => void
+  updateElement: (id: number, update: (t: T) => void) => void
 ) {
   const x =
     t.x +
@@ -78,5 +82,9 @@ export function defaultDrag<T extends ElementCommons>(
     t.y +
     mouseMove.currentEvent!.clientY -
     (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
-  callback({ ...t, x, y });
+
+  updateElement(t.id, (element) => {
+    element.x = x;
+    element.y = y;
+  });
 }

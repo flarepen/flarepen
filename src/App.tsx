@@ -34,8 +34,9 @@ function App() {
   const elements = useStore((state) => state.elements);
   const setElements = useStore((state) => state.setElements);
 
-  const selectedElement = useStore((state) => state.selectedElement);
-  const setSelectedElement = useStore((state) => state.setSelectedElement);
+  const selectedId = useStore((state) => state.selectedId);
+  const setSelectedId = useStore((state) => state.setSelectedId);
+  const deleteElement = useStore((state) => state.deleteElement);
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(
@@ -45,16 +46,12 @@ function App() {
   }
 
   function handleDelete() {
-    if (!selectedElement) {
+    if (!selectedId) {
       return null;
     }
 
-    const index = _.findIndex(elements, (element) => element.id === selectedElement.id);
-    if (index > -1) {
-      elements.splice(index, 1);
-      setElements(elements);
-      setSelectedElement(null);
-    }
+    deleteElement(selectedId);
+    setSelectedId(null);
   }
 
   return (
@@ -71,7 +68,7 @@ function App() {
         <button style={{ display: 'inline' }} onClick={() => copyToClipboard(scene(elements))}>
           Copy
         </button>
-        {selectedElement && (
+        {selectedId && (
           <button style={{ display: 'inline' }} onClick={() => handleDelete()}>
             Delete
           </button>
