@@ -45,6 +45,7 @@ function App() {
   const redo = useStore((state) => state.redo);
 
   function copyToClipboard(text: string) {
+    console.log('past', past);
     navigator.clipboard.writeText(text).then(
       () => console.log(text),
       () => console.log('copy failed')
@@ -80,7 +81,7 @@ function App() {
           </button>
         )}
       </div>
-      <UndoRedo canRedo={future.length !== 0} canUndo={past.length !== 0} undo={undo} redo={redo} />
+      <UndoRedo canRedo={future.length > 0} canUndo={past.length > 0} undo={undo} redo={redo} />
       <Canvas tool={selected}></Canvas>
     </div>
   );
