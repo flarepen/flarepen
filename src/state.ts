@@ -79,7 +79,7 @@ const createUndoSlice: StateCreatorFor<UndoSlice> = (set) => ({
 
   snapshot: () => {
     set(
-      produce((state: AllSlices) => {
+      produce((state) => {
         state.past.push({ elements: state.elements, selectedId: state.selectedId });
         state.future = [];
       })
@@ -87,7 +87,7 @@ const createUndoSlice: StateCreatorFor<UndoSlice> = (set) => ({
   },
   undo: () => {
     set(
-      produce((state: AllSlices) => {
+      produce((state) => {
         // Fetch past snapshot
         const lastSnapshot = state.past.pop();
         if (lastSnapshot) {
@@ -102,7 +102,7 @@ const createUndoSlice: StateCreatorFor<UndoSlice> = (set) => ({
   },
   redo: () => {
     set(
-      produce((state: AllSlices) => {
+      produce((state) => {
         // Fetch future snapshot
         const nextSnapshot = state.future.pop();
         if (nextSnapshot) {
