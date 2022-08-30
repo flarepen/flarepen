@@ -4,6 +4,7 @@ import { useStore } from './state';
 import { scene } from './geometry';
 import _ from 'lodash';
 import { Tool, TOOL_SHORTCUTS } from './tools';
+import { UndoRedo } from './components/UndoRedo';
 
 interface ToolProps {
   tool: Tool;
@@ -37,6 +38,11 @@ function App() {
   const selectedId = useStore((state) => state.selectedId);
   const setSelectedId = useStore((state) => state.setSelectedId);
   const deleteElement = useStore((state) => state.deleteElement);
+
+  const past = useStore((state) => state.past);
+  const future = useStore((state) => state.future);
+  const undo = useStore((state) => state.undo);
+  const redo = useStore((state) => state.redo);
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(
@@ -74,6 +80,7 @@ function App() {
           </button>
         )}
       </div>
+      <UndoRedo canRedo={future.length !== 0} canUndo={past.length !== 0} undo={undo} redo={redo} />
       <Canvas tool={selected}></Canvas>
     </div>
   );
