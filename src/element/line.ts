@@ -44,18 +44,16 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   outlineBounds: function (line: Line) {
-    const { xMin, xMax, yMin, yMax } = getLinearBounding(
+    let { xMin, xMax, yMin, yMax } = getLinearBounding(
       point(line.x, line.y),
       line.len,
       isHorizontalLine(line)
     );
 
-    return {
-      x: xMin,
-      y: yMin,
-      width: xMax - xMin,
-      height: yMax - yMin,
-    };
+    xMin = xMin + X_SCALE / 2;
+    yMin = yMin + Y_SCALE / 2;
+
+    return { x: xMin, y: yMin, width: xMax - xMin - X_SCALE, height: yMax - yMin - Y_SCALE };
   },
 
   inVicinity: function (line: Line, p: Point) {

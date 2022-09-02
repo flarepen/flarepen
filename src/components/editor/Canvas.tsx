@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
-import * as g from './geometry';
-import { SHORTCUT_TO_TOOL, Tool } from './tools';
+import * as g from '../../geometry';
+import { SHORTCUT_TO_TOOL, Tool } from '../../tools';
 import {
   ElementType,
   Element,
@@ -11,13 +11,13 @@ import {
   ElementUtils,
   Text,
   TextUtils,
-} from './element';
-import { useStore } from './state';
-import { X_SCALE, Y_SCALE } from './constants';
+} from '../../element';
+import { useStore } from '../../state';
+import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
-import { IMouseMove } from './types';
-import draw from './draw';
-import { TextInput } from './components/TextInput';
+import { IMouseMove } from '../../types';
+import draw from '../../draw';
+import { TextInput } from '../TextInput';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -65,16 +65,11 @@ function inVicinity(p: Point, element: Element): boolean {
 
 let mouseMove = new IMouseMove();
 
-interface CanvasProps {
-  tool: Tool;
-}
-
-function Canvas({ tool }: CanvasProps): JSX.Element {
+function Canvas(): JSX.Element {
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const [editingElement, setEditingElement] = useState<null | Element>(null);
   const [dragging, setDragging] = useState(false);
   const [editingText, setEditingText] = useState<null | Text>(null);
 
@@ -83,12 +78,16 @@ function Canvas({ tool }: CanvasProps): JSX.Element {
   const updateElement = useStore((state) => state.updateElement);
   const deleteElement = useStore((state) => state.deleteElement);
 
+  const editingElement = useStore((state) => state.editingElement);
+  const setEditingElement = useStore((state) => state.setEditingElement);
+
   const selectedId = useStore((state) => state.selectedId);
   const setSelectedId = useStore((state) => state.setSelectedId);
 
   const ctx = useStore((state) => state.canvasCtx);
   const setCtx = useStore((state) => state.setCanvasCtx);
 
+  const tool = useStore((state) => state.tool);
   const setTool = useStore((state) => state.setTool);
   const scale = window.devicePixelRatio;
 

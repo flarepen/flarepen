@@ -26,6 +26,10 @@ export interface Arrow extends ElementCommons {
   type: ElementType.Arrow;
 }
 
+export function isHorizontalArrow(arrow: Arrow): boolean {
+  return arrow.direction === ArrowDirection.Left || arrow.direction === ArrowDirection.Right;
+}
+
 export const ArrowUtils: ElementUtils<Arrow> = {
   new: function (x: number, y: number): Arrow {
     return {
@@ -39,13 +43,16 @@ export const ArrowUtils: ElementUtils<Arrow> = {
     };
   },
   outlineBounds: function (arrow: Arrow): IBounds {
-    const { xMin, xMax, yMin, yMax } = getLinearBounding(
+    let { xMin, xMax, yMin, yMax } = getLinearBounding(
       { x: arrow.x, y: arrow.y },
       arrow.len,
       arrow.direction === ArrowDirection.Left || arrow.direction === ArrowDirection.Right
     );
 
-    return { x: xMin, y: yMin, width: xMax - xMin, height: yMax - yMin };
+    xMin = xMin + X_SCALE / 2;
+    yMin = yMin + Y_SCALE / 2;
+
+    return { x: xMin, y: yMin, width: xMax - xMin - X_SCALE, height: yMax - yMin - Y_SCALE };
   },
 
   inVicinity: function (arrow: Arrow, p: Point) {

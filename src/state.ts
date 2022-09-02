@@ -6,11 +6,13 @@ import produce from 'immer';
 // Handle state and actions for core app
 interface AppSlice {
   elements: Element[];
+  editingElement: null | Element;
   selectedId: null | number;
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
 
   setElements: (elements: Element[], snapshot?: boolean) => void;
+  setEditingElement: (element: null | Element) => void;
   updateElement: (id: number, update: (element: Element) => void) => void;
   deleteElement: (id: number, snapshot?: boolean) => void;
   setSelectedId: (id: null | number, snapshot?: boolean) => void;
@@ -21,6 +23,7 @@ interface AppSlice {
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   elements: [],
+  editingElement: null,
   selectedId: null,
   tool: Tool.Rectangle,
   canvasCtx: null,
@@ -31,6 +34,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
     }
     set((state) => ({ elements }));
   },
+  setEditingElement: (element) => set((state) => ({ editingElement: element })),
   updateElement: (id, update) =>
     set(
       produce((state) => {

@@ -1,3 +1,4 @@
+import { X_SCALE, Y_SCALE } from '../constants';
 import { getNextID } from '../id';
 import {
   defaultDrag,
@@ -20,13 +21,16 @@ export const TextUtils: ElementUtils<Text> = {
     return { id: getNextID(), x, y, content: '', shape: [''], type: ElementType.Text };
   },
   outlineBounds: function (text: Text): IBounds {
-    const { xMin, xMax, yMin, yMax } = getLinearBounding(
+    let { xMin, xMax, yMin, yMax } = getLinearBounding(
       { x: text.x, y: text.y },
       text.content.length,
       true
     );
 
-    return { x: xMin, y: yMin, width: xMax - xMin, height: yMax - yMin };
+    xMin = xMin + X_SCALE / 2;
+    yMin = yMin + Y_SCALE / 2;
+
+    return { x: xMin, y: yMin, width: xMax - xMin - X_SCALE, height: yMax - yMin - Y_SCALE };
   },
   inVicinity: function (text: Text, p: Point) {
     return inLinearVicinity(p, { x: text.x, y: text.y }, text.content.length, true);

@@ -32,14 +32,14 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
   },
 
   outlineBounds: function (rectangle: Rectangle): IBounds {
-    const x = rectangle.x - X_SCALE;
-    const y = rectangle.y - Y_SCALE;
+    const x = rectangle.x;
+    const y = rectangle.y - Y_SCALE / 2;
 
     return {
       x,
       y,
-      width: rectangle.width * X_SCALE + X_SCALE,
-      height: rectangle.height * Y_SCALE + Y_SCALE,
+      width: rectangle.width * X_SCALE,
+      height: rectangle.height * Y_SCALE - Y_SCALE / 2,
     };
   },
 

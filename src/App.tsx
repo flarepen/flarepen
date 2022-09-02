@@ -1,10 +1,10 @@
 import './App.css';
-import Canvas from './Canvas';
 import { useStore } from './state';
 import _ from 'lodash';
 import UndoRedo from './components/UndoRedo';
 import { ToolBar, ToggleGroup, Separator, ActionGroup } from './components/toolbar';
 import React from 'react';
+import Editor from './components/editor';
 
 function App() {
   const selected = useStore((state) => state.tool);
@@ -37,7 +37,7 @@ function App() {
         <ActionGroup />
       </ToolBar>
       <UndoRedo />
-      <Canvas tool={selected}></Canvas>
+      <Editor />
     </div>
   );
 }
