@@ -6,8 +6,8 @@ import { ClipboardCopyIcon, DeleteIcon } from '../icons';
 function ActionGroup(): JSX.Element {
   const elements = useStore((state) => state.elements);
 
-  const selectedId = useStore((state) => state.selectedId);
-  const setSelectedId = useStore((state) => state.setSelectedId);
+  const selectedIds = useStore((state) => state.selectedIds);
+  const resetSelected = useStore((state) => state.resetSelected);
   const deleteElement = useStore((state) => state.deleteElement);
 
   function copyToClipboard(text: string) {
@@ -18,12 +18,14 @@ function ActionGroup(): JSX.Element {
   }
 
   function handleDelete() {
-    if (!selectedId) {
+    if (selectedIds.length === 0) {
       return null;
     }
 
-    deleteElement(selectedId);
-    setSelectedId(null);
+    selectedIds.forEach((selectedId) => {
+      deleteElement(selectedId);
+    });
+    resetSelected([]);
   }
 
   function handleCopy() {
@@ -34,7 +36,7 @@ function ActionGroup(): JSX.Element {
       <Button onClick={handleCopy}>
         <ClipboardCopyIcon />
       </Button>
-      <Button onClick={handleDelete} inactive={selectedId === null}>
+      <Button onClick={handleDelete} inactive={selectedIds.length === 0}>
         <DeleteIcon />
       </Button>
     </>

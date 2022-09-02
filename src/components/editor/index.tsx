@@ -6,13 +6,13 @@ import DimensionIndicator from './DimensionIndicator';
 
 function Editor() {
   const elements = useStore((state) => state.elements);
-  const selectedId = useStore((state) => state.selectedId);
+  const selectedIds = useStore((state) => state.selectedIds);
   const editingElement = useStore((state) => state.editingElement);
 
   let element: Element | null = null;
 
-  if (selectedId) {
-    element = _.find(elements, (elem) => elem.id === selectedId)!;
+  if (selectedIds.length === 1) {
+    element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
   }
 
   element = element || editingElement;

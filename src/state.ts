@@ -2,20 +2,25 @@ import create, { StateCreator } from 'zustand';
 import { Tool } from './tools';
 import { Element } from './element';
 import produce from 'immer';
+import _ from 'lodash';
 
 // Handle state and actions for core app
 interface AppSlice {
   elements: Element[];
   editingElement: null | Element;
-  selectedId: null | number;
+  selectedIds: number[];
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
 
   setElements: (elements: Element[], snapshot?: boolean) => void;
-  setEditingElement: (element: null | Element) => void;
   updateElement: (id: number, update: (element: Element) => void) => void;
   deleteElement: (id: number, snapshot?: boolean) => void;
-  setSelectedId: (id: null | number, snapshot?: boolean) => void;
+
+  setEditingElement: (element: null | Element) => void;
+
+  select: (id: number, snapshot?: boolean) => void;
+  unselect: (id: number, snapshot?: boolean) => void;
+  resetSelected: (ids?: number[]) => void;
 
   setTool: (tool: Tool) => void;
   setCanvasCtx: (ctx: null | CanvasRenderingContext2D) => void;
@@ -24,7 +29,7 @@ interface AppSlice {
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   elements: [],
   editingElement: null,
-  selectedId: null,
+  selectedIds: [],
   tool: Tool.Rectangle,
   canvasCtx: null,
 
@@ -34,7 +39,6 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
     }
     set((state) => ({ elements }));
   },
-  setEditingElement: (element) => set((state) => ({ editingElement: element })),
   updateElement: (id, update) =>
     set(
       produce((state) => {
@@ -56,14 +60,38 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
       })
     );
   },
-  setSelectedId: (id, snapshot = true) => {
-    if (id == get().selectedId) {
+
+  setEditingElement: (element) => set((state) => ({ editingElement: element })),
+
+  select: (id, snapshot = true) => {
+    if (_.includes(get().selectedIds, id)) {
       return null;
     }
 
     snapshot && get().snapshot();
 
-    set((_state) => ({ selectedId: id }));
+    set(
+      produce((state) => {
+        state.selectedIds.push(id);
+      })
+    );
+  },
+  unselect: (selectedId, snapshot = true) => {
+    snapshot && get().snapshot();
+
+    set(
+      produce((state) => {
+        const index = state.selectedIds.findIndex((id: number) => selectedId === id);
+        if (index !== -1) {
+          state.selectedIds.splice(index, 1);
+        }
+      })
+    );
+  },
+  resetSelected: (ids, snapshot = true) => {
+    snapshot && get().snapshot();
+
+    set((state) => ({ selectedIds: ids }));
   },
 
   setTool: (tool: any) => set((_state) => ({ tool })),
@@ -72,7 +100,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
 
 // Handle state and actions for Undo Redo
 
-type Snapshot = Pick<AppSlice, 'elements' | 'selectedId'>;
+type Snapshot = Pick<AppSlice, 'elements' | 'selectedIds'>;
 
 interface UndoSlice {
   past: Snapshot[];
@@ -90,7 +118,7 @@ const createUndoSlice: StateCreatorFor<UndoSlice> = (set) => ({
   snapshot: () => {
     set(
       produce((state) => {
-        state.past.push({ elements: state.elements, selectedId: state.selectedId });
+        state.past.push({ elements: state.elements, selectedIds: state.selectedIds });
         state.future = [];
       })
     );
@@ -102,10 +130,10 @@ const createUndoSlice: StateCreatorFor<UndoSlice> = (set) => ({
         const lastSnapshot = state.past.pop();
         if (lastSnapshot) {
           // Push current snapshot to future
-          state.future.push({ elements: state.elements, selectedId: state.selectedId });
+          state.future.push({ elements: state.elements, selectedIds: state.selectedIds });
           // Apply past snapshot
           state.elements = lastSnapshot.elements;
-          state.selectedId = lastSnapshot.selectedId;
+          state.selectedIds = lastSnapshot.selectedIds;
         }
       })
     );
@@ -117,10 +145,10 @@ const createUndoSlice: StateCreatorFor<UndoSlice> = (set) => ({
         const nextSnapshot = state.future.pop();
         if (nextSnapshot) {
           // Push current snapshot to past
-          state.past.push({ elements: state.elements, selectedId: state.selectedId });
+          state.past.push({ elements: state.elements, selectedIds: state.selectedIds });
           // Apply future snapshot
           state.elements = nextSnapshot.elements;
-          state.selectedId = nextSnapshot.selectedId;
+          state.selectedIds = nextSnapshot.selectedIds;
         }
       })
     );

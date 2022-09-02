@@ -81,8 +81,10 @@ function Canvas(): JSX.Element {
   const editingElement = useStore((state) => state.editingElement);
   const setEditingElement = useStore((state) => state.setEditingElement);
 
-  const selectedId = useStore((state) => state.selectedId);
-  const setSelectedId = useStore((state) => state.setSelectedId);
+  const selectedIds = useStore((state) => state.selectedIds);
+  const select = useStore((state) => state.select);
+  const unselect = useStore((state) => state.unselect);
+  const resetSelected = useStore((state) => state.resetSelected);
 
   const ctx = useStore((state) => state.canvasCtx);
   const setCtx = useStore((state) => state.setCanvasCtx);
@@ -138,7 +140,7 @@ function Canvas(): JSX.Element {
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, editingElement, dimensions, selectedId]);
+  }, [elements, editingElement, dimensions, selectedIds]);
 
   function drawScene() {
     if (ctx) {
@@ -154,17 +156,19 @@ function Canvas(): JSX.Element {
       editingElement && draw.element(ctx, editingElement);
 
       // draw selection indicator
-      if (selectedId) {
-        const element = _.find(elements, (elem) => elem.id === selectedId);
-        element && draw.dashedRect(ctx, utilFor(element).outlineBounds(element));
+      if (selectedIds.length > 0) {
+        selectedIds.forEach((selectedId) => {
+          const element = _.find(elements, (elem) => elem.id === selectedId);
+          element && draw.dashedRect(ctx, utilFor(element).outlineBounds(element));
+        });
       }
     }
   }
 
   // Reset Select
   useEffect(() => {
-    if (selectedId && tool !== Tool.Select) {
-      setSelectedId(null);
+    if (selectedIds.length > 0 && tool !== Tool.Select) {
+      resetSelected([]);
     }
   }, [tool]);
 
@@ -202,11 +206,21 @@ function Canvas(): JSX.Element {
             const selected = elements.find((element) =>
               inVicinity({ x: e.clientX, y: e.clientY }, element)
             );
+
+            if (selected && _.includes(selectedIds, selected.id)) {
+              setDragging(true);
+              return null;
+            }
+
             if (selected) {
-              setSelectedId(selected.id);
+              if (e.shiftKey) {
+                select(selected.id);
+              } else {
+                resetSelected([selected.id]);
+              }
               setDragging(true); // GTK: Does these calls get batched in React??
             } else {
-              setSelectedId(null);
+              resetSelected([]);
               setDragging(false);
             }
           }
@@ -216,17 +230,19 @@ function Canvas(): JSX.Element {
             // TODO: Add single zustand action
             if (editingElement && editingElement.type !== ElementType.Text) {
               setElements([...elements, santizeElement(editingElement)], false);
-              setSelectedId(editingElement.id);
+              select(editingElement.id);
               setTool(Tool.Select);
               setEditingElement(null);
             }
           } else {
             setDragging(false);
             // TODO: Remove direct mutation and manual draw
-            if (selectedId) {
-              updateElement(selectedId, (elem: Element) => {
-                elem.x = clipToScale(elem.x, X_SCALE);
-                elem.y = clipToScale(elem.y, Y_SCALE);
+            if (selectedIds.length > 0) {
+              selectedIds.forEach((selectedId) => {
+                updateElement(selectedId, (elem: Element) => {
+                  elem.x = clipToScale(elem.x, X_SCALE);
+                  elem.y = clipToScale(elem.y, Y_SCALE);
+                });
               });
             }
           }
@@ -243,9 +259,11 @@ function Canvas(): JSX.Element {
               setEditingElement(updated);
             });
           } else {
-            if (dragging && selectedId) {
-              const selectedElement = _.find(elements, (elem) => elem.id === selectedId)!;
-              utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
+            if (dragging && selectedIds.length > 0) {
+              selectedIds.forEach((selectedId) => {
+                const selectedElement = _.find(elements, (elem) => elem.id === selectedId)!;
+                utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
+              });
             }
           }
 
@@ -254,9 +272,11 @@ function Canvas(): JSX.Element {
         }}
         tabIndex={0}
         onKeyDown={(e) => {
-          if (selectedId && e.key === 'Backspace') {
-            deleteElement(selectedId);
-            setSelectedId(null, false);
+          if (selectedIds.length > 0 && e.key === 'Backspace') {
+            selectedIds.forEach((selectedId) => {
+              deleteElement(selectedId);
+            });
+            resetSelected([]);
           }
 
           // TODO: Move to App div level
