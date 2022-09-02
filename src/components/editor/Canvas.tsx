@@ -213,8 +213,11 @@ function Canvas(): JSX.Element {
         }}
         onMouseUp={(e) => {
           if (tool !== Tool.Select) {
+            // TODO: Add single zustand action
             if (editingElement && editingElement.type !== ElementType.Text) {
-              setElements([...elements, santizeElement(editingElement)]);
+              setElements([...elements, santizeElement(editingElement)], false);
+              setSelectedId(editingElement.id);
+              setTool(Tool.Select);
               setEditingElement(null);
             }
           } else {
