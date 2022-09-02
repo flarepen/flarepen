@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { scene } from '../../geometry';
 import { useStore } from '../../state';
 import Button from '../Button';
@@ -29,7 +30,11 @@ function ActionGroup(): JSX.Element {
   }
 
   function handleCopy() {
-    copyToClipboard(scene(elements));
+    let elementsToCopy = elements;
+    if (selectedIds.length > 0) {
+      elementsToCopy = _.filter(elements, (element) => selectedIds.includes(element.id));
+    }
+    copyToClipboard(scene(elementsToCopy));
   }
   return (
     <>
