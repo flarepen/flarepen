@@ -46,13 +46,23 @@ export const ArrowUtils: ElementUtils<Arrow> = {
     let { xMin, xMax, yMin, yMax } = getLinearBounding(
       { x: arrow.x, y: arrow.y },
       arrow.len,
-      arrow.direction === ArrowDirection.Left || arrow.direction === ArrowDirection.Right
+      isHorizontalArrow(arrow)
     );
 
-    xMin = xMin + X_SCALE / 2;
-    yMin = yMin + Y_SCALE / 2;
+    let width = xMax - xMin - X_SCALE;
+    let height = yMax - yMin - Y_SCALE - 6;
 
-    return { x: xMin, y: yMin, width: xMax - xMin - X_SCALE, height: yMax - yMin - Y_SCALE };
+    if (isHorizontalArrow(arrow)) {
+      xMin = xMin + X_SCALE / 2;
+      yMin = yMin + Y_SCALE / 2;
+    } else {
+      xMin = xMin + X_SCALE / 2;
+      yMin = yMin;
+      width = xMax - xMin + 4;
+      height = yMax - yMin - 2 * Y_SCALE + 4;
+    }
+
+    return { x: xMin, y: yMin, width: width, height };
   },
 
   inVicinity: function (arrow: Arrow, p: Point) {

@@ -25,7 +25,24 @@ function getDimensionString(element: Element) {
 }
 
 function getPosition(element: Element) {
-  return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+  switch (element.type) {
+    case ElementType.Rectangle:
+      return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+    case ElementType.Line:
+      if (isHorizontalLine(element)) {
+        return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+      } else {
+        return { left: element.x - X_SCALE, top: element.y - 2 * Y_SCALE + 6 };
+      }
+    case ElementType.Arrow:
+      if (isHorizontalArrow(element)) {
+        return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+      } else {
+        return { left: element.x - X_SCALE, top: element.y - 2 * Y_SCALE + 6 };
+      }
+    case ElementType.Text:
+      return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+  }
 }
 
 interface DimensionIndicatorProps {

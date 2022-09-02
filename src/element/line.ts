@@ -50,10 +50,20 @@ export const LineUtils: ElementUtils<Line> = {
       isHorizontalLine(line)
     );
 
-    xMin = xMin + X_SCALE / 2;
-    yMin = yMin + Y_SCALE / 2;
+    let width = xMax - xMin - X_SCALE;
+    let height = yMax - yMin - Y_SCALE - 6;
 
-    return { x: xMin, y: yMin, width: xMax - xMin - X_SCALE, height: yMax - yMin - Y_SCALE };
+    if (isHorizontalLine(line)) {
+      xMin = xMin + X_SCALE / 2;
+      yMin = yMin + Y_SCALE / 2;
+    } else {
+      xMin = xMin + X_SCALE / 2;
+      yMin = yMin;
+      width = xMax - xMin + 4;
+      height = yMax - yMin - 1 * Y_SCALE;
+    }
+
+    return { x: xMin, y: yMin, width: width, height };
   },
 
   inVicinity: function (line: Line, p: Point) {
