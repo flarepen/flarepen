@@ -24,6 +24,12 @@ export const TextIcon = createIcon(paths.text);
 export const SelectIcon = createIcon(paths.select);
 export const ClipboardCopyIcon = createIcon(paths.clipboard_copy);
 export const DeleteIcon = createIcon(paths.trash);
+export const AlignLeftIcon = createIcon(paths.align_left);
+export const AlignRightIcon = createIcon(paths.align_right);
+export const AlignCenterXIcon = createIcon(paths.align_center_x);
+export const AlignTop = createIcon(paths.align_top);
+export const AlignBottom = createIcon(paths.align_bottom);
+export const AlignCenterYIcon = createIcon(paths.align_center_y);
 
 export * from './UndoIcon';
 export * from './RedoIcon';

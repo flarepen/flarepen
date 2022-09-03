@@ -5,6 +5,7 @@ import UndoRedo from './components/UndoRedo';
 import { ToolBar, ToggleGroup, Separator, ActionGroup } from './components/toolbar';
 import React from 'react';
 import Editor from './components/editor';
+import AlignOptions from './components/AlignOptions';
 
 function App() {
   const selected = useStore((state) => state.tool);
@@ -37,6 +38,7 @@ function App() {
         <ActionGroup />
       </ToolBar>
       <UndoRedo />
+      <AlignOptions />
       <Editor />
     </div>
   );

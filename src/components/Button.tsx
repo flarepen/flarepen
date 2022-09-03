@@ -16,6 +16,7 @@ const Button = styled('button', {
   '&:first-child': { marginLeft: 0 },
   '&:hover': { backgroundColor: orange.orange2 },
   '&:active': { backgroundColor: orange.orange3, color: orange.orange10 },
+  '&:focus': { backgroundColor: orange.orange2 },
   variants: {
     inactive: {
       true: {
