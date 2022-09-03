@@ -5,6 +5,18 @@ import UndoRedo from './components/UndoRedo';
 import { ToolBar, ToggleGroup, Separator, ActionGroup } from './components/toolbar';
 import React from 'react';
 import Editor from './components/editor';
+import { styled, theme, darkTheme } from './stitches.config';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { Theme } from './types';
+
+const ToolBarWrapper = styled('div', {
+  left: 10,
+  top: 10,
+  float: 'left',
+  position: 'absolute',
+  display: 'flex',
+  alignItems: 'center',
+});
 
 function App() {
   const selected = useStore((state) => state.tool);
@@ -14,6 +26,8 @@ function App() {
   const future = useStore((state) => state.future);
   const undo = useStore((state) => state.undo);
   const redo = useStore((state) => state.redo);
+
+  const selectedTheme = useStore((state) => state.theme);
 
   const canRedo = future.length > 0;
   const canUndo = past.length > 0;
@@ -29,13 +43,18 @@ function App() {
     }
   }
 
+  const themeClass = selectedTheme === Theme.light ? theme : darkTheme;
+
   return (
-    <div className="App" onKeyDown={handleKeyPress}>
-      <ToolBar>
-        <ToggleGroup value={selected} onValueChange={setTool} />
-        <Separator />
-        <ActionGroup />
-      </ToolBar>
+    <div className={`App ${themeClass}`} onKeyDown={handleKeyPress}>
+      <ToolBarWrapper>
+        <ToolBar>
+          <ToggleGroup value={selected} onValueChange={setTool} />
+          <Separator />
+          <ActionGroup />
+        </ToolBar>
+        <ThemeSwitcher />
+      </ToolBarWrapper>
       <UndoRedo />
       <Editor />
     </div>

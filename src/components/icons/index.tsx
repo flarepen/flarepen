@@ -24,6 +24,8 @@ export const TextIcon = createIcon(paths.text);
 export const SelectIcon = createIcon(paths.select);
 export const ClipboardCopyIcon = createIcon(paths.clipboard_copy);
 export const DeleteIcon = createIcon(paths.trash);
+export const SunIcon = createIcon(paths.sun);
+export const MoonIcon = createIcon(paths.moon);
 
 export * from './UndoIcon';
 export * from './RedoIcon';

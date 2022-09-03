@@ -1,5 +1,4 @@
-import { mauve, orange } from '@radix-ui/colors';
-import { styled } from '@stitches/react';
+import { styled } from '../stitches.config';
 
 const Button = styled('button', {
   all: 'unset',
@@ -7,21 +6,21 @@ const Button = styled('button', {
   padding: '0 5px',
   borderRadius: 4,
   display: 'inline-flex',
-  color: mauve.mauve11,
+  color: '$secondary',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'white',
+  backgroundColor: '$background',
   marginLeft: 2,
   cursor: 'pointer',
   '&:first-child': { marginLeft: 0 },
-  '&:hover': { backgroundColor: orange.orange2 },
-  '&:active': { backgroundColor: orange.orange3, color: orange.orange10 },
+  '&:hover': { backgroundColor: '$primaryBackgroundDim' },
+  '&:active': { backgroundColor: '$primaryBackground', color: '$primary' },
   variants: {
     inactive: {
       true: {
-        color: mauve.mauve8,
-        '&:hover': { backgroundColor: 'white', cursor: 'not-allowed' },
-        '&:active': { backgroundColor: 'white', color: mauve.mauve8 },
+        color: '$secondaryBackground',
+        '&:hover': { backgroundColor: '$background', cursor: 'not-allowed' },
+        '&:active': { backgroundColor: '$background', color: '$secondaryBackground' },
       },
     },
   },

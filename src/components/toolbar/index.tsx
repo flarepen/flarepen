@@ -1,25 +1,20 @@
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 
-import { styled } from '@stitches/react';
-import { mauve } from '@radix-ui/colors';
+import { styled } from '../../stitches.config';
 import ToggleGroup from './ToggleGroup';
 import ActionGroup from './ActionGroup';
 
 const Separator = styled(ToolbarPrimitive.Separator, {
   width: 1,
-  backgroundColor: mauve.mauve6,
+  backgroundColor: '$secondaryBackground',
   margin: '0 10px',
 });
 
 const ToolBar = styled(ToolbarPrimitive.Root, {
-  left: 10,
-  top: 10,
-  float: 'left',
-  position: 'absolute',
   display: 'flex',
   padding: 6,
   borderRadius: 6,
-  border: `1px solid ${mauve.mauve9}`,
+  border: `1px solid $border`,
 });
 
 export { ToolBar, Separator, ToggleGroup, ActionGroup };

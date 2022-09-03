@@ -28,3 +28,8 @@ export class IMouseMove {
     this.accY = this.accY % Y_SCALE;
   }
 }
+
+export enum Theme {
+  dark = 'dark',
+  light = 'light',
+}

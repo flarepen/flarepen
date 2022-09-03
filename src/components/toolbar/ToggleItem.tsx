@@ -1,6 +1,5 @@
-import { mauve, orange, orangeA } from '@radix-ui/colors';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { styled } from '@stitches/react';
+import { styled } from '../../stitches.config';
 
 interface ToggleItemProps {
   tool: string;
@@ -24,16 +23,16 @@ const StyledToggleItem = styled(ToggleItem, {
   padding: '0 5px',
   borderRadius: 4,
   display: 'inline-flex',
-  color: mauve.mauve11,
+  color: '$secondary',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'white',
+  backgroundColor: '$background',
   marginLeft: 2,
   '&:first-child': { marginLeft: 0 },
-  '&:hover': { backgroundColor: orange.orange2 },
+  '&:hover': { backgroundColor: '$primaryBackgroundDim' },
   '&[data-state=on]': {
-    backgroundColor: orange.orange3,
-    color: orange.orange10,
+    backgroundColor: '$primaryBackground',
+    color: '$primary',
   },
 });
 

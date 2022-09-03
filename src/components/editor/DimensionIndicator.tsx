@@ -1,5 +1,4 @@
-import { mauve } from '@radix-ui/colors';
-import { styled } from '@stitches/react';
+import { styled } from '../../stitches.config';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element, ElementType, isHorizontalArrow, isHorizontalLine } from '../../element';
 
@@ -69,5 +68,5 @@ function DimensionIndicator({ className, element }: DimensionIndicatorProps) {
 export default styled(DimensionIndicator, {
   padding: 0,
   margin: 0,
-  color: mauve.mauve12,
+  color: '$secondary',
 });

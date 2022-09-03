@@ -1,5 +1,4 @@
-import { mauve } from '@radix-ui/colors';
-import { styled } from '@stitches/react';
+import { styled } from '../stitches.config';
 import { useStore } from '../state';
 import Button from './Button';
 import { RedoIcon, UndoIcon } from './icons';
@@ -32,7 +31,7 @@ export default styled(UndoRedo, {
   right: 10,
   top: 10,
   position: 'absolute',
-  border: `1px solid ${mauve.mauve9}`,
+  border: '1px solid $border',
   padding: 4,
   borderRadius: 6,
 });

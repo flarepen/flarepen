@@ -15,9 +15,11 @@ import {
 import { useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
-import { IMouseMove } from '../../types';
+import { IMouseMove, Theme } from '../../types';
 import draw from '../../draw';
 import { TextInput } from '../TextInput';
+import { styled } from '../../stitches.config';
+import { mauve } from '@radix-ui/colors';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -65,7 +67,12 @@ function inVicinity(p: Point, element: Element): boolean {
 
 let mouseMove = new IMouseMove();
 
-function Canvas(): JSX.Element {
+const StyledCanvas = styled('canvas', {
+  display: 'block',
+  background: '$canvasBackground',
+});
+
+function CanvasWithInput(): JSX.Element {
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -92,6 +99,8 @@ function Canvas(): JSX.Element {
   const tool = useStore((state) => state.tool);
   const setTool = useStore((state) => state.setTool);
   const scale = window.devicePixelRatio;
+
+  const theme = useStore((state) => state.theme);
 
   // Handle Resize
   useEffect(() => {
@@ -123,6 +132,11 @@ function Canvas(): JSX.Element {
       const ctx = canvas.getContext('2d')!;
       ctx.font = '22px Cascadia';
       ctx.scale(scale, scale);
+
+      const primaryColor = theme === Theme.dark ? mauve.mauve8 : mauve.mauve12;
+
+      ctx.fillStyle = primaryColor;
+      ctx.strokeStyle = primaryColor;
       setCtx(ctx);
     }
   }
@@ -135,12 +149,12 @@ function Canvas(): JSX.Element {
   // Fix Canvas on resize
   useEffect(() => {
     setupCanvas();
-  }, [dimensions]);
+  }, [dimensions, theme]);
 
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, editingElement, dimensions, selectedIds]);
+  }, [elements, editingElement, dimensions, selectedIds, theme]);
 
   function drawScene() {
     if (ctx) {
@@ -174,10 +188,9 @@ function Canvas(): JSX.Element {
 
   return (
     <>
-      <canvas
+      <StyledCanvas
         id="canvas"
         ref={canvasRef}
-        style={{ display: 'block' }}
         aria-label="ascii canvas"
         onMouseDown={(e) => {
           // Handle Text Element
@@ -286,7 +299,7 @@ function Canvas(): JSX.Element {
         }}
       >
         <div>Test</div>
-      </canvas>
+      </StyledCanvas>
       {editingText && (
         <TextInput
           x={editingText.x}
@@ -304,4 +317,4 @@ function Canvas(): JSX.Element {
   );
 }
 
-export default Canvas;
+export default CanvasWithInput;

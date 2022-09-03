@@ -3,6 +3,7 @@ import { Tool } from './tools';
 import { Element } from './element';
 import produce from 'immer';
 import _ from 'lodash';
+import { Theme } from './types';
 
 // Handle state and actions for core app
 interface AppSlice {
@@ -11,6 +12,7 @@ interface AppSlice {
   selectedIds: number[];
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
+  theme: Theme;
 
   setElements: (elements: Element[], snapshot?: boolean) => void;
   updateElement: (id: number, update: (element: Element) => void) => void;
@@ -24,6 +26,7 @@ interface AppSlice {
 
   setTool: (tool: Tool) => void;
   setCanvasCtx: (ctx: null | CanvasRenderingContext2D) => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
@@ -32,6 +35,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   selectedIds: [],
   tool: Tool.Rectangle,
   canvasCtx: null,
+  theme: Theme.dark,
 
   setElements: (elements, snapshot = true) => {
     if (snapshot) {
@@ -96,6 +100,8 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
 
   setTool: (tool: any) => set((_state) => ({ tool })),
   setCanvasCtx: (ctx) => set((_state) => ({ canvasCtx: ctx })),
+
+  setTheme: (theme: Theme) => set((_state) => ({ theme })),
 });
 
 // Handle state and actions for Undo Redo
