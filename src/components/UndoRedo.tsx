@@ -32,4 +32,7 @@ export default styled(UndoRedo, {
   right: 10,
   top: 10,
   position: 'absolute',
+  border: `1px solid ${mauve.mauve9}`,
+  padding: 4,
+  borderRadius: 6,
 });

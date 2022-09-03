@@ -17,9 +17,9 @@ const ToolBar = styled(ToolbarPrimitive.Root, {
   float: 'left',
   position: 'absolute',
   display: 'flex',
-  padding: '10px',
+  padding: 6,
   borderRadius: 6,
-  boxShadow: `0 2px 10px ${mauve.mauve7}`,
+  border: `1px solid ${mauve.mauve9}`,
 });
 
 export { ToolBar, Separator, ToggleGroup, ActionGroup };
