@@ -8,6 +8,7 @@ import Editor from './components/editor';
 import { styled, theme, darkTheme } from './stitches.config';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { Theme } from './types';
+import AlignOptions from './components/AlignOptions';
 
 const ToolBarWrapper = styled('div', {
   left: 10,
@@ -56,6 +57,7 @@ function App() {
         <ThemeSwitcher />
       </ToolBarWrapper>
       <UndoRedo />
+      <AlignOptions />
       <Editor />
     </div>
   );

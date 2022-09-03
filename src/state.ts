@@ -4,6 +4,7 @@ import { Element } from './element';
 import produce from 'immer';
 import _ from 'lodash';
 import { Theme } from './types';
+import { align, AlignType } from './align-utils';
 
 // Handle state and actions for core app
 interface AppSlice {
@@ -29,6 +30,8 @@ interface AppSlice {
   setCanvasCtx: (ctx: null | CanvasRenderingContext2D) => void;
   setTheme: (theme: Theme) => void;
   setShowGrid: (showGrid: boolean) => void;
+
+  alignElements: (alignType: AlignType, snapshot?: boolean) => void;
 }
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
@@ -106,6 +109,20 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
 
   setTheme: (theme: Theme) => set((_state) => ({ theme })),
   setShowGrid: (showGrid: boolean) => set((_state) => ({ showGrid })),
+
+  alignElements: (alignType, snapshot = true) => {
+    snapshot && get().snapshot();
+
+    set(
+      produce((state) => {
+        const selectedElements = _.filter(state.elements, (element) =>
+          _.includes(state.selectedIds, element.id)
+        );
+
+        align(selectedElements, alignType);
+      })
+    );
+  },
 });
 
 // Handle state and actions for Undo Redo
