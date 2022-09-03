@@ -122,7 +122,7 @@ function writeToScene(origin: Point, sceneArr: string[][], element: Element) {
 
   shape.forEach((row, rowNum) => {
     row.forEach((s, colNum) => {
-      sceneArr[rowNum + offsetY][colNum + offsetX] = s;
+      s !== ' ' && (sceneArr[rowNum + offsetY][colNum + offsetX] = s);
     });
   });
 }
