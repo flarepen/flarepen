@@ -32,6 +32,8 @@ export default styled(UndoRedo, {
   top: 10,
   position: 'absolute',
   border: '1px solid $border',
+  backgroundColor: '$background',
   padding: 4,
   borderRadius: 6,
+  zIndex: 10,
 });

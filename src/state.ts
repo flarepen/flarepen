@@ -35,7 +35,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   selectedIds: [],
   tool: Tool.Rectangle,
   canvasCtx: null,
-  theme: Theme.dark,
+  theme: Theme.light,
 
   setElements: (elements, snapshot = true) => {
     if (snapshot) {

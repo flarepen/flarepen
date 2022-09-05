@@ -70,6 +70,7 @@ let mouseMove = new IMouseMove();
 const StyledCanvas = styled('canvas', {
   display: 'block',
   background: '$canvasBackground',
+  zIndex: -2,
 });
 
 function CanvasWithInput(): JSX.Element {
@@ -137,6 +138,7 @@ function CanvasWithInput(): JSX.Element {
 
       ctx.fillStyle = primaryColor;
       ctx.strokeStyle = primaryColor;
+      ctx.textBaseline = 'middle';
       setCtx(ctx);
     }
   }
@@ -160,6 +162,8 @@ function CanvasWithInput(): JSX.Element {
     if (ctx) {
       // Clear scene
       ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+
+      draw.rect(ctx, { x: 390, y: 30, width: 10, height: 10 });
 
       // First draw all elements created till now
       elements.forEach((element) => {
