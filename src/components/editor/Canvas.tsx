@@ -193,6 +193,13 @@ function CanvasWithInput(): JSX.Element {
         ref={canvasRef}
         aria-label="ascii canvas"
         onMouseDown={(e) => {
+          if (editingElement && editingElement.type !== ElementType.Text) {
+            setElements([...elements, santizeElement(editingElement)], false);
+            select(editingElement.id);
+            setTool(Tool.Select);
+            setEditingElement(null);
+            return null;
+          }
           // Handle Text Element
           if (tool === Tool.Text) {
             if (editingText) {
