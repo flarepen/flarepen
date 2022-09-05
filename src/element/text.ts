@@ -30,7 +30,12 @@ export const TextUtils: ElementUtils<Text> = {
     xMin = xMin + X_SCALE / 2;
     yMin = yMin + Y_SCALE / 2;
 
-    return { x: xMin, y: yMin, width: xMax - xMin - X_SCALE, height: yMax - yMin - Y_SCALE };
+    return {
+      x: xMin,
+      y: yMin,
+      width: xMax - xMin - X_SCALE / 2,
+      height: yMax - yMin - Y_SCALE / 2,
+    };
   },
   inVicinity: function (text: Text, p: Point) {
     return inLinearVicinity(p, { x: text.x, y: text.y }, text.content.length, true);

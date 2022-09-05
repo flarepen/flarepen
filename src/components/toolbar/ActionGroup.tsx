@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { scene } from '../../geometry';
 import { useStore } from '../../state';
 import Button from '../Button';
-import { ClipboardCopyIcon, DeleteIcon } from '../icons';
+import { ClipboardCopyIcon, DeleteIcon, GridIcon } from '../icons';
 
 function ActionGroup(): JSX.Element {
   const elements = useStore((state) => state.elements);
@@ -10,6 +10,9 @@ function ActionGroup(): JSX.Element {
   const selectedIds = useStore((state) => state.selectedIds);
   const resetSelected = useStore((state) => state.resetSelected);
   const deleteElement = useStore((state) => state.deleteElement);
+
+  const showGrid = useStore((state) => state.showGrid);
+  const setShowGrid = useStore((staet) => staet.setShowGrid);
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(
@@ -36,8 +39,16 @@ function ActionGroup(): JSX.Element {
     }
     copyToClipboard(scene(elementsToCopy));
   }
+
+  function flipGrid() {
+    setShowGrid(!showGrid);
+  }
+
   return (
     <>
+      <Button onClick={flipGrid} toggled={showGrid}>
+        <GridIcon />
+      </Button>
       <Button onClick={handleCopy}>
         <ClipboardCopyIcon />
       </Button>

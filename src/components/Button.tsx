@@ -23,6 +23,11 @@ const Button = styled('button', {
         '&:active': { backgroundColor: '$background', color: '$secondaryBackground' },
       },
     },
+    toggled: {
+      true: {
+        backgroundColor: '$primaryBackground',
+      },
+    },
   },
 });
 

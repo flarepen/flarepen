@@ -33,7 +33,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
 
   outlineBounds: function (rectangle: Rectangle): IBounds {
     const x = rectangle.x;
-    const y = rectangle.y - Y_SCALE / 2;
+    const y = rectangle.y - Y_SCALE / 4;
 
     return {
       x,

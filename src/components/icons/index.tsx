@@ -29,3 +29,4 @@ export const MoonIcon = createIcon(paths.moon);
 
 export * from './UndoIcon';
 export * from './RedoIcon';
+export * from './GridIcon';

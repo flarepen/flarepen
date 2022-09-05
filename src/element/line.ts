@@ -51,16 +51,16 @@ export const LineUtils: ElementUtils<Line> = {
     );
 
     let width = xMax - xMin - X_SCALE;
-    let height = yMax - yMin - Y_SCALE - 6;
+    let height = yMax - yMin - Y_SCALE;
 
     if (isHorizontalLine(line)) {
       xMin = xMin + X_SCALE / 2;
       yMin = yMin + Y_SCALE / 2;
     } else {
       xMin = xMin + X_SCALE / 2;
-      yMin = yMin;
+      yMin = yMin + Y_SCALE / 4;
       width = xMax - xMin + 4;
-      height = yMax - yMin - 1 * Y_SCALE;
+      height = yMax - yMin - (5 / 4) * Y_SCALE;
     }
 
     return { x: xMin, y: yMin, width: width, height };

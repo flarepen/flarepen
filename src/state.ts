@@ -13,6 +13,7 @@ interface AppSlice {
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
   theme: Theme;
+  showGrid: boolean;
 
   setElements: (elements: Element[], snapshot?: boolean) => void;
   updateElement: (id: number, update: (element: Element) => void) => void;
@@ -27,6 +28,7 @@ interface AppSlice {
   setTool: (tool: Tool) => void;
   setCanvasCtx: (ctx: null | CanvasRenderingContext2D) => void;
   setTheme: (theme: Theme) => void;
+  setShowGrid: (showGrid: boolean) => void;
 }
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
@@ -36,6 +38,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   tool: Tool.Rectangle,
   canvasCtx: null,
   theme: Theme.dark,
+  showGrid: true,
 
   setElements: (elements, snapshot = true) => {
     if (snapshot) {
@@ -102,6 +105,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   setCanvasCtx: (ctx) => set((_state) => ({ canvasCtx: ctx })),
 
   setTheme: (theme: Theme) => set((_state) => ({ theme })),
+  setShowGrid: (showGrid: boolean) => set((_state) => ({ showGrid })),
 });
 
 // Handle state and actions for Undo Redo

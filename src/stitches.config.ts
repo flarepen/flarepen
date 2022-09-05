@@ -12,6 +12,7 @@ export const { styled, css, theme, createTheme } = createStitches({
       border: mauve.mauve9,
       background: 'white',
       canvasBackground: 'white',
+      gridColor: mauve.mauve12,
     },
   },
 });
@@ -26,5 +27,6 @@ export const darkTheme = createTheme({
     border: mauve.mauve9,
     background: '#212529',
     canvasBackground: '#212529',
+    gridColor: mauve.mauve9,
   },
 });

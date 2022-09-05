@@ -70,6 +70,7 @@ let mouseMove = new IMouseMove();
 const StyledCanvas = styled('canvas', {
   display: 'block',
   background: '$canvasBackground',
+  zIndex: -2,
 });
 
 function CanvasWithInput(): JSX.Element {
@@ -137,6 +138,7 @@ function CanvasWithInput(): JSX.Element {
 
       ctx.fillStyle = primaryColor;
       ctx.strokeStyle = primaryColor;
+      ctx.textBaseline = 'middle';
       setCtx(ctx);
     }
   }

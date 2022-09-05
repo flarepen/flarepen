@@ -12,8 +12,8 @@ export const TOOL_SHORTCUTS: { [key in Tool]: string } = {
   [Tool.Rectangle]: '1',
   [Tool.Line]: '2',
   [Tool.Arrow]: '3',
-  [Tool.Select]: '4',
-  [Tool.Text]: '5',
+  [Tool.Text]: '4',
+  [Tool.Select]: '5',
 };
 
 export const SHORTCUT_TO_TOOL = _.invert(TOOL_SHORTCUTS) as {
