@@ -1,11 +1,16 @@
-import { Y_SCALE } from './constants';
+import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds } from './element';
 
 function element(ctx: CanvasRenderingContext2D, element: Element) {
   let x = element.x;
   let y = element.y;
   element.shape.forEach((row) => {
-    ctx.fillText(row, x, y);
+    x = element.x;
+    row = row || '';
+    row.split('').forEach((ch) => {
+      ctx.fillText(ch, x, y);
+      x = x + X_SCALE;
+    });
     y = y + Y_SCALE;
   });
 }
