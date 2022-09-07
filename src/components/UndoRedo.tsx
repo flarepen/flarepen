@@ -1,5 +1,5 @@
 import { styled } from '../stitches.config';
-import { useStore } from '../state';
+import { useStore, actions } from '../state';
 import Button from './Button';
 import { RedoIcon, UndoIcon } from './icons';
 
@@ -9,18 +9,15 @@ interface UndoRedoProps {
 function UndoRedo({ className }: UndoRedoProps): JSX.Element {
   const past = useStore((state) => state.past);
   const future = useStore((state) => state.future);
-  const undo = useStore((state) => state.undo);
-  const redo = useStore((state) => state.redo);
-
   const canRedo = future.length > 0;
   const canUndo = past.length > 0;
 
   return (
     <div className={className}>
-      <Button inactive={!canUndo} onClick={undo}>
+      <Button inactive={!canUndo} onClick={actions.undo}>
         <UndoIcon />
       </Button>
-      <Button inactive={!canRedo} onClick={redo}>
+      <Button inactive={!canRedo} onClick={actions.redo}>
         <RedoIcon />
       </Button>
     </div>

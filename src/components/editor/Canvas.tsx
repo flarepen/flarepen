@@ -12,12 +12,12 @@ import {
   Text,
   TextUtils,
 } from '../../element';
-import { useStore } from '../../state';
+import { actions, useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
 import { IMouseMove, Theme } from '../../types';
 import draw from '../../draw';
-import { TextInput } from '../TextInput';
+import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
 import { mauve } from '@radix-ui/colors';
 
@@ -82,23 +82,21 @@ function CanvasWithInput(): JSX.Element {
   const [editingText, setEditingText] = useState<null | Text>(null);
 
   const elements = useStore((state) => state.elements);
-  const setElements = useStore((state) => state.setElements);
-  const updateElement = useStore((state) => state.updateElement);
-  const deleteElement = useStore((state) => state.deleteElement);
+  const setElements = actions.setElements;
+  const updateElement = actions.updateElement;
+  const deleteElement = actions.deleteElement;
 
   const editingElement = useStore((state) => state.editingElement);
-  const setEditingElement = useStore((state) => state.setEditingElement);
+  const setEditingElement = actions.setEditingElement;
 
   const selectedIds = useStore((state) => state.selectedIds);
-  const select = useStore((state) => state.select);
-  const unselect = useStore((state) => state.unselect);
-  const resetSelected = useStore((state) => state.resetSelected);
+  const select = actions.select;
+  const unselect = actions.unselect;
+  const resetSelected = actions.resetSelected;
 
   const ctx = useStore((state) => state.canvasCtx);
-  const setCtx = useStore((state) => state.setCanvasCtx);
 
   const tool = useStore((state) => state.tool);
-  const setTool = useStore((state) => state.setTool);
   const scale = window.devicePixelRatio;
 
   const theme = useStore((state) => state.theme);
@@ -139,7 +137,7 @@ function CanvasWithInput(): JSX.Element {
       ctx.fillStyle = primaryColor;
       ctx.strokeStyle = primaryColor;
       ctx.textBaseline = 'middle';
-      setCtx(ctx);
+      actions.setCanvasCtx(ctx);
     }
   }
 
@@ -178,6 +176,25 @@ function CanvasWithInput(): JSX.Element {
           element && draw.dashedRect(ctx, utilFor(element).outlineBounds(element));
         });
       }
+
+      // // Resize Experiment
+      // if (selectedIds.length === 1) {
+      //   const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
+      //   if (element.type === ElementType.Rectangle) {
+      //     const { x, y, width, height } = utilFor(element).outlineBounds(element);
+      //     const size = 8;
+      //     [
+      //       [x - size, y - size],
+      //       [x - size, y + height],
+      //       [x + width, y - size],
+      //       [x + width, y + height],
+      //       [x + width / 2 - 5, y - size],
+      //       [x + width / 2 - 5, y + height],
+      //       [x - size, y + height / 2 - size / 2],
+      //       [x + width, y + height / 2 - size / 2],
+      //     ].forEach((xy) => draw.rect(ctx, { x: xy[0], y: xy[1], width: size, height: size }));
+      //   }
+      // }
     }
   }
 
@@ -188,124 +205,131 @@ function CanvasWithInput(): JSX.Element {
     }
   }, [tool]);
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    if (editingElement && editingElement.type !== ElementType.Text) {
+      setElements([...elements, santizeElement(editingElement)], false);
+      select(editingElement.id);
+      actions.setTool(Tool.Select);
+      setEditingElement(null);
+      return null;
+    }
+
+    // Handle Text Element
+    if (tool === Tool.Text) {
+      if (editingText) {
+        setElements([...elements, santizeElement(editingText)]);
+        setEditingText(null);
+        return null;
+      } else {
+        setEditingText(
+          TextUtils.new(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE))
+        );
+        return null;
+      }
+    }
+
+    if (ElementTypeForTool[tool]) {
+      const newElement = createElement(
+        ElementTypeForTool[tool]!,
+        clipToScale(e.clientX, X_SCALE),
+        clipToScale(e.clientY, Y_SCALE)
+      );
+
+      setEditingElement(newElement);
+    } else if (tool === Tool.Select) {
+      const selected = elements.find((element) =>
+        inVicinity({ x: e.clientX, y: e.clientY }, element)
+      );
+
+      if (selected && _.includes(selectedIds, selected.id)) {
+        setDragging(true);
+        return null;
+      }
+
+      if (selected) {
+        if (e.shiftKey) {
+          select(selected.id);
+        } else {
+          resetSelected([selected.id]);
+        }
+        setDragging(true); // GTK: Does these calls get batched in React??
+      } else {
+        resetSelected([]);
+        setDragging(false);
+      }
+    }
+  };
+
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    if (tool !== Tool.Select) {
+      // TODO: Add single zustand action
+      if (editingElement && editingElement.type !== ElementType.Text) {
+        setElements([...elements, santizeElement(editingElement)], false);
+        select(editingElement.id);
+        actions.setTool(Tool.Select);
+        setEditingElement(null);
+      }
+    } else {
+      setDragging(false);
+      // TODO: Remove direct mutation and manual draw
+      if (selectedIds.length > 0) {
+        selectedIds.forEach((selectedId) => {
+          updateElement(selectedId, (elem: Element) => {
+            elem.x = clipToScale(elem.x, X_SCALE);
+            elem.y = clipToScale(elem.y, Y_SCALE);
+          });
+        });
+      }
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    // Accumulate mouse movement into batches of scale
+    mouseMove.currentEvent = e;
+    mouseMove.acc();
+
+    if (editingElement) {
+      utilFor(editingElement).moveToEdit(editingElement, mouseMove, (updated) => {
+        setEditingElement(updated);
+      });
+    } else {
+      if (dragging && selectedIds.length > 0) {
+        selectedIds.forEach((selectedId) => {
+          const selectedElement = _.find(elements, (elem) => elem.id === selectedId)!;
+          utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
+        });
+      }
+    }
+
+    mouseMove.flushAcc();
+    mouseMove.previousEvent = e;
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (selectedIds.length > 0 && e.key === 'Backspace') {
+      selectedIds.forEach((selectedId) => {
+        deleteElement(selectedId);
+      });
+      resetSelected([]);
+    }
+
+    // TODO: Move to App div level
+    if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
+      actions.setTool(SHORTCUT_TO_TOOL[e.key]);
+    }
+  };
+
   return (
     <>
       <StyledCanvas
         id="canvas"
         ref={canvasRef}
         aria-label="ascii canvas"
-        onMouseDown={(e) => {
-          if (editingElement && editingElement.type !== ElementType.Text) {
-            setElements([...elements, santizeElement(editingElement)], false);
-            select(editingElement.id);
-            setTool(Tool.Select);
-            setEditingElement(null);
-            return null;
-          }
-          // Handle Text Element
-          if (tool === Tool.Text) {
-            if (editingText) {
-              setElements([...elements, santizeElement(editingText)]);
-              setEditingText(null);
-              return null;
-            } else {
-              setEditingText(
-                TextUtils.new(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE))
-              );
-              return null;
-            }
-          }
-
-          if (ElementTypeForTool[tool]) {
-            const newElement = createElement(
-              ElementTypeForTool[tool]!,
-              clipToScale(e.clientX, X_SCALE),
-              clipToScale(e.clientY, Y_SCALE)
-            );
-
-            setEditingElement(newElement);
-          } else if (tool === Tool.Select) {
-            const selected = elements.find((element) =>
-              inVicinity({ x: e.clientX, y: e.clientY }, element)
-            );
-
-            if (selected && _.includes(selectedIds, selected.id)) {
-              setDragging(true);
-              return null;
-            }
-
-            if (selected) {
-              if (e.shiftKey) {
-                select(selected.id);
-              } else {
-                resetSelected([selected.id]);
-              }
-              setDragging(true); // GTK: Does these calls get batched in React??
-            } else {
-              resetSelected([]);
-              setDragging(false);
-            }
-          }
-        }}
-        onMouseUp={(e) => {
-          if (tool !== Tool.Select) {
-            // TODO: Add single zustand action
-            if (editingElement && editingElement.type !== ElementType.Text) {
-              setElements([...elements, santizeElement(editingElement)], false);
-              select(editingElement.id);
-              setTool(Tool.Select);
-              setEditingElement(null);
-            }
-          } else {
-            setDragging(false);
-            // TODO: Remove direct mutation and manual draw
-            if (selectedIds.length > 0) {
-              selectedIds.forEach((selectedId) => {
-                updateElement(selectedId, (elem: Element) => {
-                  elem.x = clipToScale(elem.x, X_SCALE);
-                  elem.y = clipToScale(elem.y, Y_SCALE);
-                });
-              });
-            }
-          }
-        }}
-        // TODO: Need to clean this up
-        onMouseMove={(e) => {
-          // Accumulate mouse movement into batches of scale
-          // TODO: How to handle this for different screen resolutions?
-          mouseMove.currentEvent = e;
-          mouseMove.acc();
-
-          if (editingElement) {
-            utilFor(editingElement).moveToEdit(editingElement, mouseMove, (updated) => {
-              setEditingElement(updated);
-            });
-          } else {
-            if (dragging && selectedIds.length > 0) {
-              selectedIds.forEach((selectedId) => {
-                const selectedElement = _.find(elements, (elem) => elem.id === selectedId)!;
-                utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
-              });
-            }
-          }
-
-          mouseMove.flushAcc();
-          mouseMove.previousEvent = e;
-        }}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (selectedIds.length > 0 && e.key === 'Backspace') {
-            selectedIds.forEach((selectedId) => {
-              deleteElement(selectedId);
-            });
-            resetSelected([]);
-          }
-
-          // TODO: Move to App div level
-          if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
-            setTool(SHORTCUT_TO_TOOL[e.key]);
-          }
-        }}
+        onKeyDown={handleKeyDown}
       >
         <div>Test</div>
       </StyledCanvas>

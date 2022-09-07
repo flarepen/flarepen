@@ -3,7 +3,7 @@ import { Element } from '../../element';
 import { useStore } from '../../state';
 import Canvas from './Canvas';
 import DimensionIndicator from './DimensionIndicator';
-import { OverlayGrid } from './grid';
+import { OverlayGrid } from './Grid';
 
 function Editor() {
   const elements = useStore((state) => state.elements);

@@ -1,6 +1,9 @@
+import produce from 'immer';
 import _ from 'lodash';
-import { X_SCALE, Y_SCALE } from './constants';
-import { Element, ElementType, isHorizontalArrow, isHorizontalLine } from './element';
+import { X_SCALE, Y_SCALE } from '../../constants';
+import { Element, ElementType, isHorizontalArrow, isHorizontalLine } from '../../element';
+import { AppState, useStore } from '../store';
+import { snapshot } from './undo';
 
 export type AlignType = 'left' | 'right' | 'center_x' | 'top' | 'bottom' | 'center_y';
 
@@ -77,7 +80,7 @@ function alignCenterY(elements: Element[]) {
   });
 }
 
-export function align(elements: Element[], alignType: AlignType) {
+function align(elements: Element[], alignType: AlignType) {
   switch (alignType) {
     case 'left':
       alignLeft(elements);
@@ -98,3 +101,17 @@ export function align(elements: Element[], alignType: AlignType) {
       alignCenterY(elements);
   }
 }
+
+export const alignElements = (alignType: AlignType, doSnapshot = true) => {
+  doSnapshot && snapshot();
+
+  useStore.setState(
+    produce<AppState>((state) => {
+      const selectedElements = _.filter(state.elements, (element) =>
+        _.includes(state.selectedIds, element.id)
+      );
+
+      align(selectedElements, alignType);
+    })
+  );
+};

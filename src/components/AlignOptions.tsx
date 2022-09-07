@@ -1,6 +1,6 @@
 import { styled } from '@stitches/react';
 import _ from 'lodash';
-import { AlignType } from '../align-utils';
+import { alignElements, AlignType } from '../state/actions';
 import { useStore } from '../state';
 import Button from './Button';
 import {
@@ -22,8 +22,6 @@ const Row = styled('div', {
 
 function AlignOptions({ className }: AlignOptionsProps): JSX.Element {
   const selectedIds = useStore((state) => state.selectedIds);
-  const alignElements = useStore((state) => state.alignElements);
-
   const inactive = selectedIds.length < 2;
 
   function getAlignHandler(alignType: AlignType) {
