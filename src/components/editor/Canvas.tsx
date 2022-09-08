@@ -19,7 +19,7 @@ import { IMouseMove, Theme } from '../../types';
 import draw from '../../draw';
 import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
-import { mauve } from '@radix-ui/colors';
+import { mauve, orange } from '@radix-ui/colors';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -72,6 +72,22 @@ const StyledCanvas = styled('canvas', {
   background: '$canvasBackground',
   zIndex: -2,
 });
+
+function canvasColors(theme: Theme) {
+  if (theme === Theme.light) {
+    return {
+      text: mauve.mauve12,
+      selection: orange.orange10,
+      selectionBackground: orange.orange10,
+    };
+  } else {
+    return {
+      text: mauve.mauve8,
+      selection: orange.orange11,
+      selectionBackground: orange.orange11,
+    };
+  }
+}
 
 function CanvasWithInput(): JSX.Element {
   const [dimensions, setDimensions] = useState({
@@ -132,7 +148,7 @@ function CanvasWithInput(): JSX.Element {
       ctx.font = '22px Cascadia';
       ctx.scale(scale, scale);
 
-      const primaryColor = theme === Theme.dark ? mauve.mauve8 : mauve.mauve12;
+      const primaryColor = canvasColors(theme).text;
 
       ctx.fillStyle = primaryColor;
       ctx.strokeStyle = primaryColor;
@@ -171,10 +187,43 @@ function CanvasWithInput(): JSX.Element {
 
       // draw selection indicator
       if (selectedIds.length > 0) {
-        selectedIds.forEach((selectedId) => {
-          const element = _.find(elements, (elem) => elem.id === selectedId);
-          element && draw.dashedRect(ctx, utilFor(element).outlineBounds(element));
-        });
+        const selectedElements = _.filter(elements, (element) =>
+          _.includes(selectedIds, element.id)
+        );
+
+        const colors = canvasColors(theme);
+
+        if (selectedElements.length === 1) {
+          draw.rect(
+            ctx,
+            utilFor(selectedElements[0]).outlineBounds(selectedElements[0]),
+            colors.selection,
+            colors.selectionBackground
+          );
+        } else {
+          const allBounds = _.map(selectedElements, (element) =>
+            utilFor(element).outlineBounds(element)
+          );
+
+          allBounds.forEach((bound) => {
+            draw.rect(ctx, bound, colors.selection, colors.selectionBackground);
+          });
+
+          const bounds = g.getBoundingRectForBounds(allBounds);
+
+          draw.dashedRect(
+            ctx,
+            {
+              x: bounds.x - X_SCALE / 2,
+              y: bounds.y - Y_SCALE / 2,
+              width: bounds.width + X_SCALE,
+              height: bounds.height + Y_SCALE,
+            },
+            colors.selection,
+            colors.selectionBackground,
+            [4, 2]
+          );
+        }
       }
 
       // // Resize Experiment

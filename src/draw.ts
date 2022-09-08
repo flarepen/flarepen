@@ -1,14 +1,6 @@
+import { orange } from '@radix-ui/colors';
 import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds } from './element';
-
-const grid_data = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-<defs>
-  <pattern id="grid" width="13" height="30" patternUnits="userSpaceOnUse">
-    <path d="M 13 0 L 0 0 0 30" fill="none" stroke="black" stroke-width="0.5" />
-  </pattern>
-</defs>
-<rect width="100%" height="100%" fill="url(#grid)" />
-</svg>`;
 
 function element(ctx: CanvasRenderingContext2D, element: Element) {
   let x = element.x;
@@ -24,31 +16,35 @@ function element(ctx: CanvasRenderingContext2D, element: Element) {
   });
 }
 
-function dashedRect(ctx: CanvasRenderingContext2D, bounds: IBounds) {
-  const lineDash = ctx.getLineDash();
-  ctx.setLineDash([8, 4]);
-  ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-  ctx.setLineDash(lineDash);
+function withOpacity(radix_color: string, opacity: number) {
+  const len = radix_color.length;
+  const hsl = radix_color.substring(4, len - 1);
+  return `hsla(${hsl},${opacity})`;
 }
 
-function rect(ctx: CanvasRenderingContext2D, bounds: IBounds) {
+function dashedRect(
+  ctx: CanvasRenderingContext2D,
+  bounds: IBounds,
+  stroke: string,
+  fill: string,
+  segments = [8, 4]
+) {
   const lineDash = ctx.getLineDash();
-  ctx.setLineDash([]);
+  const fillStyle = ctx.fillStyle;
+  const strokeStyle = ctx.strokeStyle;
+
+  ctx.fillStyle = withOpacity(fill, 0.1);
+  ctx.strokeStyle = stroke;
+  ctx.setLineDash(segments);
   ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+  ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
   ctx.setLineDash(lineDash);
+  ctx.fillStyle = fillStyle;
+  ctx.strokeStyle = strokeStyle;
 }
 
-// This seems to take too much time on each draw. Instead use OverlayGrid SVG
-function grid(ctx: CanvasRenderingContext2D) {
-  let img = new Image();
-  let svg = new Blob([grid_data], { type: 'image/svg+xml;charset=utf-8' });
-  let url = URL.createObjectURL(svg);
-
-  img.onload = function () {
-    ctx.drawImage(img, 0, 0);
-  };
-
-  img.src = url;
+function rect(ctx: CanvasRenderingContext2D, bounds: IBounds, stroke: string, fill: string) {
+  dashedRect(ctx, bounds, stroke, fill, []);
 }
 
 export default { element, dashedRect, rect };

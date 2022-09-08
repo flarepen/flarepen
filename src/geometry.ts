@@ -2,6 +2,7 @@ import {
   ArrowDirection,
   Element,
   ElementType,
+  IBounds,
   isHorizontalLine,
   LineDirection,
   point,
@@ -127,26 +128,59 @@ function writeToScene(origin: Point, sceneArr: string[][], element: Element) {
   });
 }
 
-export function scene(elements: Element[]): string {
-  // Find boundaries
+export function getBoundingRectForBounds(bounds: IBounds[]): IBounds {
+  const xMin = _.min(_.map(bounds, (bound) => bound.x)) || 0;
+  const xMax = _.max(_.map(bounds, (bound) => bound.x + bound.width)) || 0;
+  const yMin = _.min(_.map(bounds, (bound) => bound.y)) || 0;
+  const yMax = _.max(_.map(bounds, (bound) => bound.y + bound.height)) || 0;
+
+  let width = xMax - xMin;
+  let height = yMax - yMin;
+
+  return {
+    x: xMin,
+    y: yMin,
+    width,
+    height,
+  };
+}
+
+export function getBoundingRect(elements: Element[], scaled = false): IBounds {
   const xMin = _.min(_.map(elements, (element) => element.x)) || 0;
   const xMax = _.max(_.map(elements, (element) => element.x + getWidth(element) * X_SCALE)) || 0;
   const yMin = _.min(_.map(elements, (element) => element.y)) || 0;
   const yMax = _.max(_.map(elements, (element) => element.y + getHeight(element) * Y_SCALE)) || 0;
 
-  const width = Math.floor((xMax - xMin) / X_SCALE);
-  const height = Math.floor((yMax - yMin) / Y_SCALE);
+  let width = xMax - xMin;
+  let height = yMax - yMin;
+
+  if (!scaled) {
+    width = Math.floor(width / X_SCALE);
+    height = Math.floor(height / Y_SCALE);
+  }
+
+  return {
+    x: xMin,
+    y: yMin,
+    width,
+    height,
+  };
+}
+
+export function scene(elements: Element[]): string {
+  // Find boundaries
+  const bound = getBoundingRect(elements);
 
   // Create a 2D array
   let sceneArr: string[][] = [];
-  for (let i = 0; i < height; i++) {
-    sceneArr.push(new Array(width).fill(' '));
+  for (let i = 0; i < bound.height; i++) {
+    sceneArr.push(new Array(bound.width).fill(' '));
   }
 
   // Fill the array
   console.log(elements);
   elements.forEach((element) => {
-    writeToScene(point(xMin, yMin), sceneArr, element);
+    writeToScene(point(bound.x, bound.y), sceneArr, element);
   });
 
   // Merge everything
