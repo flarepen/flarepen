@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { debounce } from 'lodash';
+import { useEffect, useState } from 'react';
 import * as g from '../../geometry';
 import { SHORTCUT_TO_TOOL, Tool } from '../../tools';
 import {
@@ -11,17 +10,14 @@ import {
   ElementUtils,
   Text,
   TextUtils,
-  expandIBound,
-  insideBound,
 } from '../../element';
 import { actions, useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
 import { IMouseMove } from '../../types';
-import draw from '../../draw';
 import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
-import { useSelectionBox, useCanvasColors } from './hooks';
+import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -75,16 +71,15 @@ const StyledCanvas = styled('canvas', {
   zIndex: -2,
 });
 
+type CanvasStatus = 'drafting' | 'editing' | 'dragging' | 'selecting';
+
 // TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
-  const [dimensions, setDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
   const [dragging, setDragging] = useState(false);
   const [editingText, setEditingText] = useState<null | Text>(null);
+
   const [selectionBox, selectionBoxHandlers] = useSelectionBox();
-  const canvasColors = useCanvasColors();
+  const canvasRef = useHtmlCanvas();
 
   const elements = useStore((state) => state.elements);
   const setElements = actions.setElements;
@@ -96,154 +91,13 @@ function CanvasWithInput(): JSX.Element {
 
   const selectedIds = useStore((state) => state.selectedIds);
   const select = actions.select;
-  const unselect = actions.unselect;
   const setSelected = actions.setSelected;
 
   const ctx = useStore((state) => state.canvasCtx);
 
   const tool = useStore((state) => state.tool);
-  const scale = window.devicePixelRatio;
 
-  // Handle Resize
-  useEffect(() => {
-    function handleWindowResize() {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    }
-
-    const debouncedHandler = debounce(handleWindowResize, 100);
-
-    window.addEventListener('resize', debouncedHandler);
-
-    return () => window.removeEventListener('resize', debouncedHandler);
-  });
-
-  const canvasRef = useRef(null);
-
-  function setupCanvas() {
-    if (canvasRef.current) {
-      const canvas: HTMLCanvasElement = canvasRef.current;
-      canvas.width = dimensions.width * scale;
-      canvas.height = dimensions.height * scale;
-
-      canvas.style.width = canvas.width / window.devicePixelRatio + 'px';
-      canvas.style.height = canvas.height / window.devicePixelRatio + 'px';
-
-      const ctx = canvas.getContext('2d')!;
-      ctx.font = '22px Cascadia';
-      ctx.scale(scale, scale);
-
-      const primaryColor = canvasColors.text;
-
-      ctx.fillStyle = primaryColor;
-      ctx.strokeStyle = primaryColor;
-      ctx.textBaseline = 'middle';
-      actions.setCanvasCtx(ctx);
-    }
-  }
-
-  // Setup Canvas on initial load
-  useEffect(() => {
-    setupCanvas();
-  }, []);
-
-  // Fix Canvas on resize
-  useEffect(() => {
-    setupCanvas();
-  }, [dimensions, canvasColors]);
-
-  // Refresh scene
-  useEffect(() => {
-    drawScene();
-  }, [elements, editingElement, dimensions, selectedIds, canvasColors, selectionBox]);
-
-  function drawScene() {
-    if (ctx) {
-      // Clear scene
-      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
-
-      // First draw all elements created till now
-      elements.forEach((element) => {
-        draw.element(ctx, element);
-      });
-
-      // draw current editing element
-      editingElement && draw.element(ctx, editingElement);
-
-      // draw selection indicator
-      if (selectedIds.length > 0) {
-        const selectedElements = _.filter(elements, (element) =>
-          _.includes(selectedIds, element.id)
-        );
-
-        if (selectedElements.length === 1) {
-          draw.rect(
-            ctx,
-            utilFor(selectedElements[0]).outlineBounds(selectedElements[0]),
-            canvasColors.selection,
-            canvasColors.selectionBackground
-          );
-        } else {
-          const allBounds = _.map(selectedElements, (element) =>
-            utilFor(element).outlineBounds(element)
-          );
-
-          allBounds.forEach((bound) => {
-            draw.rect(ctx, bound, canvasColors.selection, canvasColors.selectionBackground);
-          });
-
-          if (selectionBox.status !== 'active') {
-            const bounds = g.getBoundingRectForBounds(allBounds);
-
-            draw.dashedRect(
-              ctx,
-              {
-                x: bounds.x - X_SCALE / 2,
-                y: bounds.y - Y_SCALE / 2,
-                width: bounds.width + X_SCALE,
-                height: bounds.height + Y_SCALE,
-              },
-              canvasColors.selection,
-              canvasColors.selectionBackground,
-              [4, 2]
-            );
-          }
-        }
-      }
-
-      if (selectionBox.status === 'active' && selectionBox.bounds) {
-        selectionBoxHandlers.draw();
-      }
-
-      // // Resize Experiment
-      // if (selectedIds.length === 1 && selectionBoxState !== 'active') {
-      //   const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
-      //   if (element.type === ElementType.Rectangle) {
-      //     const { x, y, width, height } = utilFor(element).outlineBounds(element);
-      //     const size = 8;
-      //     [
-      //       [x - size, y - size],
-      //       [x - size, y + height],
-      //       [x + width, y - size],
-      //       [x + width, y + height],
-      //       [x + width / 2 - 5, y - size],
-      //       [x + width / 2 - 5, y + height],
-      //       [x - size, y + height / 2 - size / 2],
-      //       [x + width, y + height / 2 - size / 2],
-      //     ].forEach((xy) =>
-      //       draw.rect(
-      //         ctx,
-      //         { x: xy[0], y: xy[1], width: size, height: size },
-      //         colors.selection,
-      //         colors.selectionBackground
-      //       )
-      //     );
-      //   }
-      // }
-    }
-  }
+  useDraw();
 
   // Reset Select
   useEffect(() => {

@@ -1,9 +1,14 @@
 import create, { StateCreator } from 'zustand';
-import { Element } from '../element';
+import { Element, IBounds } from '../element';
 import produce from 'immer';
 import _ from 'lodash';
-import { Theme } from '../types';
+import { ISelectionBox, Theme } from '../types';
 import { Tool } from '../tools';
+
+export interface IDimensions {
+  width: number;
+  height: number;
+}
 
 export interface AppSlice {
   elements: Element[];
@@ -13,6 +18,8 @@ export interface AppSlice {
   canvasCtx: null | CanvasRenderingContext2D;
   theme: Theme;
   showGrid: boolean;
+  dimensions: IDimensions;
+  selectionBox: ISelectionBox;
 }
 
 export type AppState = AppSlice & UndoSlice;
@@ -25,6 +32,14 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   canvasCtx: null,
   theme: Theme.dark,
   showGrid: true,
+  dimensions: {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  },
+  selectionBox: {
+    bounds: null,
+    status: 'inactive',
+  },
 });
 
 // Handle state and actions for Undo Redo

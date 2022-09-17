@@ -1,77 +1,66 @@
 import _ from 'lodash';
-import { useState } from 'react';
 import draw from '../../../draw';
-import { expandIBound, IBounds, insideBound } from '../../../element';
+import { expandIBound, insideBound } from '../../../element';
 import { actions, useStore } from '../../../state';
 import { IMouseMove } from '../../../types';
 import { useCanvasColors } from './useCanvasColors';
 
-export type SelectionBoxStatus = 'inactive' | 'active' | 'pending';
-
 export function useSelectionBox() {
-  const [status, setSelectionBoxStatus] = useState<SelectionBoxStatus>('inactive');
-  const [bounds, setSelectionBox] = useState<null | IBounds>(null);
   const ctx = useStore((state) => state.canvasCtx);
   const elements = useStore((state) => state.elements);
+  const selectionBox = useStore((state) => state.selectionBox);
   const setSelected = actions.setSelected;
   const canvasColors = useCanvasColors();
 
   const init = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    setSelectionBoxStatus('pending');
-    setSelectionBox({
-      x: e.clientX,
-      y: e.clientY,
-      width: 0,
-      height: 0,
+    actions.setSelectionBox({
+      status: 'pending',
+      bounds: {
+        x: e.clientX,
+        y: e.clientY,
+        width: 0,
+        height: 0,
+      },
     });
   };
 
   const active = () => {
-    setSelectionBoxStatus('active');
+    actions.setSelectionBox({ status: 'active' });
   };
 
   const inactive = () => {
-    setSelectionBoxStatus('inactive');
-    setSelectionBox(null);
+    actions.setSelectionBox({
+      status: 'inactive',
+      bounds: null,
+    });
   };
 
   const expand = (mouseMove: IMouseMove) => {
-    status === 'pending' && active();
+    selectionBox.status === 'pending' && active();
 
-    if (bounds && (status === 'pending' || status === 'active')) {
+    if (
+      selectionBox.bounds &&
+      (selectionBox.status === 'pending' || selectionBox.status === 'active')
+    ) {
       const toSelect = _.map(
-        _.filter(elements, (element) => insideBound(element, bounds)),
+        _.filter(elements, (element) => insideBound(element, selectionBox.bounds!)),
         (element) => element.id
       );
-      bounds && setSelectionBox(expandIBound(bounds, mouseMove));
+      selectionBox.bounds &&
+        actions.setSelectionBox({
+          bounds: expandIBound(selectionBox.bounds, mouseMove),
+        });
       setSelected(toSelect);
     }
   };
 
-  const drawSelection = () => {
-    ctx &&
-      bounds &&
-      draw.dashedRect(
-        ctx,
-        {
-          ...bounds,
-          width: Math.abs(bounds.width),
-          height: Math.abs(bounds.height),
-        },
-        canvasColors.selection,
-        canvasColors.selectionBackground,
-        [4, 2]
-      );
-  };
-
   return [
-    { bounds, status },
+    selectionBox,
     {
       init,
       active,
       inactive,
       expand,
-      draw: drawSelection,
     },
   ] as const;
 }

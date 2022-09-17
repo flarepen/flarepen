@@ -1,6 +1,6 @@
 import { Tool } from '../../tools';
-import { Theme } from '../../types';
-import { useStore } from '../store';
+import { ISelectionBox, Theme } from '../../types';
+import { IDimensions, useStore } from '../store';
 
 export * from './undo';
 export * from './align';
@@ -21,4 +21,12 @@ export const setCanvasCtx = (ctx: null | CanvasRenderingContext2D) => {
 
 export const setTool = (tool: Tool) => {
   useStore.setState((_state) => ({ tool }));
+};
+
+export const setDimensions = (dimensions: IDimensions) => {
+  useStore.setState((_state) => ({ dimensions }));
+};
+
+export const setSelectionBox = (updates: Partial<ISelectionBox>) => {
+  useStore.setState((state) => ({ selectionBox: { ...state.selectionBox, ...updates } }));
 };

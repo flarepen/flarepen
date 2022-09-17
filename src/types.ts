@@ -1,5 +1,6 @@
 import React from 'react';
 import { X_SCALE, Y_SCALE } from './constants';
+import { IBounds } from './element';
 
 export class IMouseMove {
   accX: number;
@@ -32,4 +33,11 @@ export class IMouseMove {
 export enum Theme {
   dark = 'dark',
   light = 'light',
+}
+
+export type SelectionBoxStatus = 'inactive' | 'active' | 'pending';
+
+export interface ISelectionBox {
+  bounds: null | IBounds;
+  status: SelectionBoxStatus;
 }
