@@ -11,6 +11,9 @@ import {
   ElementUtils,
   Text,
   TextUtils,
+  IBounds,
+  expandIBound,
+  insideBound,
 } from '../../element';
 import { actions, useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
@@ -89,6 +92,9 @@ function canvasColors(theme: Theme) {
   }
 }
 
+type SelectionBoxState = 'inactive' | 'active' | 'pending';
+
+// TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
@@ -96,6 +102,8 @@ function CanvasWithInput(): JSX.Element {
   });
   const [dragging, setDragging] = useState(false);
   const [editingText, setEditingText] = useState<null | Text>(null);
+  const [selectionBoxState, setSelectionBoxState] = useState<SelectionBoxState>('inactive');
+  const [selectionBox, setSelectionBox] = useState<null | IBounds>(null);
 
   const elements = useStore((state) => state.elements);
   const setElements = actions.setElements;
@@ -108,7 +116,7 @@ function CanvasWithInput(): JSX.Element {
   const selectedIds = useStore((state) => state.selectedIds);
   const select = actions.select;
   const unselect = actions.unselect;
-  const resetSelected = actions.resetSelected;
+  const setSelected = actions.setSelected;
 
   const ctx = useStore((state) => state.canvasCtx);
 
@@ -170,7 +178,7 @@ function CanvasWithInput(): JSX.Element {
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, editingElement, dimensions, selectedIds, theme]);
+  }, [elements, editingElement, dimensions, selectedIds, theme, selectionBoxState, selectionBox]);
 
   function drawScene() {
     if (ctx) {
@@ -185,13 +193,13 @@ function CanvasWithInput(): JSX.Element {
       // draw current editing element
       editingElement && draw.element(ctx, editingElement);
 
+      const colors = canvasColors(theme);
+
       // draw selection indicator
       if (selectedIds.length > 0) {
         const selectedElements = _.filter(elements, (element) =>
           _.includes(selectedIds, element.id)
         );
-
-        const colors = canvasColors(theme);
 
         if (selectedElements.length === 1) {
           draw.rect(
@@ -209,21 +217,37 @@ function CanvasWithInput(): JSX.Element {
             draw.rect(ctx, bound, colors.selection, colors.selectionBackground);
           });
 
-          const bounds = g.getBoundingRectForBounds(allBounds);
+          if (selectionBoxState !== 'active') {
+            const bounds = g.getBoundingRectForBounds(allBounds);
 
-          draw.dashedRect(
-            ctx,
-            {
-              x: bounds.x - X_SCALE / 2,
-              y: bounds.y - Y_SCALE / 2,
-              width: bounds.width + X_SCALE,
-              height: bounds.height + Y_SCALE,
-            },
-            colors.selection,
-            colors.selectionBackground,
-            [4, 2]
-          );
+            draw.dashedRect(
+              ctx,
+              {
+                x: bounds.x - X_SCALE / 2,
+                y: bounds.y - Y_SCALE / 2,
+                width: bounds.width + X_SCALE,
+                height: bounds.height + Y_SCALE,
+              },
+              colors.selection,
+              colors.selectionBackground,
+              [4, 2]
+            );
+          }
         }
+      }
+
+      if (selectionBoxState === 'active' && selectionBox) {
+        draw.dashedRect(
+          ctx,
+          {
+            ...selectionBox,
+            width: Math.abs(selectionBox.width),
+            height: Math.abs(selectionBox.height),
+          },
+          colors.selection,
+          colors.selectionBackground,
+          [4, 2]
+        );
       }
 
       // // Resize Experiment
@@ -250,7 +274,7 @@ function CanvasWithInput(): JSX.Element {
   // Reset Select
   useEffect(() => {
     if (selectedIds.length > 0 && tool !== Tool.Select) {
-      resetSelected([]);
+      setSelected([]);
     }
   }, [tool]);
 
@@ -285,26 +309,37 @@ function CanvasWithInput(): JSX.Element {
       );
 
       setEditingElement(newElement);
-    } else if (tool === Tool.Select) {
-      const selected = elements.find((element) =>
+      return null;
+    }
+
+    if (tool === Tool.Select) {
+      const toSelect = elements.find((element) =>
         inVicinity({ x: e.clientX, y: e.clientY }, element)
       );
 
-      if (selected && _.includes(selectedIds, selected.id)) {
-        setDragging(true);
-        return null;
-      }
-
-      if (selected) {
-        if (e.shiftKey) {
-          select(selected.id);
-        } else {
-          resetSelected([selected.id]);
+      if (toSelect) {
+        if (_.includes(selectedIds, toSelect.id)) {
+          setDragging(true);
+          return null;
         }
-        setDragging(true); // GTK: Does these calls get batched in React??
+
+        if (e.shiftKey) {
+          select(toSelect.id);
+        } else {
+          setSelected([toSelect.id]);
+        }
+
+        setDragging(true);
       } else {
-        resetSelected([]);
+        setSelected([]);
         setDragging(false);
+        setSelectionBoxState('pending');
+        setSelectionBox({
+          x: e.clientX,
+          y: e.clientY,
+          width: 0,
+          height: 0,
+        });
       }
     }
   };
@@ -320,6 +355,8 @@ function CanvasWithInput(): JSX.Element {
       }
     } else {
       setDragging(false);
+      setSelectionBoxState('inactive');
+      setSelectionBox(null);
       // TODO: Remove direct mutation and manual draw
       if (selectedIds.length > 0) {
         selectedIds.forEach((selectedId) => {
@@ -348,6 +385,17 @@ function CanvasWithInput(): JSX.Element {
           utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
         });
       }
+      if (selectionBoxState === 'pending') {
+        setSelectionBoxState('active');
+      }
+      if (selectionBox && (selectionBoxState === 'pending' || selectionBoxState === 'active')) {
+        const toSelect = _.map(
+          _.filter(elements, (element) => insideBound(element, selectionBox)),
+          (element) => element.id
+        );
+        setSelectionBox(expandIBound(selectionBox, mouseMove));
+        setSelected(toSelect);
+      }
     }
 
     mouseMove.flushAcc();
@@ -359,7 +407,7 @@ function CanvasWithInput(): JSX.Element {
       selectedIds.forEach((selectedId) => {
         deleteElement(selectedId);
       });
-      resetSelected([]);
+      setSelected([]);
     }
 
     // TODO: Move to App div level

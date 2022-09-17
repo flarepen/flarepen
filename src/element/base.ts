@@ -18,6 +18,33 @@ export interface IBounds {
   height: number;
 }
 
+export function expandIBound(bound: IBounds, mouseMove: IMouseMove): IBounds {
+  const widthIncr =
+    mouseMove.currentEvent!.clientX -
+    (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
+  const heightIncr =
+    mouseMove.currentEvent!.clientY -
+    (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
+  let { x, y, width, height } = bound;
+  width = width + widthIncr;
+  height = height + heightIncr;
+
+  if (width < 0) {
+    x = x + widthIncr;
+  }
+
+  if (height < 0) {
+    y = y + heightIncr;
+  }
+  return {
+    ...bound,
+    x,
+    y,
+    width,
+    height,
+  };
+}
+
 export interface ElementCommons {
   id: number;
   x: number;

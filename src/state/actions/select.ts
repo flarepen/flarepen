@@ -30,7 +30,7 @@ export const unselect = (selectedId: number, doSnapshot = true) => {
   );
 };
 
-export const resetSelected = (ids: number[], doSnapshot = true) => {
+export const setSelected = (ids: number[], doSnapshot = true) => {
   doSnapshot && snapshot();
 
   useStore.setState((state) => ({ selectedIds: ids }));

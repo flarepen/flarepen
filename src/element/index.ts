@@ -2,7 +2,8 @@ import { Line, LineUtils } from './line';
 import { Arrow, ArrowUtils } from './arrow';
 import { Text, TextUtils } from './text';
 import { Rectangle, RectangleUtils } from './rectangle';
-import { ElementType, ElementUtils } from './base';
+import { ElementType, ElementUtils, IBounds } from './base';
+import { X_SCALE, Y_SCALE } from '../constants';
 
 export type Element = Rectangle | Line | Arrow | Text;
 
@@ -25,6 +26,16 @@ export const ElementUtilsMap: { [k in ElementType]: ElementUtils<any> } = {
   [ElementType.Line]: LineUtils,
   [ElementType.Text]: TextUtils,
 };
+
+export function insideBound(element: Element, bound: IBounds): boolean {
+  const outlineBounds = ElementUtilsMap[element.type].outlineBounds(element);
+  return (
+    bound.x < outlineBounds.x &&
+    bound.y < outlineBounds.y &&
+    bound.x + Math.abs(bound.width) > outlineBounds.x + outlineBounds.width &&
+    bound.y + Math.abs(bound.height) > outlineBounds.y + outlineBounds.height
+  );
+}
 
 export * from './base';
 export * from './line';

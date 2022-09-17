@@ -8,7 +8,7 @@ function ActionGroup(): JSX.Element {
   const elements = useStore((state) => state.elements);
 
   const selectedIds = useStore((state) => state.selectedIds);
-  const resetSelected = actions.resetSelected;
+  const setSelected = actions.setSelected;
   const deleteElement = actions.deleteElement;
 
   const showGrid = useStore((state) => state.showGrid);
@@ -28,7 +28,7 @@ function ActionGroup(): JSX.Element {
     selectedIds.forEach((selectedId) => {
       deleteElement(selectedId);
     });
-    resetSelected([]);
+    setSelected([]);
   }
 
   function handleCopy() {
