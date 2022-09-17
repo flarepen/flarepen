@@ -11,18 +11,17 @@ import {
   ElementUtils,
   Text,
   TextUtils,
-  IBounds,
   expandIBound,
   insideBound,
 } from '../../element';
 import { actions, useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
-import { IMouseMove, Theme } from '../../types';
+import { IMouseMove } from '../../types';
 import draw from '../../draw';
 import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
-import { mauve, orange } from '@radix-ui/colors';
+import { useSelectionBox, useCanvasColors } from './hooks';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -76,24 +75,6 @@ const StyledCanvas = styled('canvas', {
   zIndex: -2,
 });
 
-function canvasColors(theme: Theme) {
-  if (theme === Theme.light) {
-    return {
-      text: mauve.mauve12,
-      selection: orange.orange10,
-      selectionBackground: orange.orange10,
-    };
-  } else {
-    return {
-      text: mauve.mauve8,
-      selection: orange.orange11,
-      selectionBackground: orange.orange11,
-    };
-  }
-}
-
-type SelectionBoxState = 'inactive' | 'active' | 'pending';
-
 // TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
   const [dimensions, setDimensions] = useState({
@@ -102,8 +83,8 @@ function CanvasWithInput(): JSX.Element {
   });
   const [dragging, setDragging] = useState(false);
   const [editingText, setEditingText] = useState<null | Text>(null);
-  const [selectionBoxState, setSelectionBoxState] = useState<SelectionBoxState>('inactive');
-  const [selectionBox, setSelectionBox] = useState<null | IBounds>(null);
+  const [selectionBox, selectionBoxHandlers] = useSelectionBox();
+  const canvasColors = useCanvasColors();
 
   const elements = useStore((state) => state.elements);
   const setElements = actions.setElements;
@@ -122,8 +103,6 @@ function CanvasWithInput(): JSX.Element {
 
   const tool = useStore((state) => state.tool);
   const scale = window.devicePixelRatio;
-
-  const theme = useStore((state) => state.theme);
 
   // Handle Resize
   useEffect(() => {
@@ -156,7 +135,7 @@ function CanvasWithInput(): JSX.Element {
       ctx.font = '22px Cascadia';
       ctx.scale(scale, scale);
 
-      const primaryColor = canvasColors(theme).text;
+      const primaryColor = canvasColors.text;
 
       ctx.fillStyle = primaryColor;
       ctx.strokeStyle = primaryColor;
@@ -173,12 +152,12 @@ function CanvasWithInput(): JSX.Element {
   // Fix Canvas on resize
   useEffect(() => {
     setupCanvas();
-  }, [dimensions, theme]);
+  }, [dimensions, canvasColors]);
 
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, editingElement, dimensions, selectedIds, theme, selectionBoxState, selectionBox]);
+  }, [elements, editingElement, dimensions, selectedIds, canvasColors, selectionBox]);
 
   function drawScene() {
     if (ctx) {
@@ -193,8 +172,6 @@ function CanvasWithInput(): JSX.Element {
       // draw current editing element
       editingElement && draw.element(ctx, editingElement);
 
-      const colors = canvasColors(theme);
-
       // draw selection indicator
       if (selectedIds.length > 0) {
         const selectedElements = _.filter(elements, (element) =>
@@ -205,8 +182,8 @@ function CanvasWithInput(): JSX.Element {
           draw.rect(
             ctx,
             utilFor(selectedElements[0]).outlineBounds(selectedElements[0]),
-            colors.selection,
-            colors.selectionBackground
+            canvasColors.selection,
+            canvasColors.selectionBackground
           );
         } else {
           const allBounds = _.map(selectedElements, (element) =>
@@ -214,10 +191,10 @@ function CanvasWithInput(): JSX.Element {
           );
 
           allBounds.forEach((bound) => {
-            draw.rect(ctx, bound, colors.selection, colors.selectionBackground);
+            draw.rect(ctx, bound, canvasColors.selection, canvasColors.selectionBackground);
           });
 
-          if (selectionBoxState !== 'active') {
+          if (selectionBox.status !== 'active') {
             const bounds = g.getBoundingRectForBounds(allBounds);
 
             draw.dashedRect(
@@ -228,30 +205,20 @@ function CanvasWithInput(): JSX.Element {
                 width: bounds.width + X_SCALE,
                 height: bounds.height + Y_SCALE,
               },
-              colors.selection,
-              colors.selectionBackground,
+              canvasColors.selection,
+              canvasColors.selectionBackground,
               [4, 2]
             );
           }
         }
       }
 
-      if (selectionBoxState === 'active' && selectionBox) {
-        draw.dashedRect(
-          ctx,
-          {
-            ...selectionBox,
-            width: Math.abs(selectionBox.width),
-            height: Math.abs(selectionBox.height),
-          },
-          colors.selection,
-          colors.selectionBackground,
-          [4, 2]
-        );
+      if (selectionBox.status === 'active' && selectionBox.bounds) {
+        selectionBoxHandlers.draw();
       }
 
       // // Resize Experiment
-      // if (selectedIds.length === 1) {
+      // if (selectedIds.length === 1 && selectionBoxState !== 'active') {
       //   const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
       //   if (element.type === ElementType.Rectangle) {
       //     const { x, y, width, height } = utilFor(element).outlineBounds(element);
@@ -265,7 +232,14 @@ function CanvasWithInput(): JSX.Element {
       //       [x + width / 2 - 5, y + height],
       //       [x - size, y + height / 2 - size / 2],
       //       [x + width, y + height / 2 - size / 2],
-      //     ].forEach((xy) => draw.rect(ctx, { x: xy[0], y: xy[1], width: size, height: size }));
+      //     ].forEach((xy) =>
+      //       draw.rect(
+      //         ctx,
+      //         { x: xy[0], y: xy[1], width: size, height: size },
+      //         colors.selection,
+      //         colors.selectionBackground
+      //       )
+      //     );
       //   }
       // }
     }
@@ -333,13 +307,7 @@ function CanvasWithInput(): JSX.Element {
       } else {
         setSelected([]);
         setDragging(false);
-        setSelectionBoxState('pending');
-        setSelectionBox({
-          x: e.clientX,
-          y: e.clientY,
-          width: 0,
-          height: 0,
-        });
+        selectionBoxHandlers.init(e);
       }
     }
   };
@@ -355,8 +323,7 @@ function CanvasWithInput(): JSX.Element {
       }
     } else {
       setDragging(false);
-      setSelectionBoxState('inactive');
-      setSelectionBox(null);
+      selectionBoxHandlers.inactive();
       // TODO: Remove direct mutation and manual draw
       if (selectedIds.length > 0) {
         selectedIds.forEach((selectedId) => {
@@ -385,16 +352,9 @@ function CanvasWithInput(): JSX.Element {
           utilFor(selectedElement).drag(selectedElement, mouseMove, updateElement);
         });
       }
-      if (selectionBoxState === 'pending') {
-        setSelectionBoxState('active');
-      }
-      if (selectionBox && (selectionBoxState === 'pending' || selectionBoxState === 'active')) {
-        const toSelect = _.map(
-          _.filter(elements, (element) => insideBound(element, selectionBox)),
-          (element) => element.id
-        );
-        setSelectionBox(expandIBound(selectionBox, mouseMove));
-        setSelected(toSelect);
+
+      if (selectionBox.status === 'pending' || selectionBox.status === 'active') {
+        selectionBoxHandlers.expand(mouseMove);
       }
     }
 
