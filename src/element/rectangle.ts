@@ -11,6 +11,23 @@ import {
   defaultDrag,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
+import { EditHandle, EditHandleType, IMouseMove } from '../types';
+import _ from 'lodash';
+
+const HANDLE_SIZE = 8;
+
+function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
+  return {
+    bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
+    handleType,
+  };
+}
+
+function isPointInsideBound(p: Point, bound: IBounds) {
+  return (
+    p.x > bound.x && p.x < bound.x + bound.width && p.y > bound.y && p.y < bound.y + bound.height
+  );
+}
 
 export interface Rectangle extends ElementCommons {
   width: number;
@@ -105,4 +122,115 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
   },
 
   drag: defaultDrag,
+
+  allEditHandles: function (rectangle) {
+    const { x, y, width, height } = RectangleUtils.outlineBounds(rectangle);
+
+    return [
+      handle(x + width / 2 - 5, y - HANDLE_SIZE, 'top'),
+      handle(x + width / 2 - 5, y + height, 'bottom'),
+      handle(x + width, y + height / 2 - HANDLE_SIZE / 2, 'right'),
+      handle(x - HANDLE_SIZE, y + height / 2 - HANDLE_SIZE / 2, 'left'),
+      handle(x - HANDLE_SIZE, y - HANDLE_SIZE, 'topLeft'),
+      handle(x - HANDLE_SIZE, y + height, 'bottomLeft'),
+      handle(x + width, y - HANDLE_SIZE, 'topRight'),
+      handle(x + width, y + height, 'bottomRight'),
+    ];
+  },
+
+  getEditHandleType: function (rectangle, e) {
+    const point = {
+      x: e.clientX,
+      y: e.clientY,
+    };
+
+    const handle = _.find(RectangleUtils.allEditHandles(rectangle), (handle) =>
+      isPointInsideBound(point, handle.bounds)
+    );
+
+    return handle?.handleType || null;
+  },
+
+  edit: function (rectangle, mouseMove, handleType) {
+    let { x, y, width, height } = rectangle;
+
+    const widthIncr =
+      mouseMove.accX > 0
+        ? Math.floor(mouseMove.accX / X_SCALE)
+        : Math.ceil(mouseMove.accX / X_SCALE);
+    const heightIncr =
+      mouseMove.accY > 0
+        ? Math.floor(mouseMove.accY / Y_SCALE)
+        : Math.ceil(mouseMove.accY / Y_SCALE);
+
+    switch (handleType) {
+      case 'left':
+        if (width - widthIncr >= 2) {
+          x = x + widthIncr * X_SCALE;
+          width = width - widthIncr;
+        }
+        break;
+      case 'right':
+        if (width + widthIncr >= 2) {
+          width = width + widthIncr;
+        }
+        break;
+      case 'top':
+        if (height - heightIncr >= 2) {
+          y = y + heightIncr * Y_SCALE;
+          height = height - heightIncr;
+        }
+        break;
+      case 'bottom':
+        if (height + heightIncr >= 2) {
+          height = height + heightIncr;
+        }
+        break;
+      case 'topLeft':
+        if (width - widthIncr >= 2) {
+          x = x + widthIncr * X_SCALE;
+          width = width - widthIncr;
+        }
+        if (height - heightIncr >= 2) {
+          y = y + heightIncr * Y_SCALE;
+          height = height - heightIncr;
+        }
+        break;
+      case 'topRight':
+        if (width + widthIncr >= 2) {
+          width = width + widthIncr;
+        }
+        if (height - heightIncr >= 2) {
+          y = y + heightIncr * Y_SCALE;
+          height = height - heightIncr;
+        }
+        break;
+      case 'bottomLeft':
+        if (width - widthIncr >= 2) {
+          x = x + widthIncr * X_SCALE;
+          width = width - widthIncr;
+        }
+        if (height + heightIncr >= 2) {
+          height = height + heightIncr;
+        }
+        break;
+      case 'bottomRight':
+        if (width + widthIncr >= 2) {
+          width = width + widthIncr;
+        }
+        if (height + heightIncr >= 2) {
+          height = height + heightIncr;
+        }
+        break;
+    }
+
+    return {
+      ...rectangle,
+      x,
+      y,
+      width,
+      height,
+      shape: g.rectangle(Math.abs(width), Math.abs(height)),
+    };
+  },
 };

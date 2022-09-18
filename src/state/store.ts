@@ -2,7 +2,7 @@ import create, { StateCreator } from 'zustand';
 import { Element, IBounds } from '../element';
 import produce from 'immer';
 import _ from 'lodash';
-import { ISelectionBox, Theme } from '../types';
+import { EditingContext, ISelectionBox, Theme } from '../types';
 import { Tool } from '../tools';
 
 export interface IDimensions {
@@ -12,7 +12,8 @@ export interface IDimensions {
 
 export interface AppSlice {
   elements: Element[];
-  editingElement: null | Element;
+  draft: null | Element;
+  editingContext: EditingContext;
   selectedIds: number[];
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
@@ -26,7 +27,8 @@ export type AppState = AppSlice & UndoSlice;
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   elements: [],
-  editingElement: null,
+  editingContext: { id: null, handleType: null },
+  draft: null,
   selectedIds: [],
   tool: Tool.Rectangle,
   canvasCtx: null,

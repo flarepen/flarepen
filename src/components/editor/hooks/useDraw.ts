@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
 import { X_SCALE, Y_SCALE } from '../../../constants';
 import draw from '../../../draw';
-import { Element, ElementUtils, ElementUtilsMap } from '../../../element';
+import {
+  Element,
+  ElementType,
+  ElementUtils,
+  ElementUtilsMap,
+  RectangleUtils,
+} from '../../../element';
 import { useStore } from '../../../state';
 import { useCanvasColors } from './useCanvasColors';
 import * as g from '../../../geometry';
@@ -13,7 +19,7 @@ function utilFor(element: Element): ElementUtils<any> {
 
 export function useDraw() {
   const elements = useStore((state) => state.elements);
-  const editingElement = useStore((state) => state.editingElement);
+  const draft = useStore((state) => state.draft);
   const selectedIds = useStore((state) => state.selectedIds);
   const dimensions = useStore((state) => state.dimensions);
   const selectionBox = useStore((state) => state.selectionBox);
@@ -24,7 +30,7 @@ export function useDraw() {
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, editingElement, dimensions, selectedIds, canvasColors, selectionBox]);
+  }, [elements, draft, dimensions, selectedIds, canvasColors, selectionBox]);
 
   function drawScene() {
     if (ctx) {
@@ -36,8 +42,8 @@ export function useDraw() {
         draw.element(ctx, element);
       });
 
-      // draw current editing element
-      editingElement && draw.element(ctx, editingElement);
+      // draw current draft
+      draft && draw.element(ctx, draft);
 
       // draw selection indicator
       if (selectedIds.length > 0) {
@@ -96,31 +102,15 @@ export function useDraw() {
           );
       }
 
-      // // Resize Experiment
-      // if (selectedIds.length === 1 && selectionBoxState !== 'active') {
-      //   const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
-      //   if (element.type === ElementType.Rectangle) {
-      //     const { x, y, width, height } = utilFor(element).outlineBounds(element);
-      //     const size = 8;
-      //     [
-      //       [x - size, y - size],
-      //       [x - size, y + height],
-      //       [x + width, y - size],
-      //       [x + width, y + height],
-      //       [x + width / 2 - 5, y - size],
-      //       [x + width / 2 - 5, y + height],
-      //       [x - size, y + height / 2 - size / 2],
-      //       [x + width, y + height / 2 - size / 2],
-      //     ].forEach((xy) =>
-      //       draw.rect(
-      //         ctx,
-      //         { x: xy[0], y: xy[1], width: size, height: size },
-      //         colors.selection,
-      //         colors.selectionBackground
-      //       )
-      //     );
-      //   }
-      // }
+      // Resize Experiment
+      if (selectedIds.length === 1 && selectionBox.status !== 'active') {
+        const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
+        if (element.type === ElementType.Rectangle) {
+          RectangleUtils.allEditHandles(element).forEach((handle) =>
+            draw.rect(ctx, handle.bounds, canvasColors.selection, canvasColors.selectionBackground)
+          );
+        }
+      }
     }
   }
 }

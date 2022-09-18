@@ -1,5 +1,5 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { IMouseMove } from '../types';
+import { EditHandle, EditHandleType, IMouseMove } from '../types';
 
 // TODO: Use it instead of x,y in other places
 export interface Point {
@@ -94,6 +94,12 @@ export interface ElementUtils<T extends ElementCommons> {
     mouseMove: IMouseMove,
     updateElement: (id: number, update: (element: T) => void) => void
   ) => void;
+  allEditHandles: (t: T) => EditHandle[];
+  getEditHandleType: (
+    t: T,
+    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => null | EditHandleType;
+  edit: (t: T, mouseMove: IMouseMove, handleType: EditHandleType) => T;
 }
 
 export function defaultDrag<T extends ElementCommons>(

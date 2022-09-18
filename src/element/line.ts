@@ -143,4 +143,13 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   drag: defaultDrag,
+  allEditHandles: function () {
+    return [];
+  },
+  getEditHandleType: function (line, e) {
+    return null;
+  },
+  edit: function (line, mouseMove, handleType) {
+    return line;
+  },
 };

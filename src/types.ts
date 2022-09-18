@@ -41,3 +41,23 @@ export interface ISelectionBox {
   bounds: null | IBounds;
   status: SelectionBoxStatus;
 }
+
+export type EditHandleType =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'topLeft'
+  | 'topRight'
+  | 'bottomLeft'
+  | 'bottomRight';
+
+export interface EditHandle {
+  handleType: EditHandleType;
+  bounds: IBounds;
+}
+
+export interface EditingContext {
+  id: null | number;
+  handleType: null | EditHandleType;
+}

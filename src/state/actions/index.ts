@@ -1,5 +1,5 @@
 import { Tool } from '../../tools';
-import { ISelectionBox, Theme } from '../../types';
+import { EditingContext, ISelectionBox, Theme } from '../../types';
 import { IDimensions, useStore } from '../store';
 
 export * from './undo';
@@ -29,4 +29,8 @@ export const setDimensions = (dimensions: IDimensions) => {
 
 export const setSelectionBox = (updates: Partial<ISelectionBox>) => {
   useStore.setState((state) => ({ selectionBox: { ...state.selectionBox, ...updates } }));
+};
+
+export const setEditingContext = (updates: Partial<EditingContext>) => {
+  useStore.setState((state) => ({ editingContext: { ...state.editingContext, ...updates } }));
 };

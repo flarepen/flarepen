@@ -10,15 +10,26 @@ export const setElements = (elements: Element[], doSnapshot = true) => {
   useStore.setState((state) => ({ elements }));
 };
 
-export const updateElement = (id: number, update: (element: Element) => void) => {
-  useStore.setState(
-    produce<AppState>((state) => {
-      const index = state.elements.findIndex((elem: Element) => elem.id === id);
-      if (index !== -1) {
-        update(state.elements[index]);
-      }
-    })
-  );
+export const updateElement = (id: number, update: (element: Element) => void | Element) => {
+  if (typeof update === 'function') {
+    useStore.setState(
+      produce<AppState>((state) => {
+        const index = state.elements.findIndex((elem: Element) => elem.id === id);
+        if (index !== -1) {
+          update(state.elements[index]);
+        }
+      })
+    );
+  } else {
+    useStore.setState(
+      produce<AppState>((state) => {
+        const index = state.elements.findIndex((elem: Element) => elem.id === id);
+        if (index !== -1) {
+          state.elements[index] = update;
+        }
+      })
+    );
+  }
 };
 
 export const deleteElement = (id: number, doSnapshot = true) => {
@@ -34,6 +45,6 @@ export const deleteElement = (id: number, doSnapshot = true) => {
   );
 };
 
-export const setEditingElement = (element: Element | null) => {
-  useStore.setState((state) => ({ editingElement: element }));
+export const setDraft = (draft: Element | null) => {
+  useStore.setState((state) => ({ draft }));
 };

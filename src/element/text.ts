@@ -42,4 +42,13 @@ export const TextUtils: ElementUtils<Text> = {
   },
   moveToEdit: function (t, mouseMove, callback) {},
   drag: defaultDrag,
+  allEditHandles: function () {
+    return [];
+  },
+  getEditHandleType: function (text, e) {
+    return null;
+  },
+  edit: function (text, mouseMove, handleType) {
+    return text;
+  },
 };

@@ -8,7 +8,7 @@ import { OverlayGrid } from './SvgGrid';
 function Editor() {
   const elements = useStore((state) => state.elements);
   const selectedIds = useStore((state) => state.selectedIds);
-  const editingElement = useStore((state) => state.editingElement);
+  const draft = useStore((state) => state.draft);
   const showGrid = useStore((state) => state.showGrid);
 
   let element: Element | null = null;
@@ -17,7 +17,7 @@ function Editor() {
     element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
   }
 
-  element = element || editingElement;
+  element = element || draft;
 
   return (
     <>

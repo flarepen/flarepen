@@ -147,4 +147,13 @@ export const ArrowUtils: ElementUtils<Arrow> = {
   },
 
   drag: defaultDrag,
+  allEditHandles: function () {
+    return [];
+  },
+  getEditHandleType: function (arrow, e) {
+    return null;
+  },
+  edit: function (arrow, mouseMove, handleType) {
+    return arrow;
+  },
 };

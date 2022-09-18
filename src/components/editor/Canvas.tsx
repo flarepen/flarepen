@@ -86,8 +86,8 @@ function CanvasWithInput(): JSX.Element {
   const updateElement = actions.updateElement;
   const deleteElement = actions.deleteElement;
 
-  const editingElement = useStore((state) => state.editingElement);
-  const setEditingElement = actions.setEditingElement;
+  const draft = useStore((state) => state.draft);
+  const setDraft = actions.setDraft;
 
   const selectedIds = useStore((state) => state.selectedIds);
   const select = actions.select;
@@ -96,6 +96,8 @@ function CanvasWithInput(): JSX.Element {
   const ctx = useStore((state) => state.canvasCtx);
 
   const tool = useStore((state) => state.tool);
+
+  const editingContext = useStore((state) => state.editingContext);
 
   useDraw();
 
@@ -107,11 +109,11 @@ function CanvasWithInput(): JSX.Element {
   }, [tool]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    if (editingElement && editingElement.type !== ElementType.Text) {
-      setElements([...elements, santizeElement(editingElement)], false);
-      select(editingElement.id);
+    if (draft && draft.type !== ElementType.Text) {
+      setElements([...elements, santizeElement(draft)], false);
+      select(draft.id);
       actions.setTool(Tool.Select);
-      setEditingElement(null);
+      setDraft(null);
       return null;
     }
 
@@ -136,11 +138,25 @@ function CanvasWithInput(): JSX.Element {
         clipToScale(e.clientY, Y_SCALE)
       );
 
-      setEditingElement(newElement);
+      setDraft(newElement);
       return null;
     }
 
     if (tool === Tool.Select) {
+      // Move to Edit mode
+      if (selectedIds.length === 1) {
+        const selectedElement = _.find(elements, (elem) => elem.id === selectedIds[0])!;
+        const editHandleType = utilFor(selectedElement).getEditHandleType(selectedElement, e);
+        if (editHandleType) {
+          actions.setEditingContext({
+            id: selectedElement.id,
+            handleType: editHandleType,
+          });
+          return null;
+        }
+      }
+
+      // Select Elements and move to drag mode
       const toSelect = elements.find((element) =>
         inVicinity({ x: e.clientX, y: e.clientY }, element)
       );
@@ -158,24 +174,29 @@ function CanvasWithInput(): JSX.Element {
         }
 
         setDragging(true);
-      } else {
-        setSelected([]);
-        setDragging(false);
-        selectionBoxHandlers.init(e);
+        return null;
       }
+
+      // Remove selection
+      setSelected([]);
+      setDragging(false);
+
+      // Move to Drag and Select Mode
+      selectionBoxHandlers.init(e);
     }
   };
 
   const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (tool !== Tool.Select) {
       // TODO: Add single zustand action
-      if (editingElement && editingElement.type !== ElementType.Text) {
-        setElements([...elements, santizeElement(editingElement)], false);
-        select(editingElement.id);
+      if (draft && draft.type !== ElementType.Text) {
+        setElements([...elements, santizeElement(draft)], false);
+        select(draft.id);
         actions.setTool(Tool.Select);
-        setEditingElement(null);
+        setDraft(null);
       }
     } else {
+      editingContext.id && actions.setEditingContext({ id: null, handleType: null });
       setDragging(false);
       selectionBoxHandlers.inactive();
       // TODO: Remove direct mutation and manual draw
@@ -195,9 +216,9 @@ function CanvasWithInput(): JSX.Element {
     mouseMove.currentEvent = e;
     mouseMove.acc();
 
-    if (editingElement) {
-      utilFor(editingElement).moveToEdit(editingElement, mouseMove, (updated) => {
-        setEditingElement(updated);
+    if (draft) {
+      utilFor(draft).moveToEdit(draft, mouseMove, (updated) => {
+        setDraft(updated);
       });
     } else {
       if (dragging && selectedIds.length > 0) {
@@ -209,6 +230,14 @@ function CanvasWithInput(): JSX.Element {
 
       if (selectionBox.status === 'pending' || selectionBox.status === 'active') {
         selectionBoxHandlers.expand(mouseMove);
+      }
+
+      if (editingContext.id && editingContext.handleType) {
+        const selectedElement = _.find(elements, (elem) => elem.id === editingContext.id)!;
+        actions.updateElement(
+          editingContext.id,
+          utilFor(selectedElement).edit(selectedElement, mouseMove, editingContext.handleType)
+        );
       }
     }
 
@@ -225,7 +254,7 @@ function CanvasWithInput(): JSX.Element {
     }
 
     // TODO: Move to App div level
-    if (!editingElement && SHORTCUT_TO_TOOL[e.key]) {
+    if (!draft && SHORTCUT_TO_TOOL[e.key]) {
       actions.setTool(SHORTCUT_TO_TOOL[e.key]);
     }
   };
