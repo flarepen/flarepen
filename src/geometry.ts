@@ -179,7 +179,6 @@ export function merge(elements: Element[]): MergedElements {
   }
 
   // Fill the array
-  console.log(elements);
   elements.forEach((element) => {
     writeToScene(point(bound.x, bound.y), sceneArr, element);
   });

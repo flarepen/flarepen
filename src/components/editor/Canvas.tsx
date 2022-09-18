@@ -14,7 +14,7 @@ import {
 import { actions, useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
-import { IMouseMove } from '../../types';
+import { ArrowKey, IMouseMove } from '../../types';
 import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
 import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
@@ -246,11 +246,35 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
-    if (selectedIds.length > 0 && e.key === 'Backspace') {
-      selectedIds.forEach((selectedId) => {
-        deleteElement(selectedId);
-      });
-      setSelected([]);
+    if (selectedIds.length > 0) {
+      switch (e.key) {
+        case 'Backspace':
+          selectedIds.forEach((selectedId) => {
+            deleteElement(selectedId);
+          });
+          setSelected([]);
+          break;
+        case ArrowKey.Left:
+          actions.updateAllSelected((element) => {
+            element.x = element.x - X_SCALE;
+          });
+          break;
+        case ArrowKey.Right:
+          actions.updateAllSelected((element) => {
+            element.x = element.x + X_SCALE;
+          });
+          break;
+        case ArrowKey.Up:
+          actions.updateAllSelected((element) => {
+            element.y = element.y - Y_SCALE;
+          });
+          break;
+        case ArrowKey.Down:
+          actions.updateAllSelected((element) => {
+            element.y = element.y + Y_SCALE;
+          });
+          break;
+      }
     }
 
     // TODO: Move to App div level

@@ -71,3 +71,10 @@ export interface MergedElements {
   origin: Point;
   content: string[][];
 }
+
+export enum ArrowKey {
+  'Up' = 'ArrowUp',
+  'Down' = 'ArrowDown',
+  'Left' = 'ArrowLeft',
+  'Right' = 'ArrowRight',
+}
