@@ -9,6 +9,7 @@ import {
   inLinearVicinity,
   point,
   defaultDrag,
+  isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
 import { EditHandle, EditHandleType, IMouseMove } from '../types';
@@ -21,12 +22,6 @@ function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
     bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
     handleType,
   };
-}
-
-function isPointInsideBound(p: Point, bound: IBounds) {
-  return (
-    p.x > bound.x && p.x < bound.x + bound.width && p.y > bound.y && p.y < bound.y + bound.height
-  );
 }
 
 export interface Rectangle extends ElementCommons {

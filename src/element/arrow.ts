@@ -8,9 +8,21 @@ import {
   getLinearBounding,
   IBounds,
   inLinearVicinity,
+  isPointInsideBound,
   Point,
 } from './base';
 import * as g from '../geometry';
+import { EditHandle, EditHandleType } from '../types';
+import _ from 'lodash';
+
+const HANDLE_SIZE = 8;
+
+function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
+  return {
+    bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
+    handleType,
+  };
+}
 
 export enum ArrowDirection {
   Left,
@@ -147,13 +159,79 @@ export const ArrowUtils: ElementUtils<Arrow> = {
   },
 
   drag: defaultDrag,
-  allEditHandles: function () {
-    return [];
+
+  allEditHandles: function (arrow) {
+    const { x, y, width, height } = ArrowUtils.outlineBounds(arrow);
+
+    if (isHorizontalArrow(arrow)) {
+      return [
+        handle(x - HANDLE_SIZE, y + height / 2 - HANDLE_SIZE / 2, 'left'),
+        handle(x + width, y + height / 2 - HANDLE_SIZE / 2, 'right'),
+      ];
+    }
+
+    return [
+      handle(x + width / 2 - HANDLE_SIZE / 2, y - HANDLE_SIZE, 'top'),
+      handle(x + width / 2 - HANDLE_SIZE / 2, y + height, 'bottom'),
+    ];
   },
+
   getEditHandleType: function (arrow, e) {
-    return null;
+    const point = {
+      x: e.clientX,
+      y: e.clientY,
+    };
+
+    const handle = _.find(ArrowUtils.allEditHandles(arrow), (handle) =>
+      isPointInsideBound(point, handle.bounds)
+    );
+
+    return handle?.handleType || null;
   },
+
   edit: function (arrow, mouseMove, handleType) {
-    return arrow;
+    let { x, y, len } = arrow;
+
+    const widthIncr =
+      mouseMove.accX > 0
+        ? Math.floor(mouseMove.accX / X_SCALE)
+        : Math.ceil(mouseMove.accX / X_SCALE);
+    const heightIncr =
+      mouseMove.accY > 0
+        ? Math.floor(mouseMove.accY / Y_SCALE)
+        : Math.ceil(mouseMove.accY / Y_SCALE);
+
+    switch (handleType) {
+      case 'left':
+        if (len - widthIncr >= 2) {
+          x = x + widthIncr * X_SCALE;
+          len = len - widthIncr;
+        }
+        break;
+      case 'right':
+        if (len + widthIncr >= 2) {
+          len = len + widthIncr;
+        }
+        break;
+      case 'top':
+        if (len - heightIncr >= 2) {
+          y = y + heightIncr * Y_SCALE;
+          len = len - heightIncr;
+        }
+        break;
+      case 'bottom':
+        if (len + heightIncr >= 2) {
+          len = len + heightIncr;
+        }
+        break;
+    }
+
+    return {
+      ...arrow,
+      x,
+      y,
+      len,
+      shape: g.arrow(len, arrow.direction),
+    };
   },
 };

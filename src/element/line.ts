@@ -7,10 +7,22 @@ import {
   inLinearVicinity,
   Point,
   defaultDrag,
+  isPointInsideBound,
 } from './base';
 import { getNextID } from '../id';
 import { X_SCALE, Y_SCALE } from '../constants';
 import * as g from '../geometry';
+import { EditHandleType, EditHandle } from '../types';
+import _ from 'lodash';
+
+const HANDLE_SIZE = 8;
+
+function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
+  return {
+    bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
+    handleType,
+  };
+}
 
 export enum LineDirection {
   Up,
@@ -143,13 +155,76 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   drag: defaultDrag,
-  allEditHandles: function () {
-    return [];
+  allEditHandles: function (line) {
+    const { x, y, width, height } = LineUtils.outlineBounds(line);
+
+    if (isHorizontalLine(line)) {
+      return [
+        handle(x - HANDLE_SIZE, y + height / 2 - HANDLE_SIZE / 2, 'left'),
+        handle(x + width, y + height / 2 - HANDLE_SIZE / 2, 'right'),
+      ];
+    }
+
+    return [
+      handle(x + width / 2 - HANDLE_SIZE / 2, y - HANDLE_SIZE, 'top'),
+      handle(x + width / 2 - HANDLE_SIZE / 2, y + height, 'bottom'),
+    ];
   },
   getEditHandleType: function (line, e) {
-    return null;
+    const point = {
+      x: e.clientX,
+      y: e.clientY,
+    };
+
+    const handle = _.find(LineUtils.allEditHandles(line), (handle) =>
+      isPointInsideBound(point, handle.bounds)
+    );
+
+    return handle?.handleType || null;
   },
   edit: function (line, mouseMove, handleType) {
-    return line;
+    let { x, y, len } = line;
+
+    const widthIncr =
+      mouseMove.accX > 0
+        ? Math.floor(mouseMove.accX / X_SCALE)
+        : Math.ceil(mouseMove.accX / X_SCALE);
+    const heightIncr =
+      mouseMove.accY > 0
+        ? Math.floor(mouseMove.accY / Y_SCALE)
+        : Math.ceil(mouseMove.accY / Y_SCALE);
+
+    switch (handleType) {
+      case 'left':
+        if (len - widthIncr >= 1) {
+          x = x + widthIncr * X_SCALE;
+          len = len - widthIncr;
+        }
+        break;
+      case 'right':
+        if (len + widthIncr >= 1) {
+          len = len + widthIncr;
+        }
+        break;
+      case 'top':
+        if (len - heightIncr >= 1) {
+          y = y + heightIncr * Y_SCALE;
+          len = len - heightIncr;
+        }
+        break;
+      case 'bottom':
+        if (len + heightIncr >= 1) {
+          len = len + heightIncr;
+        }
+        break;
+    }
+
+    return {
+      ...line,
+      x,
+      y,
+      len,
+      shape: g.line(len, isHorizontalLine(line)),
+    };
   },
 };

@@ -11,6 +11,12 @@ export function point(x: number, y: number): Point {
   return { x, y };
 }
 
+export function isPointInsideBound(p: Point, bound: IBounds) {
+  return (
+    p.x > bound.x && p.x < bound.x + bound.width && p.y > bound.y && p.y < bound.y + bound.height
+  );
+}
+
 export interface IBounds {
   x: number;
   y: number;

@@ -105,10 +105,17 @@ export function useDraw() {
       // Resize Experiment
       if (selectedIds.length === 1 && selectionBox.status !== 'active') {
         const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
-        if (element.type === ElementType.Rectangle) {
-          RectangleUtils.allEditHandles(element).forEach((handle) =>
-            draw.rect(ctx, handle.bounds, canvasColors.selection, canvasColors.selectionBackground)
-          );
+        if (element.type !== ElementType.Text) {
+          utilFor(element)
+            .allEditHandles(element)
+            .forEach((handle) =>
+              draw.rect(
+                ctx,
+                handle.bounds,
+                canvasColors.selection,
+                canvasColors.selectionBackground
+              )
+            );
         }
       }
     }
