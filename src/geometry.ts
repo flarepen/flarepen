@@ -10,6 +10,7 @@ import {
 } from './element';
 import _ from 'lodash';
 import { X_SCALE, Y_SCALE } from './constants';
+import { MergedElements } from './types';
 
 export type Row = string;
 export type Shape = Row[];
@@ -167,7 +168,7 @@ export function getBoundingRect(elements: Element[], scaled = false): IBounds {
   };
 }
 
-export function scene(elements: Element[]): string {
+export function merge(elements: Element[]): MergedElements {
   // Find boundaries
   const bound = getBoundingRect(elements);
 
@@ -183,6 +184,8 @@ export function scene(elements: Element[]): string {
     writeToScene(point(bound.x, bound.y), sceneArr, element);
   });
 
-  // Merge everything
-  return _.map(sceneArr, (row) => row.join('')).join('\n');
+  return {
+    origin: { x: bound.x, y: bound.y },
+    content: sceneArr,
+  };
 }

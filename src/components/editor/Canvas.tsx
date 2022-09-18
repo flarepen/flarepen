@@ -75,7 +75,6 @@ type CanvasStatus = 'drafting' | 'editing' | 'dragging' | 'selecting';
 
 // TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
-  const [dragging, setDragging] = useState(false);
   const [editingText, setEditingText] = useState<null | Text>(null);
 
   const [selectionBox, selectionBoxHandlers] = useSelectionBox();
@@ -93,7 +92,8 @@ function CanvasWithInput(): JSX.Element {
   const select = actions.select;
   const setSelected = actions.setSelected;
 
-  const ctx = useStore((state) => state.canvasCtx);
+  const dragging = useStore((state) => state.dragging);
+  const setDragging = actions.setDragging;
 
   const tool = useStore((state) => state.tool);
 

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { scene } from '../../geometry';
+import * as g from '../../geometry';
 import { useStore, actions } from '../../state';
 import Button from '../Button';
 import { ClipboardCopyIcon, DeleteIcon, GridIcon } from '../icons';
@@ -36,7 +36,8 @@ function ActionGroup(): JSX.Element {
     if (selectedIds.length > 0) {
       elementsToCopy = _.filter(elements, (element) => selectedIds.includes(element.id));
     }
-    copyToClipboard(scene(elementsToCopy));
+    const merged = g.merge(elementsToCopy);
+    copyToClipboard(_.map(merged.content, (row) => row.join('')).join('\n'));
   }
 
   function flipGrid() {

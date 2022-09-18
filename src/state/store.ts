@@ -15,6 +15,7 @@ export interface AppSlice {
   draft: null | Element;
   editingContext: EditingContext;
   selectedIds: number[];
+  dragging: boolean;
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
   theme: Theme;
@@ -30,6 +31,7 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   editingContext: { id: null, handleType: null },
   draft: null,
   selectedIds: [],
+  dragging: false,
   tool: Tool.Rectangle,
   canvasCtx: null,
   theme: Theme.dark,

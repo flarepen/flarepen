@@ -61,3 +61,13 @@ export interface EditingContext {
   id: null | number;
   handleType: null | EditHandleType;
 }
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface MergedElements {
+  origin: Point;
+  content: string[][];
+}

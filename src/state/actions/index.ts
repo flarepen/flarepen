@@ -34,3 +34,7 @@ export const setSelectionBox = (updates: Partial<ISelectionBox>) => {
 export const setEditingContext = (updates: Partial<EditingContext>) => {
   useStore.setState((state) => ({ editingContext: { ...state.editingContext, ...updates } }));
 };
+
+export const setDragging = (dragging: boolean) => {
+  useStore.setState((state) => ({ dragging }));
+};

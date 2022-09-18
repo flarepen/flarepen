@@ -24,6 +24,7 @@ export function useDraw() {
   const dimensions = useStore((state) => state.dimensions);
   const selectionBox = useStore((state) => state.selectionBox);
   const ctx = useStore((state) => state.canvasCtx);
+  const dragging = useStore((state) => state.dragging);
 
   const canvasColors = useCanvasColors();
 
@@ -37,20 +38,26 @@ export function useDraw() {
       // Clear scene
       ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-      // First draw all elements created till now
-      elements.forEach((element) => {
-        draw.element(ctx, element);
-      });
+      const selectedElements = _.filter(elements, (element) => _.includes(selectedIds, element.id));
+
+      // Dont merge selected items when dragging. Dragging is not scaled and breaks merge
+      if (dragging) {
+        const otherElements = _.filter(elements, (element) => !_.includes(selectedIds, element.id));
+
+        selectedElements.forEach((element) => {
+          draw.element(ctx, element);
+        });
+
+        draw.merged(ctx, g.merge(otherElements));
+      } else {
+        draw.merged(ctx, g.merge(elements));
+      }
 
       // draw current draft
       draft && draw.element(ctx, draft);
 
       // draw selection indicator
       if (selectedIds.length > 0) {
-        const selectedElements = _.filter(elements, (element) =>
-          _.includes(selectedIds, element.id)
-        );
-
         if (selectedElements.length === 1) {
           draw.rect(
             ctx,

@@ -1,6 +1,19 @@
-import { orange } from '@radix-ui/colors';
 import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds } from './element';
+import { MergedElements } from './types';
+
+function merged(ctx: CanvasRenderingContext2D, merged: MergedElements) {
+  let { x, y } = merged.origin;
+
+  merged.content.forEach((row) => {
+    x = merged.origin.x;
+    row.forEach((ch) => {
+      ctx.fillText(ch, x, y);
+      x = x + X_SCALE;
+    });
+    y = y + Y_SCALE;
+  });
+}
 
 function element(ctx: CanvasRenderingContext2D, element: Element) {
   let x = element.x;
@@ -47,4 +60,4 @@ function rect(ctx: CanvasRenderingContext2D, bounds: IBounds, stroke: string, fi
   dashedRect(ctx, bounds, stroke, fill, []);
 }
 
-export default { element, dashedRect, rect };
+export default { element, dashedRect, rect, merged };
