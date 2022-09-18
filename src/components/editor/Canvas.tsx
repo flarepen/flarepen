@@ -120,7 +120,7 @@ function CanvasWithInput(): JSX.Element {
     // Handle Text Element
     if (tool === Tool.Text) {
       if (editingText) {
-        setElements([...elements, santizeElement(editingText)]);
+        editingText.content && setElements([...elements, santizeElement(editingText)]);
         setEditingText(null);
         return null;
       } else {
