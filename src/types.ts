@@ -78,3 +78,5 @@ export enum ArrowKey {
   'Left' = 'ArrowLeft',
   'Right' = 'ArrowRight',
 }
+
+export type CanvasDrag = 'inactive' | 'active';

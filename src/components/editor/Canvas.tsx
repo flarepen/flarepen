@@ -99,6 +99,9 @@ function CanvasWithInput(): JSX.Element {
 
   const editingContext = useStore((state) => state.editingContext);
 
+  const canvasDrag = useStore((state) => state.canvasDrag);
+  const spacePressed = useStore((state) => state.spacePressed);
+
   useDraw();
 
   // Reset Select
@@ -109,6 +112,11 @@ function CanvasWithInput(): JSX.Element {
   }, [tool]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    if (spacePressed) {
+      actions.setCanvasDrag('active');
+      return null;
+    }
+
     if (draft && draft.type !== ElementType.Text) {
       setElements([...elements, santizeElement(draft)], false);
       select(draft.id);
@@ -187,6 +195,11 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    if (canvasDrag !== 'inactive') {
+      actions.sanitizeElements();
+      actions.setCanvasDrag('inactive');
+    }
+
     if (tool !== Tool.Select) {
       // TODO: Add single zustand action
       if (draft && draft.type !== ElementType.Text) {
@@ -216,7 +229,15 @@ function CanvasWithInput(): JSX.Element {
     mouseMove.currentEvent = e;
     mouseMove.acc();
 
-    if (draft) {
+    if (canvasDrag === 'active') {
+      const x_by =
+        mouseMove.currentEvent!.clientX -
+        (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
+      const y_by =
+        mouseMove.currentEvent!.clientY -
+        (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
+      actions.shiftElements(x_by, y_by);
+    } else if (draft) {
       utilFor(draft).moveToEdit(draft, mouseMove, (updated) => {
         setDraft(updated);
       });
@@ -246,6 +267,11 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    // Manually track space up/down
+    if (e.key === ' ') {
+      actions.setSpacePressed(true);
+    }
+
     if (selectedIds.length > 0) {
       switch (e.key) {
         case 'Backspace':
@@ -283,6 +309,13 @@ function CanvasWithInput(): JSX.Element {
     }
   };
 
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    // Manually track space up/down
+    if (e.key === ' ') {
+      actions.setSpacePressed(false);
+    }
+  };
+
   return (
     <>
       <StyledCanvas
@@ -294,6 +327,8 @@ function CanvasWithInput(): JSX.Element {
         onMouseMove={handleMouseMove}
         tabIndex={0}
         onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
+        css={{ cursor: spacePressed ? 'grab' : 'default' }}
       >
         <div>Test</div>
       </StyledCanvas>

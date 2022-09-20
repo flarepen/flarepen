@@ -2,7 +2,7 @@ import create, { StateCreator } from 'zustand';
 import { Element, IBounds } from '../element';
 import produce from 'immer';
 import _ from 'lodash';
-import { EditingContext, ISelectionBox, Theme } from '../types';
+import { EditingContext, ISelectionBox, Theme, CanvasDrag } from '../types';
 import { Tool } from '../tools';
 
 export interface IDimensions {
@@ -22,6 +22,8 @@ export interface AppSlice {
   showGrid: boolean;
   dimensions: IDimensions;
   selectionBox: ISelectionBox;
+  canvasDrag: CanvasDrag;
+  spacePressed: boolean;
 }
 
 export type AppState = AppSlice & UndoSlice;
@@ -44,6 +46,8 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
     bounds: null,
     status: 'inactive',
   },
+  canvasDrag: 'inactive',
+  spacePressed: false,
 });
 
 // Handle state and actions for Undo Redo

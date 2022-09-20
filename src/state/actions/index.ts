@@ -1,5 +1,5 @@
 import { Tool } from '../../tools';
-import { EditingContext, ISelectionBox, Theme } from '../../types';
+import { CanvasDrag, EditingContext, ISelectionBox, Theme } from '../../types';
 import { IDimensions, useStore } from '../store';
 
 export * from './undo';
@@ -37,4 +37,12 @@ export const setEditingContext = (updates: Partial<EditingContext>) => {
 
 export const setDragging = (dragging: boolean) => {
   useStore.setState((state) => ({ dragging }));
+};
+
+export const setCanvasDrag = (canvasDrag: CanvasDrag) => {
+  useStore.setState((state) => ({ canvasDrag }));
+};
+
+export const setSpacePressed = (spacePressed: boolean) => {
+  useStore.setState((state) => ({ spacePressed }));
 };

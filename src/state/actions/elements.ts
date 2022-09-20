@@ -1,8 +1,13 @@
 import produce from 'immer';
 import _ from 'lodash';
+import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { AppState, useStore } from '../store';
 import { snapshot } from './undo';
+
+function clipToScale(value: number, scale: number) {
+  return Math.floor(value / scale) * scale;
+}
 
 export const setElements = (elements: Element[], doSnapshot = true) => {
   doSnapshot && snapshot();
@@ -47,4 +52,28 @@ export const deleteElement = (id: number, doSnapshot = true) => {
 
 export const setDraft = (draft: Element | null) => {
   useStore.setState((state) => ({ draft }));
+};
+
+export const shiftElements = (x_by: number, y_by: number) => {
+  useStore.setState(
+    produce<AppState>((state) => {
+      state.elements.forEach((element) => {
+        element.x = element.x + x_by;
+        element.y = element.y + y_by;
+      });
+    })
+  );
+};
+
+export const sanitizeElements = (doSnapshot = true) => {
+  doSnapshot && snapshot();
+
+  useStore.setState(
+    produce<AppState>((state) => {
+      state.elements.forEach((element) => {
+        element.x = clipToScale(element.x, X_SCALE);
+        element.y = clipToScale(element.y, Y_SCALE);
+      });
+    })
+  );
 };
