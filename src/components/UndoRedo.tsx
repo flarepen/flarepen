@@ -2,6 +2,7 @@ import { styled } from '../stitches.config';
 import { useStore, actions } from '../state';
 import Button from './Button';
 import { RedoIcon, UndoIcon } from './icons';
+import ToolTip from './ToolTip';
 
 interface UndoRedoProps {
   className?: string;
@@ -14,12 +15,16 @@ function UndoRedo({ className }: UndoRedoProps): JSX.Element {
 
   return (
     <div className={className}>
-      <Button inactive={!canUndo} onClick={actions.undo}>
-        <UndoIcon />
-      </Button>
-      <Button inactive={!canRedo} onClick={actions.redo}>
-        <RedoIcon />
-      </Button>
+      <ToolTip toolTip="Undo">
+        <Button inactive={!canUndo} onClick={actions.undo}>
+          <UndoIcon />
+        </Button>
+      </ToolTip>
+      <ToolTip toolTip="Redo">
+        <Button inactive={!canRedo} onClick={actions.redo}>
+          <RedoIcon />
+        </Button>
+      </ToolTip>
     </div>
   );
 }

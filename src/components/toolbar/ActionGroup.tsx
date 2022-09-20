@@ -3,6 +3,7 @@ import * as g from '../../geometry';
 import { useStore, actions } from '../../state';
 import Button from '../Button';
 import { ClipboardCopyIcon, DeleteIcon, GridIcon } from '../icons';
+import ToolTip from '../ToolTip';
 
 function ActionGroup(): JSX.Element {
   const elements = useStore((state) => state.elements);
@@ -46,15 +47,21 @@ function ActionGroup(): JSX.Element {
 
   return (
     <>
-      <Button onClick={flipGrid} toggled={showGrid}>
-        <GridIcon />
-      </Button>
-      <Button onClick={handleCopy}>
-        <ClipboardCopyIcon />
-      </Button>
-      <Button onClick={handleDelete} inactive={selectedIds.length === 0}>
-        <DeleteIcon />
-      </Button>
+      <ToolTip toolTip="Grid">
+        <Button onClick={flipGrid} toggled={showGrid}>
+          <GridIcon />
+        </Button>
+      </ToolTip>
+      <ToolTip toolTip="Copy to clipboard">
+        <Button onClick={handleCopy}>
+          <ClipboardCopyIcon />
+        </Button>
+      </ToolTip>
+      <ToolTip toolTip="Delete">
+        <Button onClick={handleDelete} inactive={selectedIds.length === 0}>
+          <DeleteIcon />
+        </Button>
+      </ToolTip>
     </>
   );
 }

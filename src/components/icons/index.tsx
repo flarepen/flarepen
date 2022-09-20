@@ -29,8 +29,8 @@ export const MoonIcon = createIcon(paths.moon);
 export const AlignLeftIcon = createIcon(paths.align_left);
 export const AlignRightIcon = createIcon(paths.align_right);
 export const AlignCenterXIcon = createIcon(paths.align_center_x);
-export const AlignTop = createIcon(paths.align_top);
-export const AlignBottom = createIcon(paths.align_bottom);
+export const AlignTopIcon = createIcon(paths.align_top);
+export const AlignBottomIcon = createIcon(paths.align_bottom);
 export const AlignCenterYIcon = createIcon(paths.align_center_y);
 
 export * from './UndoIcon';

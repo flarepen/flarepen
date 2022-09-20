@@ -12,7 +12,6 @@ const Button = styled('button', {
   backgroundColor: '$background',
   marginLeft: 2,
   cursor: 'pointer',
-  '&:first-child': { marginLeft: 0 },
   '&:hover': { backgroundColor: '$primaryBackgroundDim' },
   '&:active': { backgroundColor: '$primaryBackground', color: '$primary' },
   variants: {

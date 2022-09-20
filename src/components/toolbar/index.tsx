@@ -1,7 +1,7 @@
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 
 import { styled } from '../../stitches.config';
-import ToggleGroup from './ToggleGroup';
+import ToolGroup from './ToolGroup';
 import ActionGroup from './ActionGroup';
 
 const Separator = styled(ToolbarPrimitive.Separator, {
@@ -19,4 +19,4 @@ const ToolBar = styled(ToolbarPrimitive.Root, {
   zIndex: 10,
 });
 
-export { ToolBar, Separator, ToggleGroup, ActionGroup };
+export { ToolBar, Separator, ToolGroup, ActionGroup };

@@ -1,39 +1,30 @@
-import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { styled } from '../../stitches.config';
+import { actions } from '../../state';
+import { Tool } from '../../tools';
+import Button from '../Button';
+import ToolTip from '../ToolTip';
 
 interface ToggleItemProps {
-  tool: string;
-  icon?: any;
+  selected: Tool;
+  item: Tool;
+  children: JSX.Element;
+  toolTip: string;
   className?: string;
 }
 
-function ToggleItem({ tool, icon, className }: ToggleItemProps) {
-  const content = icon ? icon : tool;
+function ToggleItem({ selected, children, item, toolTip, className }: ToggleItemProps) {
   return (
-    <ToolbarPrimitive.ToolbarToggleItem className={className} value={tool}>
-      {content}
-    </ToolbarPrimitive.ToolbarToggleItem>
+    <ToolTip toolTip={toolTip}>
+      <Button
+        className={className}
+        toggled={selected === item}
+        onClick={() => {
+          actions.setTool(item);
+        }}
+      >
+        {children}
+      </Button>
+    </ToolTip>
   );
 }
 
-const StyledToggleItem = styled(ToggleItem, {
-  all: 'unset',
-  height: 25,
-  cursor: 'pointer',
-  padding: '0 5px',
-  borderRadius: 4,
-  display: 'inline-flex',
-  color: '$secondary',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '$background',
-  marginLeft: 2,
-  '&:first-child': { marginLeft: 0 },
-  '&:hover': { backgroundColor: '$primaryBackgroundDim' },
-  '&[data-state=on]': {
-    backgroundColor: '$primaryBackground',
-    color: '$primary',
-  },
-});
-
-export default StyledToggleItem;
+export default ToggleItem;
