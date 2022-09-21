@@ -6,10 +6,9 @@ import {
   point,
   inLinearVicinity,
   Point,
-  defaultDrag,
   isPointInsideBound,
 } from './base';
-import { getNextID } from '../id';
+import { elementID } from '../id';
 import { X_SCALE, Y_SCALE } from '../constants';
 import * as g from '../geometry';
 import { EditHandleType, EditHandle } from '../types';
@@ -45,7 +44,7 @@ export function isHorizontalLine(line: Line): boolean {
 export const LineUtils: ElementUtils<Line> = {
   new: function (x: number, y: number) {
     return {
-      id: getNextID(),
+      id: elementID.getNextID(),
       x,
       y,
       len: 1,
@@ -154,7 +153,6 @@ export const LineUtils: ElementUtils<Line> = {
     }
   },
 
-  drag: defaultDrag,
   allEditHandles: function (line) {
     const { x, y, width, height } = LineUtils.outlineBounds(line);
 

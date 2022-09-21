@@ -73,7 +73,8 @@ function AlignOption({ alignType, inactive }: AlignOptionProps): JSX.Element {
 
 function AlignOptions({ className }: AlignOptionsProps): JSX.Element {
   const selectedIds = useStore((state) => state.selectedIds);
-  const inactive = selectedIds.length < 2;
+  const selectedGroupIds = useStore((state) => state.selectedGroupIds);
+  const inactive = selectedIds.length + selectedGroupIds.length < 2;
 
   return (
     <div className={className}>

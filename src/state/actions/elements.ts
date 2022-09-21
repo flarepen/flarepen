@@ -9,43 +9,38 @@ function clipToScale(value: number, scale: number) {
   return Math.floor(value / scale) * scale;
 }
 
-export const setElements = (elements: Element[], doSnapshot = true) => {
+export const addElement = (element: Element, doSnapshot = true) => {
   doSnapshot && snapshot();
 
-  useStore.setState((state) => ({ elements }));
+  useStore.setState(
+    produce<AppState>((state) => {
+      state.elements[element.id] = element;
+    })
+  );
 };
 
-export const updateElement = (id: number, update: (element: Element) => void | Element) => {
+export const updateElement = (id: string, update: (element: Element) => void | Element) => {
   if (typeof update === 'function') {
     useStore.setState(
       produce<AppState>((state) => {
-        const index = state.elements.findIndex((elem: Element) => elem.id === id);
-        if (index !== -1) {
-          update(state.elements[index]);
-        }
+        update(state.elements[id]);
       })
     );
   } else {
     useStore.setState(
       produce<AppState>((state) => {
-        const index = state.elements.findIndex((elem: Element) => elem.id === id);
-        if (index !== -1) {
-          state.elements[index] = update;
-        }
+        state.elements[id] = update;
       })
     );
   }
 };
 
-export const deleteElement = (id: number, doSnapshot = true) => {
+export const deleteElement = (id: string, doSnapshot = true) => {
   doSnapshot && snapshot();
 
   useStore.setState(
     produce<AppState>((state) => {
-      const index = state.elements.findIndex((elem: Element) => elem.id === id);
-      if (index !== -1) {
-        state.elements.splice(index, 1);
-      }
+      delete state.elements[id];
     })
   );
 };
@@ -57,9 +52,10 @@ export const setDraft = (draft: Element | null) => {
 export const shiftElements = (x_by: number, y_by: number) => {
   useStore.setState(
     produce<AppState>((state) => {
-      state.elements.forEach((element) => {
-        element.x = element.x + x_by;
-        element.y = element.y + y_by;
+      const elementIds = _.keys(state.elements);
+      elementIds.forEach((elementId) => {
+        state.elements[elementId].x = state.elements[elementId].x + x_by;
+        state.elements[elementId].y = state.elements[elementId].y + y_by;
       });
     })
   );
@@ -70,7 +66,9 @@ export const sanitizeElements = (doSnapshot = true) => {
 
   useStore.setState(
     produce<AppState>((state) => {
-      state.elements.forEach((element) => {
+      const elementIds = _.keys(state.elements);
+      elementIds.forEach((elementId) => {
+        let element = state.elements[elementId];
         element.x = clipToScale(element.x, X_SCALE);
         element.y = clipToScale(element.y, Y_SCALE);
       });

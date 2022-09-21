@@ -10,10 +10,20 @@ import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { Theme } from './types';
 import AlignOptions from './components/AlignOptions';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { GridSwitcher } from './components/GridSwitcher';
 
 const ToolBarWrapper = styled('div', {
   left: 10,
   top: 10,
+  float: 'left',
+  position: 'absolute',
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const UndoRedoWrapper = styled('div', {
+  left: 10,
+  bottom: 10,
   float: 'left',
   position: 'absolute',
   display: 'flex',
@@ -55,7 +65,10 @@ function App() {
           </ToolBar>
           <ThemeSwitcher />
         </ToolBarWrapper>
-        <UndoRedo />
+        <UndoRedoWrapper>
+          <UndoRedo />
+          <GridSwitcher />
+        </UndoRedoWrapper>
         <AlignOptions />
         <Editor />
       </TooltipProvider>

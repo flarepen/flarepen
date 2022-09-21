@@ -1,9 +1,16 @@
-let id = 0;
+export class IDGenerator {
+  id = 0;
+  prefix = '';
 
-export function getCurrentID(): number {
-  return id;
+  constructor(prefix: string) {
+    this.prefix = prefix;
+  }
+
+  getNextID() {
+    this.id = this.id + 1;
+    return `${this.prefix}${this.id}`;
+  }
 }
 
-export function getNextID(): number {
-  return ++id;
-}
+export const elementID = new IDGenerator('e');
+export const groupIDGenerator = new IDGenerator('g');

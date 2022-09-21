@@ -30,12 +30,10 @@ function UndoRedo({ className }: UndoRedoProps): JSX.Element {
 }
 
 export default styled(UndoRedo, {
-  left: 10,
-  bottom: 10,
-  position: 'absolute',
-  border: '1px solid $border',
-  backgroundColor: '$background',
-  padding: 4,
+  // display: 'flex',
+  padding: 6,
   borderRadius: 6,
+  backgroundColor: '$background',
+  border: '1px solid $border',
   zIndex: 10,
 });

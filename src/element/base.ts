@@ -52,7 +52,7 @@ export function expandIBound(bound: IBounds, mouseMove: IMouseMove): IBounds {
 }
 
 export interface ElementCommons {
-  id: number;
+  id: string;
   x: number;
   y: number;
   shape: string[];
@@ -62,7 +62,7 @@ export enum ElementType {
   Rectangle = 'rectangle',
   Line = 'line',
   Arrow = 'arrow',
-  Text = 'text,',
+  Text = 'text',
 }
 
 export function getLinearBounding(
@@ -95,35 +95,10 @@ export interface ElementUtils<T extends ElementCommons> {
   outlineBounds: (t: T) => IBounds;
   inVicinity: (t: T, p: Point) => boolean;
   moveToEdit: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
-  drag: (
-    t: T,
-    mouseMove: IMouseMove,
-    updateElement: (id: number, update: (element: T) => void) => void
-  ) => void;
   allEditHandles: (t: T) => EditHandle[];
   getEditHandleType: (
     t: T,
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => null | EditHandleType;
   edit: (t: T, mouseMove: IMouseMove, handleType: EditHandleType) => T;
-}
-
-export function defaultDrag<T extends ElementCommons>(
-  t: T,
-  mouseMove: IMouseMove,
-  updateElement: (id: number, update: (t: T) => void) => void
-) {
-  const x =
-    t.x +
-    mouseMove.currentEvent!.clientX -
-    (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
-  const y =
-    t.y +
-    mouseMove.currentEvent!.clientY -
-    (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
-
-  updateElement(t.id, (element) => {
-    element.x = x;
-    element.y = y;
-  });
 }

@@ -1,7 +1,6 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { getNextID } from '../id';
+import { elementID } from '../id';
 import {
-  defaultDrag,
   ElementCommons,
   ElementType,
   ElementUtils,
@@ -18,7 +17,7 @@ export interface Text extends ElementCommons {
 
 export const TextUtils: ElementUtils<Text> = {
   new: function (x: number, y: number): Text {
-    return { id: getNextID(), x, y, content: '', shape: [''], type: ElementType.Text };
+    return { id: elementID.getNextID(), x, y, content: '', shape: [''], type: ElementType.Text };
   },
   outlineBounds: function (text: Text): IBounds {
     let { xMin, xMax, yMin, yMax } = getLinearBounding(
@@ -41,7 +40,6 @@ export const TextUtils: ElementUtils<Text> = {
     return inLinearVicinity(p, { x: text.x, y: text.y }, text.content.length, true);
   },
   moveToEdit: function (t, mouseMove, callback) {},
-  drag: defaultDrag,
   allEditHandles: function () {
     return [];
   },

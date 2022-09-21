@@ -1,8 +1,14 @@
 import create, { StateCreator } from 'zustand';
-import { Element, IBounds } from '../element';
-import produce from 'immer';
+import { Element } from '../element';
 import _ from 'lodash';
-import { EditingContext, ISelectionBox, Theme, CanvasDrag } from '../types';
+import {
+  EditingContext,
+  ISelectionBox,
+  Theme,
+  CanvasDrag,
+  ElementGroup,
+  ElementToGroupMap,
+} from '../types';
 import { Tool } from '../tools';
 
 export interface IDimensions {
@@ -10,11 +16,19 @@ export interface IDimensions {
   height: number;
 }
 
+export interface Elements {
+  [id: string]: Element;
+}
+
+export interface Groups {
+  [id: string]: ElementGroup;
+}
+
 export interface AppSlice {
-  elements: Element[];
+  elements: Elements;
   draft: null | Element;
   editingContext: EditingContext;
-  selectedIds: number[];
+  selectedIds: string[];
   dragging: boolean;
   tool: Tool;
   canvasCtx: null | CanvasRenderingContext2D;
@@ -24,12 +38,16 @@ export interface AppSlice {
   selectionBox: ISelectionBox;
   canvasDrag: CanvasDrag;
   spacePressed: boolean;
+
+  groups: Groups;
+  groupForElement: ElementToGroupMap;
+  selectedGroupIds: string[];
 }
 
 export type AppState = AppSlice & UndoSlice;
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
-  elements: [],
+  elements: {},
   editingContext: { id: null, handleType: null },
   draft: null,
   selectedIds: [],
@@ -48,11 +66,17 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
   },
   canvasDrag: 'inactive',
   spacePressed: false,
+  groups: {},
+  groupForElement: {},
+  selectedGroupIds: [],
 });
 
 // Handle state and actions for Undo Redo
 
-export type Snapshot = Pick<AppSlice, 'elements' | 'selectedIds'>;
+export type Snapshot = Pick<
+  AppSlice,
+  'elements' | 'selectedIds' | 'groups' | 'groupForElement' | 'selectedGroupIds'
+>;
 
 export interface UndoSlice {
   past: Snapshot[];

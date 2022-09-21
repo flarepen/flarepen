@@ -1,4 +1,4 @@
-import { getNextID } from '../id';
+import { elementID } from '../id';
 import * as g from '../geometry';
 import {
   ElementCommons,
@@ -8,7 +8,6 @@ import {
   Point,
   inLinearVicinity,
   point,
-  defaultDrag,
   isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
@@ -33,7 +32,7 @@ export interface Rectangle extends ElementCommons {
 export const RectangleUtils: ElementUtils<Rectangle> = {
   new: function (x: number, y: number): Rectangle {
     return {
-      id: getNextID(),
+      id: elementID.getNextID(),
       x,
       y,
       width: 2,
@@ -115,8 +114,6 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       shape: g.rectangle(Math.abs(width), Math.abs(height)),
     });
   },
-
-  drag: defaultDrag,
 
   allEditHandles: function (rectangle) {
     const { x, y, width, height } = RectangleUtils.outlineBounds(rectangle);

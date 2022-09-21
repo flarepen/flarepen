@@ -32,6 +32,7 @@ export const AlignCenterXIcon = createIcon(paths.align_center_x);
 export const AlignTopIcon = createIcon(paths.align_top);
 export const AlignBottomIcon = createIcon(paths.align_bottom);
 export const AlignCenterYIcon = createIcon(paths.align_center_y);
+export const GroupIcon = createIcon(paths.group);
 
 export * from './UndoIcon';
 export * from './RedoIcon';

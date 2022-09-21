@@ -1,16 +1,13 @@
 import _ from 'lodash';
-import draw from '../../../draw';
 import { expandIBound, insideBound } from '../../../element';
 import { actions, useStore } from '../../../state';
 import { IMouseMove } from '../../../types';
-import { useCanvasColors } from './useCanvasColors';
 
 export function useSelectionBox() {
-  const ctx = useStore((state) => state.canvasCtx);
   const elements = useStore((state) => state.elements);
   const selectionBox = useStore((state) => state.selectionBox);
+  const selectedIds = useStore((state) => state.selectedIds);
   const setSelected = actions.setSelected;
-  const canvasColors = useCanvasColors();
 
   const init = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     actions.setSelectionBox({
@@ -43,14 +40,17 @@ export function useSelectionBox() {
       (selectionBox.status === 'pending' || selectionBox.status === 'active')
     ) {
       const toSelect = _.map(
-        _.filter(elements, (element) => insideBound(element, selectionBox.bounds!)),
+        _.filter(_.values(elements), (element) => insideBound(element, selectionBox.bounds!)),
         (element) => element.id
       );
       selectionBox.bounds &&
         actions.setSelectionBox({
           bounds: expandIBound(selectionBox.bounds, mouseMove),
         });
-      setSelected(toSelect);
+
+      if (!_.isEqual(selectedIds, toSelect)) {
+        setSelected(toSelect);
+      }
     }
   };
 

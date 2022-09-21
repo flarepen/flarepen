@@ -12,6 +12,7 @@ import { useStore } from '../../../state';
 import { useCanvasColors } from './useCanvasColors';
 import * as g from '../../../geometry';
 import _ from 'lodash';
+import { ElementGroup } from '../../../types';
 
 function utilFor(element: Element): ElementUtils<any> {
   return ElementUtilsMap[element.type]!;
@@ -19,8 +20,10 @@ function utilFor(element: Element): ElementUtils<any> {
 
 export function useDraw() {
   const elements = useStore((state) => state.elements);
+  const groups = useStore((state) => state.groups);
   const draft = useStore((state) => state.draft);
   const selectedIds = useStore((state) => state.selectedIds);
+  const selectedGroupIds = useStore((state) => state.selectedGroupIds);
   const dimensions = useStore((state) => state.dimensions);
   const selectionBox = useStore((state) => state.selectionBox);
   const ctx = useStore((state) => state.canvasCtx);
@@ -28,71 +31,115 @@ export function useDraw() {
 
   const canvasColors = useCanvasColors();
 
+  const selectedElements = _.map(selectedIds, (selectedId) => elements[selectedId]);
+  const selectedGroups = _.map(selectedGroupIds, (selectedGroupdId) => groups[selectedGroupdId]);
+
   // Refresh scene
   useEffect(() => {
     drawScene();
-  }, [elements, draft, dimensions, selectedIds, canvasColors, selectionBox]);
+  }, [elements, draft, dimensions, selectedIds, selectedGroupIds, canvasColors, selectionBox]);
+
+  function getBoundsForGroup(group: ElementGroup) {
+    const elementsInGroup = _.map(group.elementIds, (selectedId) => elements[selectedId]);
+
+    const bounds = g.getBoundingRectForBounds(
+      _.map(elementsInGroup, (element) => utilFor(element).outlineBounds(element))
+    );
+
+    return {
+      x: bounds.x - X_SCALE / 2,
+      y: bounds.y - Y_SCALE / 2,
+      width: bounds.width + X_SCALE,
+      height: bounds.height + Y_SCALE,
+    };
+  }
+
+  function drawSelected() {
+    // Dont merge selected items when dragging. Dragging is not scaled and breaks merge
+    if (dragging) {
+      _.values(elements).forEach((element) => {
+        draw.element(ctx!, element);
+      });
+    } else {
+      draw.merged(ctx!, g.merge(_.values(elements)));
+    }
+  }
+
+  function drawSelectionOutlines() {
+    if (selectedIds.length + selectedGroups.length === 0) {
+      return null;
+    }
+
+    // Draw only the outline
+    if (selectedElements.length + selectedGroups.length === 1) {
+      const selectedElement = selectedElements[0];
+      const selectedGroup = selectedGroups[0];
+
+      if (selectedElement) {
+        draw.rect(
+          ctx!,
+          utilFor(selectedElement).outlineBounds(selectedElement),
+          canvasColors.selection,
+          canvasColors.selectionBackground
+        );
+      }
+
+      if (selectedGroup) {
+        draw.rect(
+          ctx!,
+          getBoundsForGroup(selectedGroup),
+          canvasColors.selection,
+          canvasColors.selectionBackground
+        );
+      }
+
+      return null;
+    }
+
+    const elementBounds = _.map(selectedElements, (element) =>
+      utilFor(element).outlineBounds(element)
+    );
+    const groupBounds = _.map(selectedGroups, (group) => getBoundsForGroup(group));
+
+    const allBounds = elementBounds.concat(groupBounds);
+
+    allBounds.forEach((bound) => {
+      draw.rect(ctx!, bound, canvasColors.selection, canvasColors.selectionBackground);
+    });
+
+    // Draw extra dashed outline over all the elements
+
+    if (selectionBox.status !== 'active') {
+      const bounds = g.getBoundingRectForBounds(allBounds);
+
+      draw.dashedRect(
+        ctx!,
+        {
+          x: bounds.x - X_SCALE / 2,
+          y: bounds.y - Y_SCALE / 2,
+          width: bounds.width + X_SCALE,
+          height: bounds.height + Y_SCALE,
+        },
+        canvasColors.selection,
+        canvasColors.selectionBackground,
+        [4, 2]
+      );
+    }
+  }
 
   function drawScene() {
     if (ctx) {
       // Clear scene
       ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-      const selectedElements = _.filter(elements, (element) => _.includes(selectedIds, element.id));
-
-      // Dont merge selected items when dragging. Dragging is not scaled and breaks merge
-      if (dragging) {
-        const otherElements = _.filter(elements, (element) => !_.includes(selectedIds, element.id));
-
-        selectedElements.forEach((element) => {
-          draw.element(ctx, element);
-        });
-
-        draw.merged(ctx, g.merge(otherElements));
-      } else {
-        draw.merged(ctx, g.merge(elements));
-      }
+      drawSelected();
 
       // draw current draft
       draft && draw.element(ctx, draft);
 
-      // draw selection indicator
-      if (selectedIds.length > 0) {
-        if (selectedElements.length === 1) {
-          draw.rect(
-            ctx,
-            utilFor(selectedElements[0]).outlineBounds(selectedElements[0]),
-            canvasColors.selection,
-            canvasColors.selectionBackground
-          );
-        } else {
-          const allBounds = _.map(selectedElements, (element) =>
-            utilFor(element).outlineBounds(element)
-          );
+      drawSelectionOutlines();
 
-          allBounds.forEach((bound) => {
-            draw.rect(ctx, bound, canvasColors.selection, canvasColors.selectionBackground);
-          });
-
-          if (selectionBox.status !== 'active') {
-            const bounds = g.getBoundingRectForBounds(allBounds);
-
-            draw.dashedRect(
-              ctx,
-              {
-                x: bounds.x - X_SCALE / 2,
-                y: bounds.y - Y_SCALE / 2,
-                width: bounds.width + X_SCALE,
-                height: bounds.height + Y_SCALE,
-              },
-              canvasColors.selection,
-              canvasColors.selectionBackground,
-              [4, 2]
-            );
-          }
-        }
-      }
-
+      // Selection Box
       if (selectionBox.status === 'active' && selectionBox.bounds) {
         ctx &&
           selectionBox.bounds &&
@@ -109,9 +156,13 @@ export function useDraw() {
           );
       }
 
-      // Resize Experiment
-      if (selectedIds.length === 1 && selectionBox.status !== 'active') {
-        const element = _.find(elements, (elem) => elem.id === selectedIds[0])!;
+      // Edit Handles
+      if (
+        selectedIds.length === 1 &&
+        selectedGroupIds.length === 0 &&
+        selectionBox.status !== 'active'
+      ) {
+        const element = elements[selectedIds[0]];
         if (element.type !== ElementType.Text) {
           utilFor(element)
             .allEditHandles(element)

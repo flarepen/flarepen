@@ -3,7 +3,6 @@ import { Arrow, ArrowUtils } from './arrow';
 import { Text, TextUtils } from './text';
 import { Rectangle, RectangleUtils } from './rectangle';
 import { ElementType, ElementUtils, IBounds } from './base';
-import { X_SCALE, Y_SCALE } from '../constants';
 
 export type Element = Rectangle | Line | Arrow | Text;
 

@@ -2,17 +2,18 @@ import _ from 'lodash';
 import * as g from '../../geometry';
 import { useStore, actions } from '../../state';
 import Button from '../Button';
-import { ClipboardCopyIcon, DeleteIcon, GridIcon } from '../icons';
+import { ClipboardCopyIcon, DeleteIcon, GroupIcon } from '../icons';
 import ToolTip from '../ToolTip';
 
 function ActionGroup(): JSX.Element {
   const elements = useStore((state) => state.elements);
+  const groups = useStore((state) => state.groups);
 
   const selectedIds = useStore((state) => state.selectedIds);
-  const setSelected = actions.setSelected;
-  const deleteElement = actions.deleteElement;
+  const selectedGroupIds = useStore((state) => state.selectedGroupIds);
 
-  const showGrid = useStore((state) => state.showGrid);
+  const canGroup = selectedGroupIds.length === 0 && selectedIds.length > 1;
+  const canUngroup = selectedGroupIds.length !== 0;
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(
@@ -22,34 +23,43 @@ function ActionGroup(): JSX.Element {
   }
 
   function handleDelete() {
-    if (selectedIds.length === 0) {
+    if (selectedIds.length + selectedGroupIds.length === 0) {
       return null;
     }
 
-    selectedIds.forEach((selectedId) => {
-      deleteElement(selectedId);
-    });
-    setSelected([]);
+    actions.deleteAllSelected();
+    actions.unSelectAll();
   }
 
   function handleCopy() {
-    let elementsToCopy = elements;
-    if (selectedIds.length > 0) {
-      elementsToCopy = _.filter(elements, (element) => selectedIds.includes(element.id));
+    let elementsToCopy = [];
+
+    if (selectedIds.length + selectedGroupIds.length > 0) {
+      elementsToCopy = _.map(selectedIds, (selectedId) => elements[selectedId]);
+
+      const groupElements = _.flatMap(selectedGroupIds, (groupId) => {
+        return _.map(groups[groupId].elementIds, (elementId) => elements[elementId]);
+      });
+
+      elementsToCopy = elementsToCopy.concat(groupElements);
+    } else {
+      elementsToCopy = _.values(elements);
     }
+
     const merged = g.merge(elementsToCopy);
     copyToClipboard(_.map(merged.content, (row) => row.join('')).join('\n'));
   }
 
-  function flipGrid() {
-    actions.setShowGrid(!showGrid);
+  function group() {
+    canGroup && actions.group();
+    canUngroup && actions.ungroup();
   }
 
   return (
     <>
-      <ToolTip toolTip="Grid">
-        <Button onClick={flipGrid} toggled={showGrid}>
-          <GridIcon />
+      <ToolTip toolTip="Group">
+        <Button onClick={group} inactive={!canGroup && !canUngroup}>
+          <GroupIcon />
         </Button>
       </ToolTip>
       <ToolTip toolTip="Copy to clipboard">
@@ -58,7 +68,10 @@ function ActionGroup(): JSX.Element {
         </Button>
       </ToolTip>
       <ToolTip toolTip="Delete">
-        <Button onClick={handleDelete} inactive={selectedIds.length === 0}>
+        <Button
+          onClick={handleDelete}
+          inactive={selectedIds.length + selectedGroupIds.length === 0}
+        >
           <DeleteIcon />
         </Button>
       </ToolTip>

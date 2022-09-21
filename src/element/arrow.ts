@@ -1,7 +1,6 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { getNextID } from '../id';
+import { elementID } from '../id';
 import {
-  defaultDrag,
   ElementCommons,
   ElementType,
   ElementUtils,
@@ -45,7 +44,7 @@ export function isHorizontalArrow(arrow: Arrow): boolean {
 export const ArrowUtils: ElementUtils<Arrow> = {
   new: function (x: number, y: number): Arrow {
     return {
-      id: getNextID(),
+      id: elementID.getNextID(),
       x,
       y,
       len: 2,
@@ -157,8 +156,6 @@ export const ArrowUtils: ElementUtils<Arrow> = {
       });
     }
   },
-
-  drag: defaultDrag,
 
   allEditHandles: function (arrow) {
     const { x, y, width, height } = ArrowUtils.outlineBounds(arrow);

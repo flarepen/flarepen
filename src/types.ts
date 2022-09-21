@@ -58,7 +58,7 @@ export interface EditHandle {
 }
 
 export interface EditingContext {
-  id: null | number;
+  id: null | string;
   handleType: null | EditHandleType;
 }
 
@@ -80,3 +80,12 @@ export enum ArrowKey {
 }
 
 export type CanvasDrag = 'inactive' | 'active';
+
+export interface ElementGroup {
+  id: string;
+  elementIds: string[];
+}
+
+export interface ElementToGroupMap {
+  [elementId: string]: string;
+}
