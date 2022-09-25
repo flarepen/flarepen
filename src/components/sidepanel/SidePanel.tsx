@@ -15,6 +15,7 @@ const SectionTitle = styled('div', {
   fontWeight: '500',
   fontFamily: 'Cascadia',
   color: '$primaryText',
+  userSelect: 'none',
 });
 
 function RawSidePanel({ className }: SidePanelProps): JSX.Element {

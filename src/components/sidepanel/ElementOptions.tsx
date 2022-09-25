@@ -25,6 +25,7 @@ const OptionName = styled('div', {
   fontWeight: '500',
   fontFamily: 'Cascadia',
   color: '$primaryText',
+  userSelect: 'none',
 });
 
 interface ElementOptionsProps {

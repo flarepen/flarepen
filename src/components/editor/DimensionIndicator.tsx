@@ -69,4 +69,5 @@ export default styled(DimensionIndicator, {
   padding: 0,
   margin: 0,
   color: '$secondary',
+  userSelect: 'none',
 });
