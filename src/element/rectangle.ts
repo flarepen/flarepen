@@ -156,7 +156,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         ? Math.floor(mouseMove.accY / Y_SCALE)
         : Math.ceil(mouseMove.accY / Y_SCALE);
 
-    let minWidth = 2;
+    let minWidth = 2 + (rectangle.label ? rectangle.label?.length : 0);
 
     switch (handleType) {
       case 'left':
