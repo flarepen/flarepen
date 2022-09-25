@@ -17,7 +17,15 @@ export interface Text extends ElementCommons {
 
 export const TextUtils: ElementUtils<Text> = {
   new: function (x: number, y: number): Text {
-    return { id: elementID.getNextID(), x, y, content: '', shape: [''], type: ElementType.Text };
+    return {
+      id: elementID.getNextID(),
+      x,
+      y,
+      content: '',
+      shape: [''],
+      type: ElementType.Text,
+      labelEnabled: false,
+    };
   },
   outlineBounds: function (text: Text): IBounds {
     let { xMin, xMax, yMin, yMax } = getLinearBounding(
@@ -39,7 +47,7 @@ export const TextUtils: ElementUtils<Text> = {
   inVicinity: function (text: Text, p: Point) {
     return inLinearVicinity(p, { x: text.x, y: text.y }, text.content.length, true);
   },
-  moveToEdit: function (t, mouseMove, callback) {},
+  create: function (t, mouseMove, callback) {},
   allEditHandles: function () {
     return [];
   },

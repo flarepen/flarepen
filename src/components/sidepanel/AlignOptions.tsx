@@ -1,8 +1,8 @@
 import { styled } from '@stitches/react';
 import _ from 'lodash';
-import { alignElements, AlignType } from '../state/actions';
-import { useStore } from '../state';
-import Button from './Button';
+import { alignElements, AlignType } from '../../state/actions';
+import { useStore } from '../../state';
+import Button from '../Button';
 import {
   AlignBottomIcon,
   AlignCenterXIcon,
@@ -10,8 +10,8 @@ import {
   AlignLeftIcon,
   AlignRightIcon,
   AlignTopIcon,
-} from './icons';
-import ToolTip from './ToolTip';
+} from '../icons';
+import ToolTip from '../ToolTip';
 
 interface AlignOptionsProps {
   className?: string;
@@ -54,39 +54,32 @@ const ALIGN_OFFSET = {
 
 interface AlignOptionProps {
   alignType: AlignType;
-  inactive: boolean;
 }
 
-function AlignOption({ alignType, inactive }: AlignOptionProps): JSX.Element {
+function AlignOption({ alignType }: AlignOptionProps): JSX.Element {
   return (
     <ToolTip
       toolTip={ALIGN_OPTION_TOOLTIPS[alignType]}
       sideOffset={ALIGN_OFFSET[alignType]}
       side={'bottom'}
     >
-      <Button onClick={getAlignHandler(alignType)} inactive={inactive}>
-        {ALIGN_OPTION_ICONS[alignType]}
-      </Button>
+      <Button onClick={getAlignHandler(alignType)}>{ALIGN_OPTION_ICONS[alignType]}</Button>
     </ToolTip>
   );
 }
 
 function AlignOptions({ className }: AlignOptionsProps): JSX.Element {
-  const selectedIds = useStore((state) => state.selectedIds);
-  const selectedGroupIds = useStore((state) => state.selectedGroupIds);
-  const inactive = selectedIds.length + selectedGroupIds.length < 2;
-
   return (
     <div className={className}>
       <Row>
-        <AlignOption alignType="left" inactive={inactive} />
-        <AlignOption alignType="center_x" inactive={inactive} />
-        <AlignOption alignType="right" inactive={inactive} />
+        <AlignOption alignType="left" />
+        <AlignOption alignType="center_x" />
+        <AlignOption alignType="right" />
       </Row>
       <Row>
-        <AlignOption alignType="top" inactive={inactive} />
-        <AlignOption alignType="center_y" inactive={inactive} />
-        <AlignOption alignType="bottom" inactive={inactive} />
+        <AlignOption alignType="top" />
+        <AlignOption alignType="center_y" />
+        <AlignOption alignType="bottom" />
       </Row>
     </div>
   );
@@ -95,11 +88,6 @@ function AlignOptions({ className }: AlignOptionsProps): JSX.Element {
 export default styled(AlignOptions, {
   display: 'flex',
   flexDirection: 'column',
-  right: 10,
-  top: 10,
-  position: 'absolute',
-  border: '1px solid $border',
-  backgroundColor: '$background',
   padding: 6,
   borderRadius: 6,
   zIndex: 10,

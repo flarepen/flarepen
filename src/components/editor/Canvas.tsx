@@ -224,7 +224,7 @@ function CanvasWithInput(): JSX.Element {
         (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
       actions.shiftElements(x_by, y_by);
     } else if (draft) {
-      utilFor(draft).moveToEdit(draft, mouseMove, (updated) => {
+      utilFor(draft).create(draft, mouseMove, (updated) => {
         setDraft(updated);
       });
     } else {

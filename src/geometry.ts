@@ -7,6 +7,7 @@ import {
   LineDirection,
   point,
   Point,
+  Rectangle,
 } from './element';
 import _ from 'lodash';
 import { X_SCALE, Y_SCALE } from './constants';
@@ -29,14 +30,27 @@ const SYMBOLS = {
 };
 
 // TODO: Add better validations and edge case handling
-export function rectangle(width: number, height: number): Shape {
+export function rectangle(width: number, height: number, label?: string): Shape {
   const shape = [];
+
   // Top
-  shape.push(
-    SYMBOLS.LEFT_TOP +
+  let top = '';
+
+  if (label) {
+    top =
+      SYMBOLS.LEFT_TOP +
+      label +
+      (width - label.length - 2 > 0 ? SYMBOLS.HORIZONTAL.repeat(width - label.length - 2) : '') +
+      SYMBOLS.RIGHT_TOP;
+  } else {
+    top =
+      SYMBOLS.LEFT_TOP +
       (width - 2 > 0 ? SYMBOLS.HORIZONTAL.repeat(width - 2) : '') +
-      SYMBOLS.RIGHT_TOP
-  );
+      SYMBOLS.RIGHT_TOP;
+  }
+
+  shape.push(top);
+
   // Mids
   if (height - 2 > 0) {
     for (let i = height - 2; i > 0; i--) {
@@ -45,6 +59,7 @@ export function rectangle(width: number, height: number): Shape {
       );
     }
   }
+
   // Bottom
   shape.push(
     SYMBOLS.LEFT_BOTTOM +

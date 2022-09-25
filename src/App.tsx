@@ -8,9 +8,9 @@ import Editor from './components/editor';
 import { styled, theme, darkTheme } from './stitches.config';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { Theme } from './types';
-import AlignOptions from './components/AlignOptions';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { GridSwitcher } from './components/GridSwitcher';
+import { SidePanel } from './components/sidepanel';
 
 const ToolBarWrapper = styled('div', {
   left: 10,
@@ -37,6 +37,16 @@ function App() {
   const future = useStore((state) => state.future);
 
   const selectedTheme = useStore((state) => state.theme);
+
+  const selectedIds = useStore((state) => state.selectedIds);
+  const selectedGroupIds = useStore((state) => state.selectedGroupIds);
+  const elements = useStore((state) => state.elements);
+
+  const showSidePanel =
+    (selectedIds.length === 1 &&
+      selectedGroupIds.length === 0 &&
+      elements[selectedIds[0]].labelEnabled) ||
+    selectedIds.length + selectedGroupIds.length >= 2;
 
   const canRedo = future.length > 0;
   const canUndo = past.length > 0;
@@ -69,7 +79,7 @@ function App() {
           <UndoRedo />
           <GridSwitcher />
         </UndoRedoWrapper>
-        <AlignOptions />
+        {showSidePanel && <SidePanel />}
         <Editor />
       </TooltipProvider>
     </div>

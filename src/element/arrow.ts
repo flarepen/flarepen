@@ -51,6 +51,7 @@ export const ArrowUtils: ElementUtils<Arrow> = {
       direction: ArrowDirection.Undecided,
       shape: [''],
       type: ElementType.Arrow,
+      labelEnabled: false,
     };
   },
   outlineBounds: function (arrow: Arrow): IBounds {
@@ -85,7 +86,7 @@ export const ArrowUtils: ElementUtils<Arrow> = {
     );
   },
 
-  moveToEdit: function (arrow, mouseMove, callback) {
+  create: function (arrow, mouseMove, callback) {
     let widthIncr =
       mouseMove.accX > 0
         ? Math.floor(mouseMove.accX / X_SCALE)

@@ -51,6 +51,7 @@ export const LineUtils: ElementUtils<Line> = {
       direction: LineDirection.Undecided,
       shape: [''],
       type: ElementType.Line,
+      labelEnabled: false,
     };
   },
 
@@ -81,7 +82,7 @@ export const LineUtils: ElementUtils<Line> = {
     return inLinearVicinity(p, point(line.x, line.y), line.len, isHorizontalLine(line));
   },
 
-  moveToEdit: function (line, mouseMove, callback) {
+  create: function (line, mouseMove, callback) {
     let widthIncr =
       mouseMove.accX > 0
         ? Math.floor(mouseMove.accX / X_SCALE)

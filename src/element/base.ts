@@ -56,6 +56,8 @@ export interface ElementCommons {
   x: number;
   y: number;
   shape: string[];
+  label?: string;
+  labelEnabled: boolean;
 }
 
 export enum ElementType {
@@ -94,7 +96,7 @@ export interface ElementUtils<T extends ElementCommons> {
   new: (x: number, y: number) => T;
   outlineBounds: (t: T) => IBounds;
   inVicinity: (t: T, p: Point) => boolean;
-  moveToEdit: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
+  create: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
   allEditHandles: (t: T) => EditHandle[];
   getEditHandleType: (
     t: T,

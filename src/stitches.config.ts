@@ -5,6 +5,7 @@ export const { styled, css, theme, createTheme } = createStitches({
   theme: {
     colors: {
       primary: orange.orange10,
+      primaryText: mauve.mauve12,
       primaryBackground: orange.orange3,
       primaryBackgroundDim: orange.orange2,
       secondary: mauve.mauve11,
@@ -21,6 +22,7 @@ export const { styled, css, theme, createTheme } = createStitches({
 export const darkTheme = createTheme({
   colors: {
     primary: mauve.mauve1,
+    primaryText: mauve.mauve1,
     primaryBackground: orange.orange10,
     primaryBackgroundDim: orange.orange11,
     secondary: mauve.mauve5,

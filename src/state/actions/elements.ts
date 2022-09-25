@@ -19,7 +19,13 @@ export const addElement = (element: Element, doSnapshot = true) => {
   );
 };
 
-export const updateElement = (id: string, update: (element: Element) => void | Element) => {
+export const updateElement = (
+  id: string,
+  update: (element: Element) => void | Element,
+  doSnapshot = false
+) => {
+  doSnapshot && snapshot();
+
   if (typeof update === 'function') {
     useStore.setState(
       produce<AppState>((state) => {

@@ -39,6 +39,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       height: 2,
       shape: g.rectangle(2, 2),
       type: ElementType.Rectangle,
+      labelEnabled: true,
     };
   },
 
@@ -64,7 +65,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
     );
   },
 
-  moveToEdit: function (rectangle, mouseMove, callback) {
+  create: function (rectangle, mouseMove, callback) {
     const widthIncr =
       mouseMove.accX > 0
         ? Math.floor(mouseMove.accX / X_SCALE)
@@ -155,15 +156,17 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         ? Math.floor(mouseMove.accY / Y_SCALE)
         : Math.ceil(mouseMove.accY / Y_SCALE);
 
+    let minWidth = 2;
+
     switch (handleType) {
       case 'left':
-        if (width - widthIncr >= 2) {
+        if (width - widthIncr >= minWidth) {
           x = x + widthIncr * X_SCALE;
           width = width - widthIncr;
         }
         break;
       case 'right':
-        if (width + widthIncr >= 2) {
+        if (width + widthIncr >= minWidth) {
           width = width + widthIncr;
         }
         break;
@@ -179,7 +182,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         }
         break;
       case 'topLeft':
-        if (width - widthIncr >= 2) {
+        if (width - widthIncr >= minWidth) {
           x = x + widthIncr * X_SCALE;
           width = width - widthIncr;
         }
@@ -189,7 +192,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         }
         break;
       case 'topRight':
-        if (width + widthIncr >= 2) {
+        if (width + widthIncr >= minWidth) {
           width = width + widthIncr;
         }
         if (height - heightIncr >= 2) {
@@ -198,7 +201,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         }
         break;
       case 'bottomLeft':
-        if (width - widthIncr >= 2) {
+        if (width - widthIncr >= minWidth) {
           x = x + widthIncr * X_SCALE;
           width = width - widthIncr;
         }
@@ -207,7 +210,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         }
         break;
       case 'bottomRight':
-        if (width + widthIncr >= 2) {
+        if (width + widthIncr >= minWidth) {
           width = width + widthIncr;
         }
         if (height + heightIncr >= 2) {
@@ -222,7 +225,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       y,
       width,
       height,
-      shape: g.rectangle(Math.abs(width), Math.abs(height)),
+      shape: g.rectangle(Math.abs(width), Math.abs(height), rectangle.label),
     };
   },
 };
