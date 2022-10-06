@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { Y_SCALE } from '../../constants';
 import { styled } from '../../stitches.config';
 
 export interface TextInputProps {
@@ -19,7 +18,7 @@ function TextInputRaw({ x, y, onInput, className }: TextInputProps): JSX.Element
   const style: React.CSSProperties = {
     position: 'absolute',
     left: `${x}px`,
-    top: `${y - Y_SCALE}px`,
+    top: `${y}px`,
   };
   return (
     <div

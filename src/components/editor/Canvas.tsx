@@ -131,6 +131,7 @@ function CanvasWithInput(): JSX.Element {
       if (editingText) {
         editingText.content && actions.addElement(santizeElement(editingText));
         setEditingText(null);
+        actions.setTool(Tool.Select);
         return null;
       } else {
         setEditingText(
@@ -316,7 +317,7 @@ function CanvasWithInput(): JSX.Element {
       {editingText && (
         <TextInput
           x={editingText.x}
-          y={editingText.y}
+          y={editingText.y - Y_SCALE / 2}
           onInput={(e) => {
             setEditingText({
               ...editingText,
