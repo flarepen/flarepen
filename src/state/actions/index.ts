@@ -1,7 +1,11 @@
 import produce from 'immer';
+import _ from 'lodash';
+import { Element } from '../../element';
+import { elementID, groupIDGenerator } from '../../id';
 import { Tool } from '../../tools';
 import { CanvasDrag, EditingContext, IMouseMove, ISelectionBox, Theme } from '../../types';
-import { AppState, IDimensions, useStore } from '../store';
+import { parse } from '../parse';
+import { AppState, Elements, getDefaultState, IDimensions, useStore } from '../store';
 
 export * from './undo';
 export * from './align';
@@ -75,3 +79,43 @@ export const drag = (mouseMove: IMouseMove) => {
     })
   );
 };
+
+export function importToCanvas(objs: any[]) {
+  let elements = {};
+  try {
+    elements = _.reduce(
+      objs,
+      (acc, obj) => {
+        const element = parse(obj);
+        acc[element.id] = element;
+        return acc;
+      },
+      {} as Elements
+    );
+  } catch (ElementParseError) {
+    console.log('Cannot parse Elements');
+  }
+
+  console.log(elements);
+  if (elements) {
+    useStore.setState((state) => ({
+      elements,
+      editingContext: { id: null, handleType: null },
+      draft: null,
+      selectedIds: [],
+      groups: {},
+      groupForElement: {},
+      selectedGroupIds: [],
+    }));
+
+    groupIDGenerator.setID(0);
+    elementID.setID(
+      _.max(
+        _.map(objs, (obj) => {
+          const id: string = obj['id'] as string;
+          return parseInt(id.substring(1));
+        })
+      )
+    );
+  }
+}

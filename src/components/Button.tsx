@@ -1,6 +1,6 @@
 import { styled } from '../stitches.config';
 
-const Button = styled('button', {
+export const buttonStyles = {
   all: 'unset',
   height: 25,
   padding: '0 5px',
@@ -28,6 +28,8 @@ const Button = styled('button', {
       },
     },
   },
-});
+};
+
+const Button = styled('button', buttonStyles);
 
 export default Button;

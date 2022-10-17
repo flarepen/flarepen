@@ -37,3 +37,5 @@ export const GroupIcon = createIcon(paths.group);
 export * from './UndoIcon';
 export * from './RedoIcon';
 export * from './GridIcon';
+export * from './ExportIcon';
+export * from './ImportIcon';

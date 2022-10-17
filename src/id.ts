@@ -10,6 +10,12 @@ export class IDGenerator {
     this.id = this.id + 1;
     return `${this.prefix}${this.id}`;
   }
+
+  setID(id: number | undefined) {
+    if (id) {
+      this.id = id;
+    }
+  }
 }
 
 export const elementID = new IDGenerator('e');

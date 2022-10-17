@@ -8,6 +8,7 @@ import {
   CanvasDrag,
   ElementGroup,
   ElementToGroupMap,
+  SelectionBoxStatus,
 } from '../types';
 import { Tool } from '../tools';
 
@@ -46,30 +47,37 @@ export interface AppSlice {
 
 export type AppState = AppSlice & UndoSlice;
 
-const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => ({
-  elements: {},
-  editingContext: { id: null, handleType: null },
-  draft: null,
-  selectedIds: [],
-  dragging: false,
-  tool: Tool.Rectangle,
-  canvasCtx: null,
-  theme: Theme.dark,
-  showGrid: true,
-  dimensions: {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  },
-  selectionBox: {
-    bounds: null,
-    status: 'inactive',
-  },
-  canvasDrag: 'inactive',
-  spacePressed: false,
-  groups: {},
-  groupForElement: {},
-  selectedGroupIds: [],
-});
+const defaultSelectionBoxStatus: SelectionBoxStatus = 'inactive';
+const defaultCanvasDrag: CanvasDrag = 'inactive';
+
+export const getDefaultState = () => {
+  return {
+    elements: {},
+    editingContext: { id: null, handleType: null },
+    draft: null,
+    selectedIds: [],
+    dragging: false,
+    tool: Tool.Rectangle,
+    canvasCtx: null,
+    theme: Theme.dark,
+    showGrid: true,
+    dimensions: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    },
+    selectionBox: {
+      bounds: null,
+      status: defaultSelectionBoxStatus,
+    },
+    canvasDrag: defaultCanvasDrag,
+    spacePressed: false,
+    groups: {},
+    groupForElement: {},
+    selectedGroupIds: [],
+  };
+};
+
+const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => getDefaultState();
 
 // Handle state and actions for Undo Redo
 
