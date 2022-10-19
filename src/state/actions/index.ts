@@ -1,5 +1,6 @@
 import produce from 'immer';
 import _ from 'lodash';
+import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { elementID, groupIDGenerator } from '../../id';
 import { Tool } from '../../tools';
@@ -87,6 +88,8 @@ export function importToCanvas(objs: any[]) {
       objs,
       (acc, obj) => {
         const element = parse(obj);
+        element.x = element.x * X_SCALE;
+        element.y = element.y * Y_SCALE;
         acc[element.id] = element;
         return acc;
       },

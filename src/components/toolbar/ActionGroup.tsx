@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { ChangeEvent, useRef } from 'react';
+import { X_SCALE, Y_SCALE } from '../../constants';
 import * as g from '../../geometry';
 import { useStore, actions } from '../../state';
 import Button from '../Button';
@@ -61,7 +62,15 @@ function ActionGroup(): JSX.Element {
   let exportFile: string | null = null;
 
   function handleExport() {
-    const data = JSON.stringify(_.map(elements, (e) => _.omit(e, ['labelEnabled', 'shape'])));
+    const data = JSON.stringify(
+      _.map(elements, (e) => {
+        return {
+          ..._.omit(e, ['labelEnabled', 'shape']),
+          x: e.x / X_SCALE,
+          y: e.y / Y_SCALE,
+        };
+      })
+    );
 
     if (exportFile !== null) {
       window.URL.revokeObjectURL(exportFile);
