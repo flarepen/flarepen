@@ -24,11 +24,11 @@ function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
 }
 
 export enum ArrowDirection {
-  Left,
-  Right,
-  Up,
-  Down,
-  Undecided,
+  Left = 'left',
+  Right = 'right',
+  Up = 'up',
+  Down = 'down',
+  Undecided = 'undecided',
 }
 
 export interface Arrow extends ElementCommons {

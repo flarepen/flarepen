@@ -24,11 +24,11 @@ function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
 }
 
 export enum LineDirection {
-  Up,
-  Down,
-  Left,
-  Right,
-  Undecided,
+  Up = 'up',
+  Down = 'down',
+  Left = 'left',
+  Right = 'right',
+  Undecided = 'undecided',
 }
 
 export interface Line extends ElementCommons {
