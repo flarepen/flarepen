@@ -89,3 +89,9 @@ export interface ElementGroup {
 export interface ElementToGroupMap {
   [elementId: string]: string;
 }
+
+export enum BorderType {
+  Normal = 'normal',
+  Double = 'double',
+  Heavy = 'heavy',
+}

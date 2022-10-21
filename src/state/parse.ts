@@ -1,5 +1,6 @@
 import { Element, ElementType, Rectangle, Line, Arrow, Text, isHorizontalLine } from '../element';
 import * as g from '../geometry';
+import { BorderType } from '../types';
 
 export class ElementParseError extends Error {
   constructor(msg: string) {
@@ -32,12 +33,13 @@ function parseRectangle(obj: any): Rectangle {
     width: get(obj, 'width'),
     height: get(obj, 'height'),
     label: optional(obj, 'label'),
+    borderType: optional(obj, 'borderType') || BorderType.Normal,
     shape: [],
     type: ElementType.Rectangle,
     labelEnabled: true,
   };
 
-  elem.shape = g.rectangle(elem.width, elem.height);
+  elem.shape = g.rectangle(elem);
 
   return elem;
 }

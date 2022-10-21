@@ -11,16 +11,12 @@ import {
 } from './element';
 import _ from 'lodash';
 import { X_SCALE, Y_SCALE } from './constants';
-import { MergedElements } from './types';
+import { MergedElements, BorderType } from './types';
 
 export type Row = string;
 export type Shape = Row[];
 
 const SYMBOLS = {
-  LEFT_TOP: '┌',
-  RIGHT_TOP: '┐',
-  LEFT_BOTTOM: '└',
-  RIGHT_BOTTOM: '┘',
   HORIZONTAL: '─',
   VERTICAL: '│',
   ARROW_LEFT: '◀',
@@ -29,24 +25,53 @@ const SYMBOLS = {
   ARROW_DOWN: '▼',
 };
 
+const BOX = {
+  [BorderType.Normal]: {
+    LEFT_TOP: '┌',
+    RIGHT_TOP: '┐',
+    LEFT_BOTTOM: '└',
+    RIGHT_BOTTOM: '┘',
+    HORIZONTAL: '─',
+    VERTICAL: '│',
+  },
+  [BorderType.Double]: {
+    LEFT_TOP: '╔',
+    RIGHT_TOP: '╗',
+    LEFT_BOTTOM: '╚',
+    RIGHT_BOTTOM: '╝',
+    HORIZONTAL: '═',
+    VERTICAL: '║',
+  },
+  [BorderType.Heavy]: {
+    LEFT_TOP: '┏',
+    RIGHT_TOP: '┓',
+    LEFT_BOTTOM: '┗',
+    RIGHT_BOTTOM: '┛',
+    HORIZONTAL: '━',
+    VERTICAL: '┃',
+  },
+};
+
 // TODO: Add better validations and edge case handling
-export function rectangle(width: number, height: number, label?: string): Shape {
+export function rectangle(rectangle: Rectangle): Shape {
+  let { width, height, label, borderType } = rectangle;
+  width = Math.abs(width);
+  height = Math.abs(height);
+
   const shape = [];
+  const box = BOX[borderType];
 
   // Top
   let top = '';
 
   if (label) {
     top =
-      SYMBOLS.LEFT_TOP +
+      box.LEFT_TOP +
       label +
-      (width - label.length - 2 > 0 ? SYMBOLS.HORIZONTAL.repeat(width - label.length - 2) : '') +
-      SYMBOLS.RIGHT_TOP;
+      (width - label.length - 2 > 0 ? box.HORIZONTAL.repeat(width - label.length - 2) : '') +
+      box.RIGHT_TOP;
   } else {
-    top =
-      SYMBOLS.LEFT_TOP +
-      (width - 2 > 0 ? SYMBOLS.HORIZONTAL.repeat(width - 2) : '') +
-      SYMBOLS.RIGHT_TOP;
+    top = box.LEFT_TOP + (width - 2 > 0 ? box.HORIZONTAL.repeat(width - 2) : '') + box.RIGHT_TOP;
   }
 
   shape.push(top);
@@ -54,17 +79,13 @@ export function rectangle(width: number, height: number, label?: string): Shape 
   // Mids
   if (height - 2 > 0) {
     for (let i = height - 2; i > 0; i--) {
-      shape.push(
-        SYMBOLS.VERTICAL + (width - 2 > 0 ? ' '.repeat(width - 2) : '') + SYMBOLS.VERTICAL
-      );
+      shape.push(box.VERTICAL + (width - 2 > 0 ? ' '.repeat(width - 2) : '') + box.VERTICAL);
     }
   }
 
   // Bottom
   shape.push(
-    SYMBOLS.LEFT_BOTTOM +
-      (width - 2 > 0 ? SYMBOLS.HORIZONTAL.repeat(width - 2) : '') +
-      SYMBOLS.RIGHT_BOTTOM
+    box.LEFT_BOTTOM + (width - 2 > 0 ? box.HORIZONTAL.repeat(width - 2) : '') + box.RIGHT_BOTTOM
   );
   return shape;
 }

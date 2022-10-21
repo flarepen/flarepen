@@ -11,7 +11,7 @@ import {
   isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
-import { EditHandle, EditHandleType, IMouseMove } from '../types';
+import { BorderType, EditHandle, EditHandleType, IMouseMove } from '../types';
 import _ from 'lodash';
 
 const HANDLE_SIZE = 8;
@@ -26,21 +26,25 @@ function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
 export interface Rectangle extends ElementCommons {
   width: number;
   height: number;
+  borderType: BorderType;
   type: ElementType.Rectangle;
 }
 
 export const RectangleUtils: ElementUtils<Rectangle> = {
   new: function (x: number, y: number): Rectangle {
-    return {
+    const newRect: Rectangle = {
       id: elementID.getNextID(),
       x,
       y,
       width: 2,
       height: 2,
-      shape: g.rectangle(2, 2),
+      borderType: BorderType.Normal,
+      shape: [] as string[],
       type: ElementType.Rectangle,
       labelEnabled: true,
     };
+    newRect.shape = g.rectangle(newRect);
+    return newRect;
   },
 
   outlineBounds: function (rectangle: Rectangle): IBounds {
@@ -106,14 +110,17 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       y = y + heightIncr * Y_SCALE;
     }
 
-    callback({
+    const newRect = {
       ...rectangle,
       x,
       y,
       width,
       height,
-      shape: g.rectangle(Math.abs(width), Math.abs(height)),
-    });
+    };
+
+    newRect.shape = g.rectangle(newRect);
+
+    callback(newRect);
   },
 
   allEditHandles: function (rectangle) {
@@ -219,13 +226,16 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
         break;
     }
 
-    return {
+    const newRect = {
       ...rectangle,
       x,
       y,
       width,
       height,
-      shape: g.rectangle(Math.abs(width), Math.abs(height), rectangle.label),
     };
+
+    newRect.shape = g.rectangle(newRect);
+
+    return newRect;
   },
 };
