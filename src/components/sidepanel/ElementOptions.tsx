@@ -38,7 +38,7 @@ const StyledSelect = styled('select', {
 
 const OptionName = styled('span', {
   fontSize: 16,
-  marginRight: 8,
+  marginRight: 24,
   marginLeft: 4,
   fontWeight: '500',
   fontFamily: 'Cascadia',
@@ -93,11 +93,12 @@ function ElementOptions({ className, elementId }: ElementOptionsProps): JSX.Elem
       </Option>
       {selectedElement.type === ElementType.Rectangle && (
         <Option>
-          <OptionName>Border</OptionName>
+          <OptionName>Type</OptionName>
           <StyledSelect value={selectedElement.borderType} onChange={updateBorder}>
             <option value={BorderType.Normal}>Normal</option>
             <option value={BorderType.Double}>Double</option>
             <option value={BorderType.Heavy}>Heavy</option>
+            <option value={BorderType.Rounded}>Rounded</option>
           </StyledSelect>
         </Option>
       )}

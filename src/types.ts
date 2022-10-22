@@ -94,4 +94,5 @@ export enum BorderType {
   Normal = 'normal',
   Double = 'double',
   Heavy = 'heavy',
+  Rounded = 'rounded',
 }

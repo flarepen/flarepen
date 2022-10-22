@@ -50,6 +50,14 @@ const BOX = {
     HORIZONTAL: '━',
     VERTICAL: '┃',
   },
+  [BorderType.Rounded]: {
+    LEFT_TOP: '╭',
+    RIGHT_TOP: '╮',
+    LEFT_BOTTOM: '╰',
+    RIGHT_BOTTOM: '╯',
+    HORIZONTAL: '─',
+    VERTICAL: '│',
+  },
 };
 
 // TODO: Add better validations and edge case handling
