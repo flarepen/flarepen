@@ -6,5 +6,5 @@ Web based editor for sketching ASCII diagrams
 
 ```
 yarn install
-yarn start-https
+yarn start
 ```
