@@ -51,5 +51,6 @@
   },
   "devDependencies": {
     "prettier": "2.7.1"
-  }
+  },
+  "packageManager": "yarn@1.22.19"
 }
