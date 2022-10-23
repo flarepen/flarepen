@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Cascadia';
-  src: local('Cascadia'), url(./fonts/Cascadia.woff2) format('woff');
+  src: local('Cascadia'), url(@/fonts/Cascadia.woff2) format('woff');
 }
 
 body {

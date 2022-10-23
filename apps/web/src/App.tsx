@@ -12,6 +12,8 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { GridSwitcher } from './components/GridSwitcher';
 import { SidePanel } from './components/sidepanel';
 
+import init, { render } from 'text-render';
+
 const ToolBarWrapper = styled('div', {
   left: 10,
   top: 10,
@@ -31,6 +33,10 @@ const UndoRedoWrapper = styled('div', {
 });
 
 function App() {
+  init().then(() => {
+    console.log(render());
+  });
+
   const selected = useStore((state) => state.tool);
 
   const past = useStore((state) => state.past);
