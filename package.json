@@ -6,7 +6,8 @@
     ],
     "scripts": {
       "build": "turbo run build",
-      "start": "turbo run start"
+      "start": "turbo run start",
+      "build:ci": "./ci_install.sh && turbo run build"
     },
     "devDependencies": {
       "turbo": "^1.6.1"

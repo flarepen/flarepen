@@ -6,6 +6,9 @@
       },
       "start": {
         "cache": false
+      },
+      "@flarepen/web#build": {
+        "dependsOn": ["@flarepen/text-render#build"]
       }
     }
   }
