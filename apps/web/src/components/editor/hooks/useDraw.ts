@@ -36,7 +36,7 @@ export function useDraw() {
 
   // Refresh scene
   useEffect(() => {
-    drawScene();
+    window.requestAnimationFrame(drawScene);
   }, [elements, draft, dimensions, selectedIds, selectedGroupIds, canvasColors, selectionBox]);
 
   function getBoundsForGroup(group: ElementGroup) {
