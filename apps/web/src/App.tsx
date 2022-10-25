@@ -3,7 +3,7 @@ import { useStore, actions } from './state';
 import _ from 'lodash';
 import UndoRedo from './components/UndoRedo';
 import { ToolBar, ToolGroup, Separator, ActionGroup } from './components/toolbar';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Editor from './components/editor';
 import { styled, theme, darkTheme } from './stitches.config';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
@@ -33,10 +33,11 @@ const UndoRedoWrapper = styled('div', {
 });
 
 function App() {
-  init().then(() => {
-    console.log(render());
-  });
-
+  useEffect(() => {
+    init().then(() => {
+      console.log(render());
+    });
+  }, []);
   const selected = useStore((state) => state.tool);
 
   const past = useStore((state) => state.past);
