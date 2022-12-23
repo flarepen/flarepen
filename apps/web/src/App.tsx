@@ -11,6 +11,7 @@ import { Theme } from './types';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { GridSwitcher } from './components/GridSwitcher';
 import { SidePanel } from './components/sidepanel';
+import { ToolLock } from './components/ToolLock';
 
 import init, { render } from 'text-render';
 
@@ -75,6 +76,7 @@ function App() {
     <div className={`App ${themeClass}`} onKeyDown={handleKeyPress}>
       <TooltipProvider>
         <ToolBarWrapper>
+          <ToolLock />
           <ToolBar>
             <ToolGroup selected={selected} />
             <Separator />

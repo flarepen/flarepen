@@ -39,6 +39,7 @@ export interface AppSlice {
   selectionBox: ISelectionBox;
   canvasDrag: CanvasDrag;
   spacePressed: boolean;
+  toolLocked: boolean;
 
   groups: Groups;
   groupForElement: ElementToGroupMap;
@@ -71,6 +72,7 @@ export const getDefaultState = () => {
     },
     canvasDrag: defaultCanvasDrag,
     spacePressed: false,
+    toolLocked: false,
     groups: {},
     groupForElement: {},
     selectedGroupIds: [],

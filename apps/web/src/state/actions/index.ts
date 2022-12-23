@@ -54,6 +54,10 @@ export const setSpacePressed = (spacePressed: boolean) => {
   useStore.setState((state) => ({ spacePressed }));
 };
 
+export const setToolLocked = (toolLocked: boolean) => {
+  useStore.setState((state) => ({ toolLocked }));
+};
+
 export const drag = (mouseMove: IMouseMove) => {
   const xBy =
     mouseMove.currentEvent!.clientX -

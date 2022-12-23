@@ -17,6 +17,7 @@ const ToolBar = styled(ToolbarPrimitive.Root, {
   backgroundColor: '$background',
   border: `1px solid $border`,
   zIndex: 10,
+  marginLeft: 4,
 });
 
 export { ToolBar, Separator, ToolGroup, ActionGroup };

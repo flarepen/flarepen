@@ -102,6 +102,7 @@ function CanvasWithInput(): JSX.Element {
 
   const canvasDrag = useStore((state) => state.canvasDrag);
   const spacePressed = useStore((state) => state.spacePressed);
+  const toolTocked = useStore((state) => state.toolLocked);
 
   useDraw();
 
@@ -112,6 +113,12 @@ function CanvasWithInput(): JSX.Element {
     }
   }, [tool]);
 
+  const resetTool = () => {
+    if (!toolTocked) {
+      actions.setTool(Tool.Select);
+    }
+  };
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (spacePressed) {
       actions.setCanvasDrag('active');
@@ -121,7 +128,7 @@ function CanvasWithInput(): JSX.Element {
     if (draft && draft.type !== ElementType.Text) {
       actions.addElement(santizeElement(draft), false);
       select(draft.id, true);
-      actions.setTool(Tool.Select);
+      resetTool();
       setDraft(null);
       return null;
     }
@@ -131,7 +138,7 @@ function CanvasWithInput(): JSX.Element {
       if (editingText) {
         editingText.content && actions.addElement(santizeElement(editingText));
         setEditingText(null);
-        actions.setTool(Tool.Select);
+        resetTool();
         return null;
       } else {
         setEditingText(
@@ -197,7 +204,7 @@ function CanvasWithInput(): JSX.Element {
       if (draft && draft.type !== ElementType.Text) {
         actions.addElement(santizeElement(draft), false);
         select(draft.id, true);
-        actions.setTool(Tool.Select);
+        resetTool();
         setDraft(null);
       }
     } else {

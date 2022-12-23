@@ -39,3 +39,5 @@ export * from './RedoIcon';
 export * from './GridIcon';
 export * from './ExportIcon';
 export * from './ImportIcon';
+export * from './LockIcon';
+export * from './UnlockIcon';
