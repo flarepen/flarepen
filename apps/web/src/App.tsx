@@ -16,12 +16,17 @@ import { ToolLock } from './components/ToolLock';
 import init, { render } from 'text-render';
 
 const ToolBarWrapper = styled('div', {
-  left: 10,
-  top: 10,
-  float: 'left',
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const ToolBarAlignContainer = styled('div', {
   position: 'absolute',
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  marginTop: 10,
 });
 
 const UndoRedoWrapper = styled('div', {
@@ -75,15 +80,17 @@ function App() {
   return (
     <div className={`App ${themeClass}`} onKeyDown={handleKeyPress}>
       <TooltipProvider>
-        <ToolBarWrapper>
-          <ToolLock />
-          <ToolBar>
-            <ToolGroup selected={selected} />
-            <Separator />
-            <ActionGroup />
-          </ToolBar>
-          <ThemeSwitcher />
-        </ToolBarWrapper>
+        <ToolBarAlignContainer>
+          <ToolBarWrapper>
+            <ToolLock />
+            <ToolBar>
+              <ToolGroup selected={selected} />
+              <Separator />
+              <ActionGroup />
+            </ToolBar>
+            <ThemeSwitcher />
+          </ToolBarWrapper>
+        </ToolBarAlignContainer>
         <UndoRedoWrapper>
           <UndoRedo />
           <GridSwitcher />
