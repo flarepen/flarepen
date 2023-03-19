@@ -59,12 +59,13 @@ export const setToolLocked = (toolLocked: boolean) => {
 };
 
 export const drag = (mouseMove: IMouseMove) => {
-  const xBy =
-    mouseMove.currentEvent!.clientX -
-    (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
-  const yBy =
-    mouseMove.currentEvent!.clientY -
-    (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
+  const scalesMovedX =
+    mouseMove.accX > 0 ? Math.floor(mouseMove.accX / X_SCALE) : Math.ceil(mouseMove.accX / X_SCALE);
+  const xBy = scalesMovedX * X_SCALE;
+
+  const scalesMovedY =
+    mouseMove.accY > 0 ? Math.floor(mouseMove.accY / Y_SCALE) : Math.ceil(mouseMove.accY / Y_SCALE);
+  const yBy = scalesMovedY * Y_SCALE;
 
   useStore.setState(
     produce<AppState>((state) => {
