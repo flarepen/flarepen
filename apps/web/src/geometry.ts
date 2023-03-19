@@ -16,7 +16,7 @@ import { MergedElements, BorderType } from './types';
 export type Row = string;
 export type Shape = Row[];
 
-const SYMBOLS = {
+export const SYMBOLS = {
   HORIZONTAL: '─',
   VERTICAL: '│',
   ARROW_LEFT: '◀',
@@ -25,7 +25,7 @@ const SYMBOLS = {
   ARROW_DOWN: '▼',
 };
 
-const BOX = {
+export const BOX = {
   [BorderType.Normal]: {
     LEFT_TOP: '┌',
     RIGHT_TOP: '┐',

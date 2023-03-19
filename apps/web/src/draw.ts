@@ -1,5 +1,6 @@
 import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds } from './element';
+import { SYMBOLS } from './geometry';
 import { MergedElements } from './types';
 
 function merged(ctx: CanvasRenderingContext2D, merged: MergedElements) {
@@ -8,7 +9,7 @@ function merged(ctx: CanvasRenderingContext2D, merged: MergedElements) {
   merged.content.forEach((row) => {
     x = merged.origin.x;
     row.forEach((ch) => {
-      ctx.fillText(ch, x, y);
+      ctx.fillText(ch, x, overrideY(ch, y));
       x = x + X_SCALE;
     });
     y = y + Y_SCALE;
@@ -22,11 +23,17 @@ function element(ctx: CanvasRenderingContext2D, element: Element) {
     x = element.x;
     row = row || '';
     row.split('').forEach((ch) => {
-      ctx.fillText(ch, x, y);
+      ctx.fillText(ch, x, overrideY(ch, y));
       x = x + X_SCALE;
     });
     y = y + Y_SCALE;
   });
+}
+
+// Overriding Y for any kind of customizations before render.
+function overrideY(ch: string, y: number): number {
+  // ARROW_RIGHT U+25B6 is not properly centered.
+  return ch == SYMBOLS.ARROW_RIGHT ? y + 2 : y;
 }
 
 function withOpacity(radix_color: string, opacity: number) {
