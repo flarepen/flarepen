@@ -4,7 +4,7 @@ import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { elementID, groupIDGenerator } from '../../id';
 import { Tool } from '../../tools';
-import { CanvasDrag, EditingContext, IMouseMove, ISelectionBox, Theme } from '../../types';
+import { CanvasDrag, EditingContext, IMouseMove, ISelectionBox, Point, Theme } from '../../types';
 import { parse } from '../parse';
 import { AppState, Elements, getDefaultState, IDimensions, useStore } from '../store';
 
@@ -56,6 +56,10 @@ export const setSpacePressed = (spacePressed: boolean) => {
 
 export const setToolLocked = (toolLocked: boolean) => {
   useStore.setState((state) => ({ toolLocked }));
+};
+
+export const setCurrentCell = (currentCell: Point) => {
+  useStore.setState((_state) => ({ currentCell }));
 };
 
 export const drag = (mouseMove: IMouseMove) => {

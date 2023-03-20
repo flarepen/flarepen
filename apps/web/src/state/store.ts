@@ -9,6 +9,7 @@ import {
   ElementGroup,
   ElementToGroupMap,
   SelectionBoxStatus,
+  Point,
 } from '../types';
 import { Tool } from '../tools';
 
@@ -40,6 +41,7 @@ export interface AppSlice {
   canvasDrag: CanvasDrag;
   spacePressed: boolean;
   toolLocked: boolean;
+  currentCell: null | Point;
 
   groups: Groups;
   groupForElement: ElementToGroupMap;
@@ -73,6 +75,7 @@ export const getDefaultState = () => {
     canvasDrag: defaultCanvasDrag,
     spacePressed: false,
     toolLocked: false,
+    currentCell: null,
     groups: {},
     groupForElement: {},
     selectedGroupIds: [],

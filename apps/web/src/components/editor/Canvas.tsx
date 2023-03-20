@@ -223,6 +223,11 @@ function CanvasWithInput(): JSX.Element {
     mouseMove.currentEvent = e;
     mouseMove.acc();
 
+    actions.setCurrentCell({
+      x: clipToScale(e.clientX, X_SCALE),
+      y: clipToScale(e.clientY - Y_SCALE / 2, Y_SCALE) + Y_SCALE / 2,
+    });
+
     if (canvasDrag === 'active') {
       const x_by =
         mouseMove.currentEvent!.clientX -

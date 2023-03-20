@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { X_SCALE, Y_SCALE } from '../../../constants';
-import draw from '../../../draw';
+import draw, { withOpacity } from '../../../draw';
 import {
   Element,
   ElementType,
@@ -28,6 +28,8 @@ export function useDraw() {
   const selectionBox = useStore((state) => state.selectionBox);
   const ctx = useStore((state) => state.canvasCtx);
   const dragging = useStore((state) => state.dragging);
+  const currentCell = useStore((state) => state.currentCell);
+  const editingContext = useStore((state) => state.editingContext);
 
   const canvasColors = useCanvasColors();
 
@@ -133,6 +135,28 @@ export function useDraw() {
       ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
       drawSelected();
+
+      // Highlight cell when not in draft or edit mode.
+      if (
+        currentCell &&
+        !(selectionBox.status === 'active') &&
+        !draft &&
+        !editingContext.id &&
+        !editingContext.handleType &&
+        !dragging
+      ) {
+        draw.rect(
+          ctx,
+          {
+            x: currentCell.x,
+            y: currentCell.y,
+            width: X_SCALE,
+            height: Y_SCALE,
+          },
+          withOpacity(canvasColors.cellHighlight, 0.1),
+          canvasColors.cellHighlight
+        );
+      }
 
       // draw current draft
       draft && draw.element(ctx, draft);

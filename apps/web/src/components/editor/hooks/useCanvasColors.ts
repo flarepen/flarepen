@@ -10,12 +10,14 @@ export function useCanvasColors() {
       text: mauve.mauve12,
       selection: orange.orange10,
       selectionBackground: orange.orange10,
+      cellHighlight: orange.orange10,
     };
   } else {
     return {
       text: mauve.mauve8,
       selection: orange.orange11,
       selectionBackground: orange.orange11,
+      cellHighlight: orange.orange11,
     };
   }
 }

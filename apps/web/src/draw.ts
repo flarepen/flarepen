@@ -36,7 +36,7 @@ function overrideY(ch: string, y: number): number {
   return ch == SYMBOLS.ARROW_RIGHT ? y + 2 : y;
 }
 
-function withOpacity(radix_color: string, opacity: number) {
+export function withOpacity(radix_color: string, opacity: number) {
   const len = radix_color.length;
   const hsl = radix_color.substring(4, len - 1);
   return `hsla(${hsl},${opacity})`;
