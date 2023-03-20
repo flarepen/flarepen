@@ -57,14 +57,7 @@ export function useDraw() {
   }
 
   function drawSelected() {
-    // Dont merge selected items when dragging. Dragging is not scaled and breaks merge
-    if (dragging) {
-      _.values(elements).forEach((element) => {
-        draw.element(ctx!, element);
-      });
-    } else {
-      draw.merged(ctx!, g.merge(_.values(elements)));
-    }
+    draw.merged(ctx!, g.merge(_.values(elements)));
   }
 
   function drawSelectionOutlines() {
