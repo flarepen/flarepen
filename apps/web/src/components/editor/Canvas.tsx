@@ -142,7 +142,10 @@ function CanvasWithInput(): JSX.Element {
         return null;
       } else {
         setEditingText(
-          TextUtils.new(clipToScale(e.clientX, X_SCALE), clipToScale(e.clientY, Y_SCALE))
+          TextUtils.new(
+            clipToScale(e.clientX, X_SCALE),
+            clipToScale(e.clientY + Y_SCALE / 2, Y_SCALE)
+          )
         );
         return null;
       }
@@ -152,7 +155,7 @@ function CanvasWithInput(): JSX.Element {
       const newElement = createElement(
         ElementTypeForTool[tool]!,
         clipToScale(e.clientX, X_SCALE),
-        clipToScale(e.clientY, Y_SCALE)
+        clipToScale(e.clientY + Y_SCALE / 2, Y_SCALE)
       );
 
       setDraft(newElement);
