@@ -13,6 +13,7 @@ import { useCanvasColors } from './useCanvasColors';
 import * as g from '../../../geometry';
 import _ from 'lodash';
 import { ElementGroup } from '../../../types';
+import { Tool } from '../../../tools';
 
 function utilFor(element: Element): ElementUtils<any> {
   return ElementUtilsMap[element.type]!;
@@ -30,6 +31,7 @@ export function useDraw() {
   const dragging = useStore((state) => state.dragging);
   const currentCell = useStore((state) => state.currentCell);
   const editingContext = useStore((state) => state.editingContext);
+  const tool = useStore((state) => state.tool);
 
   const canvasColors = useCanvasColors();
 
@@ -136,7 +138,8 @@ export function useDraw() {
         !draft &&
         !editingContext.id &&
         !editingContext.handleType &&
-        !dragging
+        !dragging &&
+        !(tool === Tool.Select)
       ) {
         draw.rect(
           ctx,
