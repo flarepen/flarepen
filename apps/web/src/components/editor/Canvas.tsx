@@ -67,7 +67,7 @@ let mouseMove = new IMouseMove();
 
 const StyledCanvas = styled('canvas', {
   display: 'block',
-  background: '$canvasBackground',
+  background: '$canvasBg',
   zIndex: -2,
 });
 

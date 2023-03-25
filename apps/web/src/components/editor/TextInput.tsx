@@ -34,5 +34,5 @@ function TextInputRaw({ x, y, onInput, className }: TextInputProps): JSX.Element
 export const TextInput = styled(TextInputRaw, {
   fontFamily: 'Cascadia',
   fontSize: '22px',
-  color: '$secondary',
+  color: '$actionText',
 });

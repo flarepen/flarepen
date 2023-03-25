@@ -14,7 +14,7 @@ const SectionTitle = styled('div', {
   fontSize: 15,
   fontWeight: '500',
   fontFamily: 'Cascadia',
-  color: '$primaryText',
+  color: '$actionText',
   userSelect: 'none',
 });
 
@@ -41,15 +41,16 @@ function RawSidePanel({ className }: SidePanelProps): JSX.Element {
   );
 }
 
+// TODO: Whole panel colors and styles to be fixed
 export const SidePanel = styled(RawSidePanel, {
   display: 'flex',
   flexDirection: 'column',
   right: 12,
   top: 48,
-  color: '$primaryText',
+  color: '$actionText',
   position: 'absolute',
-  border: '1px solid $border',
-  backgroundColor: '$background',
+  border: '1px solid $panelBorder',
+  backgroundColor: '$panelBg',
   padding: 6,
   borderRadius: 6,
   zIndex: 10,

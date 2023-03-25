@@ -5,7 +5,7 @@ import { mauve } from '@radix-ui/colors';
 const StyledContent = styled(TooltipPrimitive.Content, {
   fontSize: 14,
   color: mauve.mauve1,
-  backgroundColor: '$toolTipBackground',
+  backgroundColor: '$toolTipBg',
   padding: '4px 8px',
   borderRadius: 3,
   marginLeft: 2,
@@ -13,7 +13,7 @@ const StyledContent = styled(TooltipPrimitive.Content, {
 const StyledTrigger = styled(TooltipPrimitive.Trigger, {
   padding: 0,
   border: 0,
-  backgroundColor: '$background',
+  backgroundColor: 'transparent',
 });
 
 export interface ToolTipProps {

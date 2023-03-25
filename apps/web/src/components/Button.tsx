@@ -6,25 +6,29 @@ export const buttonStyles = {
   padding: '0 5px',
   borderRadius: 4,
   display: 'inline-flex',
-  color: '$secondary',
+  color: '$actionText',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: '$background',
+  backgroundColor: '$actionBg',
   marginLeft: 2,
   cursor: 'pointer',
-  '&:hover': { backgroundColor: '$primaryBackgroundDim' },
-  '&:active': { backgroundColor: '$primaryBackground', color: '$primary' },
+  '&:hover': { backgroundColor: '$actionBgHover' },
+  '&:active': {
+    backgroundColor: '$actionBgActive',
+    color: '$actionTextActive',
+  },
   variants: {
     inactive: {
       true: {
-        color: '$secondaryBackground',
-        '&:hover': { backgroundColor: '$background', cursor: 'not-allowed' },
-        '&:active': { backgroundColor: '$background', color: '$secondaryBackground' },
+        color: '$actionTextDisabled',
+        '&:hover': { backgroundColor: '$actionBg', cursor: 'not-allowed' },
+        '&:active': { backgroundColor: '$actionBg', color: '$actionText' },
       },
     },
     toggled: {
       true: {
-        backgroundColor: '$primaryBackground',
+        backgroundColor: '$actionBgActive',
+        color: '$actionTextActive',
       },
     },
   },

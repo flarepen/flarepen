@@ -1,36 +1,38 @@
-import { mauve, orange } from '@radix-ui/colors';
+import { mauve, mauveDark, tomato, tomatoDark } from '@radix-ui/colors';
 import { createStitches } from '@stitches/react';
 
 export const { styled, css, theme, createTheme } = createStitches({
   theme: {
     colors: {
-      primary: orange.orange10,
-      primaryText: mauve.mauve12,
-      primaryBackground: orange.orange3,
-      primaryBackgroundDim: orange.orange2,
-      secondary: mauve.mauve11,
-      secondaryBackground: mauve.mauve8,
-      border: mauve.mauve9,
-      background: 'white',
-      canvasBackground: 'white',
-      gridColor: mauve.mauve12,
-      toolTipBackground: '#212529',
+      canvasBg: mauve.mauve2,
+      panelBg: mauve.mauve3,
+      panelBorder: mauve.mauve6,
+      seperator: mauve.mauve6,
+      actionBg: mauve.mauve3,
+      actionBgHover: tomato.tomato4,
+      actionBgActive: tomato.tomato5,
+      actionText: mauve.mauve12,
+      actionTextDisabled: mauve.mauve11,
+      actionTextActive: tomato.tomato11,
+      grid: mauveDark.mauve6,
+      toolTipBg: mauve.mauve9,
     },
   },
 });
 
 export const darkTheme = createTheme({
   colors: {
-    primary: mauve.mauve1,
-    primaryText: mauve.mauve1,
-    primaryBackground: orange.orange10,
-    primaryBackgroundDim: orange.orange11,
-    secondary: mauve.mauve5,
-    secondaryBackground: mauve.mauve9,
-    border: mauve.mauve9,
-    background: '#212529',
-    canvasBackground: '#212529',
-    gridColor: mauve.mauve9,
-    toolTipBackground: mauve.mauve11,
+    canvasBg: mauveDark.mauve2,
+    panelBg: mauveDark.mauve3,
+    panelBorder: mauveDark.mauve6,
+    seperator: mauveDark.mauve6,
+    actionBg: mauveDark.mauve3,
+    actionBgHover: tomatoDark.tomato4,
+    actionBgActive: tomatoDark.tomato5,
+    actionText: mauveDark.mauve12,
+    actionTextDisabled: mauveDark.mauve11,
+    actionTextActive: tomatoDark.tomato11,
+    grid: mauve.mauve9,
+    toolTipBg: mauveDark.mauve9,
   },
 });

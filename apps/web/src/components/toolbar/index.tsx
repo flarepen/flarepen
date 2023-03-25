@@ -6,7 +6,7 @@ import ActionGroup from './ActionGroup';
 
 const Separator = styled(ToolbarPrimitive.Separator, {
   width: 1,
-  backgroundColor: '$secondaryBackground',
+  backgroundColor: '$seperator',
   margin: '0 10px',
 });
 
@@ -14,8 +14,8 @@ const ToolBar = styled(ToolbarPrimitive.Root, {
   display: 'flex',
   padding: 6,
   borderRadius: 6,
-  backgroundColor: '$background',
-  border: `1px solid $border`,
+  backgroundColor: '$panelBg',
+  border: `1px solid $panelBorder`,
   zIndex: 10,
   marginLeft: 4,
 });

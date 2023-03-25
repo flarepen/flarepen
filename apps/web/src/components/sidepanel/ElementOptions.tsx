@@ -7,15 +7,15 @@ import * as g from './../../geometry';
 const StyledInput = styled('input', {
   all: 'unset',
   fontFamily: 'Cascadia',
-  color: '$primaryText',
-  border: '1px solid $border',
-  backgroundColor: '$background',
+  color: '$actionText',
+  border: '1px solid $panelBorder',
+  backgroundColor: '$panelBg',
   margin: '8px 4px',
   padding: 6,
   borderRadius: 2,
   zIndex: 10,
   '&:focus': {
-    border: `1px solid $primary`,
+    border: `1px solid $panelBorder`,
   },
 });
 
@@ -24,15 +24,15 @@ const StyledSelect = styled('select', {
   paddingRight: 4,
   borderRight: 2,
   fontFamily: 'Cascadia',
-  color: '$primaryText',
-  border: '1px solid $border',
-  backgroundColor: '$background',
+  color: '$actionText',
+  border: '1px solid $panelBorder',
+  backgroundColor: '$panelBg',
   margin: '8px 4px',
   padding: 6,
   borderRadius: 2,
   zIndex: 10,
   '&:focus': {
-    border: `1px solid $primary`,
+    border: `1px solid $panelBorder`,
   },
 });
 
@@ -42,7 +42,7 @@ const OptionName = styled('span', {
   marginLeft: 4,
   fontWeight: '500',
   fontFamily: 'Cascadia',
-  color: '$primaryText',
+  color: '$actionText',
   userSelect: 'none',
 });
 

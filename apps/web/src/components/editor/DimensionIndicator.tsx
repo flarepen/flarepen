@@ -68,6 +68,6 @@ function DimensionIndicator({ className, element }: DimensionIndicatorProps) {
 export default styled(DimensionIndicator, {
   padding: 0,
   margin: 0,
-  color: '$secondary',
+  color: '$actionText',
   userSelect: 'none',
 });

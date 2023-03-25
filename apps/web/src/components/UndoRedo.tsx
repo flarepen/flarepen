@@ -33,7 +33,7 @@ export default styled(UndoRedo, {
   // display: 'flex',
   padding: 6,
   borderRadius: 6,
-  backgroundColor: '$background',
-  border: '1px solid $border',
+  backgroundColor: '$panelBg',
+  border: '1px solid $panelBorder',
   zIndex: 10,
 });
