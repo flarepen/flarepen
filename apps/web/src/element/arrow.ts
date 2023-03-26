@@ -61,17 +61,15 @@ export const ArrowUtils: ElementUtils<Arrow> = {
       isHorizontalArrow(arrow)
     );
 
-    let width = xMax - xMin - X_SCALE;
-    let height = yMax - yMin - Y_SCALE;
+    let width = xMax - xMin;
+    let height = yMax - yMin;
 
     if (isHorizontalArrow(arrow)) {
-      xMin = xMin + X_SCALE / 2;
-      yMin = yMin + Y_SCALE / 2;
+      xMin = xMin - X_SCALE / 2;
+      width = xMax - xMin + X_SCALE / 2;
     } else {
-      xMin = xMin + X_SCALE / 2;
-      yMin = yMin + Y_SCALE / 4;
-      width = xMax - xMin + 4;
-      height = yMax - yMin - 2 * Y_SCALE + 4;
+      yMin = yMin - Y_SCALE / 4;
+      height = yMax - yMin;
     }
 
     return { x: xMin, y: yMin, width: width, height };

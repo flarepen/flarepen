@@ -34,14 +34,13 @@ export const TextUtils: ElementUtils<Text> = {
       true
     );
 
-    xMin = xMin + X_SCALE / 2;
-    yMin = yMin + Y_SCALE / 2;
+    xMin = xMin - X_SCALE / 2;
 
     return {
       x: xMin,
       y: yMin,
-      width: xMax - xMin - X_SCALE / 2,
-      height: yMax - yMin - Y_SCALE / 2,
+      width: xMax - xMin + X_SCALE / 2,
+      height: yMax - yMin,
     };
   },
   inVicinity: function (text: Text, p: Point) {

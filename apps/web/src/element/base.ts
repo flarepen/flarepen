@@ -72,10 +72,13 @@ export function getLinearBounding(
   len: number,
   horizontal: boolean
 ): { xMin: number; xMax: number; yMin: number; yMax: number } {
-  const xMin = origin.x - X_SCALE;
-  const xMax = horizontal ? origin.x + X_SCALE + len * X_SCALE : origin.x + X_SCALE;
-  const yMin = origin.y - Y_SCALE;
-  const yMax = horizontal ? origin.y + Y_SCALE : origin.y + Y_SCALE + len * Y_SCALE;
+  // Y Axis needs a bit of tweaking because of grid offset
+  const yOffset = Y_SCALE / 2;
+
+  const xMin = origin.x;
+  const xMax = horizontal ? origin.x + len * X_SCALE : origin.x + X_SCALE;
+  const yMin = origin.y - yOffset;
+  const yMax = horizontal ? origin.y + yOffset : origin.y + len * Y_SCALE - yOffset;
 
   return { xMin, xMax, yMin, yMax };
 }

@@ -64,8 +64,8 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
     return (
       inLinearVicinity(p, point(x, y), width, true) ||
       inLinearVicinity(p, point(x, y), height, false) ||
-      inLinearVicinity(p, point(x, y + height * Y_SCALE), width, true) ||
-      inLinearVicinity(p, point(x + width * X_SCALE, y), height, false)
+      inLinearVicinity(p, point(x, y + height * Y_SCALE - Y_SCALE), width, true) ||
+      inLinearVicinity(p, point(x + width * X_SCALE - X_SCALE, y), height, false)
     );
   },
 

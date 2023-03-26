@@ -1,13 +1,7 @@
 import { useEffect } from 'react';
 import { X_SCALE, Y_SCALE } from '../../../constants';
 import draw, { withOpacity } from '../../../draw';
-import {
-  Element,
-  ElementType,
-  ElementUtils,
-  ElementUtilsMap,
-  RectangleUtils,
-} from '../../../element';
+import { Element, ElementType, ElementUtils, ElementUtilsMap } from '../../../element';
 import { useStore } from '../../../state';
 import { useCanvasColors } from './useCanvasColors';
 import * as g from '../../../geometry';
