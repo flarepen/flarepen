@@ -19,7 +19,6 @@ yarn build
 
 This builds the `text-render` wasm package and the `web` webapp package.
 
-
 ### Run local dev server
 
 ```sh
