@@ -2,9 +2,9 @@ import produce from 'immer';
 import _ from 'lodash';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
-import { elementID, groupIDGenerator } from '../../id';
+import { elementIDGenerator, groupIDGenerator } from '../../id';
 import { Tool } from '../../tools';
-import { CanvasDrag, EditingContext, IMouseMove, ISelectionBox, Point, Theme } from '../../types';
+import { CanvasDrag, EditingContext, MouseMove, ISelectionBox, Point, Theme } from '../../types';
 import { parse } from '../parse';
 import { AppState, Elements, getDefaultState, IDimensions, useStore } from '../store';
 
@@ -62,7 +62,7 @@ export const setCurrentCell = (currentCell: Point) => {
   useStore.setState((_state) => ({ currentCell }));
 };
 
-export const drag = (mouseMove: IMouseMove) => {
+export const drag = (mouseMove: MouseMove) => {
   const scalesMovedX =
     mouseMove.accX > 0 ? Math.floor(mouseMove.accX / X_SCALE) : Math.ceil(mouseMove.accX / X_SCALE);
   const xBy = scalesMovedX * X_SCALE;
@@ -121,7 +121,7 @@ export function importToCanvas(objs: any[]) {
     }));
 
     groupIDGenerator.setID(0);
-    elementID.setID(
+    elementIDGenerator.setID(
       _.max(
         _.map(objs, (obj) => {
           const id: string = obj['id'] as string;

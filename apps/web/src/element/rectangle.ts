@@ -1,4 +1,4 @@
-import { elementID } from '../id';
+import { elementIDGenerator } from '../id';
 import * as g from '../geometry';
 import {
   ElementCommons,
@@ -11,7 +11,7 @@ import {
   isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
-import { BorderType, EditHandle, EditHandleType, IMouseMove } from '../types';
+import { BorderType, EditHandle, EditHandleType, MouseMove } from '../types';
 import _ from 'lodash';
 
 const HANDLE_SIZE = 8;
@@ -33,7 +33,7 @@ export interface Rectangle extends ElementCommons {
 export const RectangleUtils: ElementUtils<Rectangle> = {
   new: function (x: number, y: number): Rectangle {
     const newRect: Rectangle = {
-      id: elementID.getNextID(),
+      id: elementIDGenerator.getNextID(),
       x,
       y,
       width: 2,

@@ -8,7 +8,7 @@ import {
   Point,
   isPointInsideBound,
 } from './base';
-import { elementID } from '../id';
+import { elementIDGenerator } from '../id';
 import { X_SCALE, Y_SCALE } from '../constants';
 import * as g from '../geometry';
 import { EditHandleType, EditHandle } from '../types';
@@ -44,7 +44,7 @@ export function isHorizontalLine(line: Line): boolean {
 export const LineUtils: ElementUtils<Line> = {
   new: function (x: number, y: number) {
     return {
-      id: elementID.getNextID(),
+      id: elementIDGenerator.getNextID(),
       x,
       y,
       len: 1,

@@ -4,7 +4,6 @@ import {
   ElementType,
   IBounds,
   isHorizontalLine,
-  LineDirection,
   point,
   Point,
   Rectangle,

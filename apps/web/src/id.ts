@@ -18,5 +18,5 @@ export class IDGenerator {
   }
 }
 
-export const elementID = new IDGenerator('e');
+export const elementIDGenerator = new IDGenerator('e');
 export const groupIDGenerator = new IDGenerator('g');

@@ -2,7 +2,7 @@ import React from 'react';
 import { X_SCALE, Y_SCALE } from './constants';
 import { IBounds } from './element';
 
-export class IMouseMove {
+export class MouseMove {
   accX: number;
   accY: number;
   currentEvent: null | React.MouseEvent;

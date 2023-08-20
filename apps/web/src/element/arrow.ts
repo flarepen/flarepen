@@ -1,5 +1,5 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { elementID } from '../id';
+import { elementIDGenerator } from '../id';
 import {
   ElementCommons,
   ElementType,
@@ -44,7 +44,7 @@ export function isHorizontalArrow(arrow: Arrow): boolean {
 export const ArrowUtils: ElementUtils<Arrow> = {
   new: function (x: number, y: number): Arrow {
     return {
-      id: elementID.getNextID(),
+      id: elementIDGenerator.getNextID(),
       x,
       y,
       len: 2,

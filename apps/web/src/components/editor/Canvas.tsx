@@ -14,7 +14,7 @@ import {
 import { actions, useStore } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
-import { ArrowKey, IMouseMove } from '../../types';
+import { ArrowKey, MouseMove } from '../../types';
 import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
 import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
@@ -63,7 +63,7 @@ function inVicinity(p: Point, element: Element): boolean {
   return utilFor(element).inVicinity(element, p);
 }
 
-let mouseMove = new IMouseMove();
+let mouseMove = new MouseMove();
 
 const StyledCanvas = styled('canvas', {
   display: 'block',
@@ -86,6 +86,7 @@ function CanvasWithInput(): JSX.Element {
   const updateElement = actions.updateElement;
   const deleteElement = actions.deleteElement;
 
+  // Draft is the current element that is being created.
   const draft = useStore((state) => state.draft);
   const setDraft = actions.setDraft;
 
@@ -266,11 +267,12 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
-    // Manually track space up/down
+    // Manually track space press
     if (e.key === ' ') {
       actions.setSpacePressed(true);
     }
 
+    // Handle Keyboard events when any element or group is selected
     if (selectedIds.length + selectedGroupIds.length > 0) {
       switch (e.key) {
         case 'Backspace':
@@ -301,6 +303,8 @@ function CanvasWithInput(): JSX.Element {
     }
 
     // TODO: Move to App div level
+    // Check on draft to make sure that we handle keyboard shortcuts only when not in draft mode.
+    console.log(e.key);
     if (!draft && SHORTCUT_TO_TOOL[e.key]) {
       actions.setTool(SHORTCUT_TO_TOOL[e.key]);
     }

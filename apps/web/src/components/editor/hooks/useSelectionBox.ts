@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { expandIBound, insideBound } from '../../../element';
 import { actions, useStore } from '../../../state';
-import { IMouseMove } from '../../../types';
+import { MouseMove } from '../../../types';
 
 export function useSelectionBox() {
   const elements = useStore((state) => state.elements);
@@ -32,7 +32,7 @@ export function useSelectionBox() {
     });
   };
 
-  const expand = (mouseMove: IMouseMove) => {
+  const expand = (mouseMove: MouseMove) => {
     selectionBox.status === 'pending' && active();
 
     if (

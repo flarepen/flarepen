@@ -1,5 +1,5 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { elementID } from '../id';
+import { elementIDGenerator } from '../id';
 import {
   ElementCommons,
   ElementType,
@@ -18,7 +18,7 @@ export interface Text extends ElementCommons {
 export const TextUtils: ElementUtils<Text> = {
   new: function (x: number, y: number): Text {
     return {
-      id: elementID.getNextID(),
+      id: elementIDGenerator.getNextID(),
       x,
       y,
       content: '',

@@ -1,5 +1,5 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { EditHandle, EditHandleType, IMouseMove } from '../types';
+import { EditHandle, EditHandleType, MouseMove } from '../types';
 
 // TODO: Use it instead of x,y in other places
 export interface Point {
@@ -24,7 +24,7 @@ export interface IBounds {
   height: number;
 }
 
-export function expandIBound(bound: IBounds, mouseMove: IMouseMove): IBounds {
+export function expandIBound(bound: IBounds, mouseMove: MouseMove): IBounds {
   const widthIncr =
     mouseMove.currentEvent!.clientX -
     (mouseMove.previousEvent ? mouseMove.previousEvent.clientX : 0);
@@ -99,11 +99,11 @@ export interface ElementUtils<T extends ElementCommons> {
   new: (x: number, y: number) => T;
   outlineBounds: (t: T) => IBounds;
   inVicinity: (t: T, p: Point) => boolean;
-  create: (t: T, mouseMove: IMouseMove, callback: (updated: T) => void) => void;
+  create: (t: T, mouseMove: MouseMove, callback: (updated: T) => void) => void;
   allEditHandles: (t: T) => EditHandle[];
   getEditHandleType: (
     t: T,
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => null | EditHandleType;
-  edit: (t: T, mouseMove: IMouseMove, handleType: EditHandleType) => T;
+  edit: (t: T, mouseMove: MouseMove, handleType: EditHandleType) => T;
 }
