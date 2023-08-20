@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { X_SCALE, Y_SCALE } from '../../../constants';
 import draw, { withOpacity } from '../../../draw';
-import { Element, ElementType, ElementUtils, ElementUtilsMap } from '../../../element';
+import { ElementType, ElementUtils, ElementUtilsMap } from '../../../element';
 import { useStore } from '../../../state';
 import { useCanvasColors } from './useCanvasColors';
 import * as g from '../../../geometry';
 import _ from 'lodash';
-import { ElementGroup } from '../../../types';
+import { ElementGroup, Point } from '../../../types';
 import { Tool } from '../../../tools';
 
-function utilFor(element: Element): ElementUtils<any> {
-  return ElementUtilsMap[element.type]!;
+function utilFor(elementType: ElementType): ElementUtils<any> {
+  return ElementUtilsMap[elementType]!;
 }
 
 export function useDraw() {
@@ -41,7 +41,7 @@ export function useDraw() {
     const elementsInGroup = _.map(group.elementIds, (selectedId) => elements[selectedId]);
 
     const bounds = g.getBoundingRectForBounds(
-      _.map(elementsInGroup, (element) => utilFor(element).outlineBounds(element))
+      _.map(elementsInGroup, (element) => utilFor(element.type).outlineBounds(element))
     );
 
     return {
@@ -69,7 +69,7 @@ export function useDraw() {
       if (selectedElement) {
         draw.rect(
           ctx!,
-          utilFor(selectedElement).outlineBounds(selectedElement),
+          utilFor(selectedElement.type).outlineBounds(selectedElement),
           canvasColors.selection,
           canvasColors.selectionBackground
         );
@@ -88,7 +88,7 @@ export function useDraw() {
     }
 
     const elementBounds = _.map(selectedElements, (element) =>
-      utilFor(element).outlineBounds(element)
+      utilFor(element.type).outlineBounds(element)
     );
     const groupBounds = _.map(selectedGroups, (group) => getBoundsForGroup(group));
 
@@ -99,7 +99,6 @@ export function useDraw() {
     });
 
     // Draw extra dashed outline over all the elements
-
     if (selectionBox.status !== 'active') {
       const bounds = g.getBoundingRectForBounds(allBounds);
 
@@ -178,7 +177,7 @@ export function useDraw() {
       ) {
         const element = elements[selectedIds[0]];
         if (element.type !== ElementType.Text) {
-          utilFor(element)
+          utilFor(element.type)
             .allEditHandles(element)
             .forEach((handle) =>
               draw.rect(
@@ -190,6 +189,55 @@ export function useDraw() {
             );
         }
       }
+
+      // Draw guidelines
+      // Only for one element now
+      // TODO: Extend for multiple elements
+      // TODO: Optimize
+      if (selectedIds.length === 1 && selectedGroupIds.length === 0) {
+        const selectedElement = elements[selectedIds[0]];
+        const otherElements = _.values(elements).filter(
+          (element) => element.id !== selectedElement.id
+        );
+
+        const elementAnchors = utilFor(selectedElement.type).getGuideAnchors(selectedElement);
+
+        const otherAnchors = _.flatMap(otherElements, (element) => {
+          return utilFor(element.type).getGuideAnchors(element);
+        });
+
+        elementAnchors.forEach((anchor) => {
+          otherAnchors.forEach((otherAnchor) => {
+            if (anchor.x === otherAnchor.x || anchor.y === otherAnchor.y) {
+              draw.dashedLine(ctx, otherAnchor, anchor, canvasColors.selection, [4, 4]);
+              draw.circle(ctx, anchor, 3, canvasColors.selection, canvasColors.selection);
+              draw.circle(
+                ctx,
+                otherAnchor,
+                3,
+                canvasColors.selection,
+                canvasColors.selectionBackground
+              );
+            }
+          });
+        });
+      }
     }
+  }
+
+  // For Debugging Anchor Lines while development
+  function anchorDebugLines(ctx: CanvasRenderingContext2D, anchor: Point) {
+    draw.dashedLine(
+      ctx,
+      { x: anchor.x - 100, y: anchor.y },
+      { x: anchor.x + 100, y: anchor.y },
+      canvasColors.selection
+    );
+    draw.dashedLine(
+      ctx,
+      { x: anchor.x, y: anchor.y - 100 },
+      { x: anchor.x, y: anchor.y + 100 },
+      canvasColors.selection
+    );
   }
 }

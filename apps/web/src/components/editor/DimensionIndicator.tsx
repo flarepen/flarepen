@@ -2,6 +2,8 @@ import { styled } from '../../stitches.config';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element, ElementType, isHorizontalArrow, isHorizontalLine } from '../../element';
 
+const OFFSET = 6;
+
 function getDimensionString(element: Element) {
   switch (element.type) {
     case ElementType.Rectangle:
@@ -26,21 +28,21 @@ function getDimensionString(element: Element) {
 function getPosition(element: Element) {
   switch (element.type) {
     case ElementType.Rectangle:
-      return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+      return { left: element.x - X_SCALE, top: element.y - Y_SCALE - OFFSET };
     case ElementType.Line:
       if (isHorizontalLine(element)) {
-        return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+        return { left: element.x - X_SCALE, top: element.y - Y_SCALE - OFFSET };
       } else {
-        return { left: element.x - X_SCALE, top: element.y - 2 * Y_SCALE + 6 };
+        return { left: element.x - X_SCALE, top: element.y - 2 * Y_SCALE + OFFSET };
       }
     case ElementType.Arrow:
       if (isHorizontalArrow(element)) {
-        return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+        return { left: element.x - X_SCALE, top: element.y - Y_SCALE - OFFSET };
       } else {
-        return { left: element.x - X_SCALE, top: element.y - 2 * Y_SCALE + 6 };
+        return { left: element.x - X_SCALE, top: element.y - 2 * Y_SCALE + OFFSET };
       }
     case ElementType.Text:
-      return { left: element.x - X_SCALE, top: element.y - Y_SCALE - 6 };
+      return { left: element.x - X_SCALE, top: element.y - Y_SCALE - OFFSET };
   }
 }
 

@@ -106,4 +106,5 @@ export interface ElementUtils<T extends ElementCommons> {
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => null | EditHandleType;
   edit: (t: T, mouseMove: MouseMove, handleType: EditHandleType) => T;
+  getGuideAnchors: (t: T) => Point[];
 }

@@ -56,4 +56,7 @@ export const TextUtils: ElementUtils<Text> = {
   edit: function (text, mouseMove, handleType) {
     return text;
   },
+  getGuideAnchors: function (text) {
+    return [];
+  },
 };

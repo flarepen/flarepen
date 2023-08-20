@@ -230,4 +230,7 @@ export const ArrowUtils: ElementUtils<Arrow> = {
       shape: g.arrow(len, arrow.direction),
     };
   },
+  getGuideAnchors: function (arrow) {
+    return [];
+  },
 };

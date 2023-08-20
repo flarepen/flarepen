@@ -238,4 +238,31 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
 
     return newRect;
   },
+
+  getGuideAnchors: function (rectangle) {
+    const x = rectangle.x;
+    const y = rectangle.y - Y_SCALE / 2;
+
+    const width = rectangle.width;
+    const height = rectangle.height;
+
+    return [
+      // Top Left
+      { x, y: y },
+      // Top Right
+      { x: x + width * X_SCALE, y },
+      // Bottom Left
+      { x, y: y + height * Y_SCALE },
+      // Bottom Center
+      {
+        x: x + width * X_SCALE,
+        y: y + height * Y_SCALE,
+      },
+      // Center
+      {
+        x: x + (width / 2) * X_SCALE,
+        y: y + (height / 2) * Y_SCALE,
+      },
+    ];
+  },
 };

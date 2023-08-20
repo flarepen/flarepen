@@ -224,4 +224,7 @@ export const LineUtils: ElementUtils<Line> = {
       shape: g.line(len, isHorizontalLine(line)),
     };
   },
+  getGuideAnchors: function (line) {
+    return [];
+  },
 };

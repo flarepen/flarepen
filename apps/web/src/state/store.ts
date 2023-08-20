@@ -62,7 +62,7 @@ export const getDefaultState = () => {
     dragging: false,
     tool: Tool.Rectangle,
     canvasCtx: null,
-    theme: Theme.dark,
+    theme: Theme.light,
     showGrid: true,
     dimensions: {
       width: window.innerWidth,
