@@ -72,6 +72,18 @@ export const unSelectAll = (doSnapshot = true) => {
   useStore.setState((state) => ({ selectedIds: [], selectedGroupIds: [] }));
 };
 
+export const selectAll = (doSnapshot = true) => {
+  doSnapshot && snapshot();
+
+  const elementsToSelect = _.keys(useStore.getState().elements);
+  const groupsToSelect = _.keys(useStore.getState().groups);
+
+  useStore.setState((_state) => ({
+    selectedIds: elementsToSelect,
+    selectedGroupIds: groupsToSelect,
+  }));
+};
+
 export const updateAllSelected = (update: (element: Element) => void, doSnapshot = true) => {
   doSnapshot && snapshot();
 

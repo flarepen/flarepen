@@ -13,6 +13,7 @@ export * from './align';
 export * from './select';
 export * from './elements';
 export * from './group';
+export * from './copy';
 
 export const setShowGrid = (show: boolean) => {
   useStore.setState((_state) => ({ showGrid: show }));

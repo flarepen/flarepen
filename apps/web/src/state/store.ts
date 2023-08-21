@@ -27,6 +27,13 @@ export interface Groups {
   [id: string]: ElementGroup;
 }
 
+// Custom clipboard to copy elements and groups
+export interface ClipBoard {
+  elementIds: string[];
+  elements: Element[];
+  groups: ElementGroup[];
+}
+
 export interface AppSlice {
   elements: Elements;
   draft: null | Draft;
@@ -47,6 +54,7 @@ export interface AppSlice {
   groups: Groups;
   groupForElement: ElementToGroupMap;
   selectedGroupIds: string[];
+  clipboard: ClipBoard;
 }
 
 export type AppState = AppSlice & UndoSlice;
@@ -80,6 +88,7 @@ export const getDefaultState = () => {
     groups: {},
     groupForElement: {},
     selectedGroupIds: [],
+    clipboard: { elementIds: [], elements: [], groups: [] },
   };
 };
 

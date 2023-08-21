@@ -12,7 +12,7 @@ import {
   TextUtils,
 } from '../../element';
 import { actions, useStore } from '../../state';
-import { X_SCALE, Y_SCALE } from '../../constants';
+import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE } from '../../constants';
 import _ from 'lodash';
 import { ArrowKey, MouseMove } from '../../types';
 import { TextInput } from './TextInput';
@@ -290,6 +290,8 @@ function CanvasWithInput(): JSX.Element {
       actions.setSpacePressed(true);
     }
 
+    const ctrlKey = IS_PLATFORM_MAC ? e.metaKey : e.ctrlKey;
+
     // Handle Keyboard events when any element or group is selected
     if (selectedIds.length + selectedGroupIds.length > 0) {
       switch (e.key) {
@@ -317,6 +319,25 @@ function CanvasWithInput(): JSX.Element {
             element.y = element.y + Y_SCALE;
           });
           break;
+      }
+    }
+
+    if (ctrlKey && e.key === 'a') {
+      actions.selectAll();
+      return null;
+    }
+
+    if (selectedIds.length + selectedGroupIds.length > 0) {
+      if (ctrlKey) {
+        switch (e.key) {
+          case 'c':
+            actions.copy(selectedIds, selectedGroupIds);
+            break;
+          case 'v':
+            actions.paste();
+            break;
+        }
+        return null;
       }
     }
 
