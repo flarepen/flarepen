@@ -10,6 +10,7 @@ import {
   ElementToGroupMap,
   SelectionBoxStatus,
   Point,
+  Draft,
 } from '../types';
 import { Tool } from '../tools';
 
@@ -28,7 +29,7 @@ export interface Groups {
 
 export interface AppSlice {
   elements: Elements;
-  draft: null | Element;
+  draft: null | Draft;
   editingContext: EditingContext;
   selectedIds: string[];
   dragging: boolean;

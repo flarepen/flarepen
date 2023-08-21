@@ -148,7 +148,7 @@ export function useDraw() {
       }
 
       // draw current draft
-      draft && draw.element(ctx, draft);
+      draft && draw.element(ctx, draft.element);
 
       drawSelectionOutlines();
 

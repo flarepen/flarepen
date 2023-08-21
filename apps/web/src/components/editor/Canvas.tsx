@@ -26,10 +26,6 @@ const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Text]: ElementType.Text,
 };
 
-function consoleShape(shape: g.Shape) {
-  console.log(shape.join('\n'));
-}
-
 function utilFor(element: Element): ElementUtils<any> {
   return ElementUtilsMap[element.type]!;
 }
@@ -120,36 +116,36 @@ function CanvasWithInput(): JSX.Element {
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+  const handlePointerDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (spacePressed) {
       actions.setCanvasDrag('active');
       return null;
     }
 
-    if (draft && draft.type !== ElementType.Text) {
-      actions.addElement(santizeElement(draft), false);
-      select(draft.id, true);
+    if (draft && draft.element.type !== ElementType.Text) {
+      actions.addElement(santizeElement(draft.element), false);
+      select(draft.element.id, true);
       resetTool();
       setDraft(null);
       return null;
     }
 
     // Handle Text Element
+    if (editingText) {
+      editingText.content && actions.addElement(santizeElement(editingText));
+      setEditingText(null);
+      resetTool();
+      return null;
+    }
+
     if (tool === Tool.Text) {
-      if (editingText) {
-        editingText.content && actions.addElement(santizeElement(editingText));
-        setEditingText(null);
-        resetTool();
-        return null;
-      } else {
-        setEditingText(
-          TextUtils.new(
-            clipToScale(e.clientX, X_SCALE),
-            clipToScale(e.clientY + Y_SCALE / 2, Y_SCALE)
-          )
-        );
-        return null;
-      }
+      setEditingText(
+        TextUtils.new(
+          clipToScale(e.clientX, X_SCALE),
+          clipToScale(e.clientY + Y_SCALE / 2, Y_SCALE)
+        )
+      );
+      return null;
     }
 
     if (ElementTypeForTool[tool]) {
@@ -159,7 +155,7 @@ function CanvasWithInput(): JSX.Element {
         clipToScale(e.clientY + Y_SCALE / 2, Y_SCALE)
       );
 
-      setDraft(newElement);
+      setDraft({ element: newElement, stage: 'inactive' });
       return null;
     }
 
@@ -197,7 +193,7 @@ function CanvasWithInput(): JSX.Element {
     }
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+  const handlePointerUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (canvasDrag !== 'inactive') {
       actions.sanitizeElements();
       actions.setCanvasDrag('inactive');
@@ -205,9 +201,11 @@ function CanvasWithInput(): JSX.Element {
 
     if (tool !== Tool.Select) {
       // TODO: Add single zustand action
-      if (draft && draft.type !== ElementType.Text) {
-        actions.addElement(santizeElement(draft), false);
-        select(draft.id, true);
+      if (draft && draft.element.type !== ElementType.Text) {
+        if (draft.stage === 'active') {
+          actions.addElement(santizeElement(draft.element), false);
+          select(draft.element.id, true);
+        }
         resetTool();
         setDraft(null);
       }
@@ -222,7 +220,7 @@ function CanvasWithInput(): JSX.Element {
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+  const handlePointerMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     // Accumulate mouse movement into batches of scale
     mouseMove.currentEvent = e;
     mouseMove.acc();
@@ -241,8 +239,8 @@ function CanvasWithInput(): JSX.Element {
         (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
       actions.shiftElements(x_by, y_by);
     } else if (draft) {
-      utilFor(draft).create(draft, mouseMove, (updated) => {
-        setDraft(updated);
+      utilFor(draft.element).create(draft.element, mouseMove, (updated) => {
+        setDraft({ element: updated, stage: 'active' });
       });
     } else {
       if (dragging && (selectedIds.length > 0 || selectedGroupIds.length > 0)) {
@@ -304,7 +302,6 @@ function CanvasWithInput(): JSX.Element {
 
     // TODO: Move to App div level
     // Check on draft to make sure that we handle keyboard shortcuts only when not in draft mode.
-    console.log(e.key);
     if (!draft && SHORTCUT_TO_TOOL[e.key]) {
       actions.setTool(SHORTCUT_TO_TOOL[e.key]);
     }
@@ -317,18 +314,31 @@ function CanvasWithInput(): JSX.Element {
     }
   };
 
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.detail == 2 && selectedIds.length == 1) {
+      const selectedElement = elements[selectedIds[0]];
+
+      if (selectedElement.type === ElementType.Text) {
+        actions.unSelectAll();
+        deleteElement(selectedElement.id);
+        setEditingText(selectedElement);
+      }
+    }
+  };
+
   return (
     <>
       <StyledCanvas
         id="canvas"
         ref={canvasRef}
         aria-label="ascii canvas"
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerMove={handlePointerMove}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
+        onClick={handleClick}
         css={{ cursor: spacePressed ? 'grab' : 'default' }}
       >
         <div>Test</div>
@@ -337,11 +347,12 @@ function CanvasWithInput(): JSX.Element {
         <TextInput
           x={editingText.x}
           y={editingText.y - Y_SCALE / 2}
+          value={editingText.content}
           onInput={(e) => {
             setEditingText({
               ...editingText,
-              shape: g.text(e.currentTarget.textContent || ''),
-              content: e.currentTarget.textContent || '',
+              shape: g.text(e.target.value || ''),
+              content: e.target.value || '',
             });
           }}
         />

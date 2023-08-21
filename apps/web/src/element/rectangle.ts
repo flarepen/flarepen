@@ -253,7 +253,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       { x: x + width * X_SCALE, y },
       // Bottom Left
       { x, y: y + height * Y_SCALE },
-      // Bottom Center
+      // Bottom Right
       {
         x: x + width * X_SCALE,
         y: y + height * Y_SCALE,

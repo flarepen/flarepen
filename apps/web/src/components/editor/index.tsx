@@ -18,7 +18,9 @@ function Editor() {
     element = elements[selectedIds[0]];
   }
 
-  element = element || draft;
+  if (draft && !element) {
+    element = draft.element;
+  }
 
   return (
     <>

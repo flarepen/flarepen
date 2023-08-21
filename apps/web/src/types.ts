@@ -1,6 +1,6 @@
 import React from 'react';
 import { X_SCALE, Y_SCALE } from './constants';
-import { IBounds } from './element';
+import { Element, IBounds } from './element';
 
 export class MouseMove {
   accX: number;
@@ -95,4 +95,11 @@ export enum BorderType {
   Double = 'double',
   Heavy = 'heavy',
   Rounded = 'rounded',
+}
+
+export type DraftStage = 'inactive' | 'active';
+
+export interface Draft {
+  element: Element;
+  stage: DraftStage;
 }

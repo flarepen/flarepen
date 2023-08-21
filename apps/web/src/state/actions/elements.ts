@@ -4,6 +4,7 @@ import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { AppState, useStore } from '../store';
 import { snapshot } from './undo';
+import { Draft } from '../../types';
 
 function clipToScale(value: number, scale: number) {
   return Math.floor(value / scale) * scale;
@@ -51,7 +52,7 @@ export const deleteElement = (id: string, doSnapshot = true) => {
   );
 };
 
-export const setDraft = (draft: Element | null) => {
+export const setDraft = (draft: Draft | null) => {
   useStore.setState((state) => ({ draft }));
 };
 
