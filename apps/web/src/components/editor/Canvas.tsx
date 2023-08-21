@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as g from '../../geometry';
-import { SHORTCUT_TO_TOOL, Tool } from '../../tools';
+import { SHORTCUT_TO_TOOL, Tool, getCursorForTool } from '../../tools';
 import {
   ElementType,
   Element,
@@ -18,6 +18,8 @@ import { ArrowKey, MouseMove } from '../../types';
 import { TextInput } from './TextInput';
 import { styled } from '../../stitches.config';
 import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
+import { Property } from '@stitches/react/types/css';
+import { cursorEnabled, getCursor } from '../../cursor';
 
 const ElementTypeForTool: { [t in Tool]?: ElementType } = {
   [Tool.Rectangle]: ElementType.Rectangle,
@@ -72,6 +74,7 @@ type CanvasStatus = 'drafting' | 'editing' | 'dragging' | 'selecting';
 // TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
   const [editingText, setEditingText] = useState<null | Text>(null);
+  const [cursor, setCursor] = useState<Property.Cursor>('default');
 
   const [selectionBox, selectionBoxHandlers] = useSelectionBox();
   const canvasRef = useHtmlCanvas();
@@ -260,6 +263,23 @@ function CanvasWithInput(): JSX.Element {
       }
     }
 
+    // Show edit mouse pointers
+    if (!dragging && selectedIds.length > 0 && selectedGroupIds.length === 0) {
+      const selectedElement = elements[selectedIds[0]];
+      const editHandles = utilFor(selectedElement).allEditHandles(selectedElement);
+      const activeHandle = _.find(editHandles, (handle) => {
+        return cursorEnabled({ x: e.clientX, y: e.clientY }, handle.bounds);
+      });
+
+      if (activeHandle) {
+        setCursor(getCursor(activeHandle.handleType));
+      } else {
+        if (!editingContext.id) {
+          setCursor('default');
+        }
+      }
+    }
+
     mouseMove.flushAcc();
     mouseMove.previousEvent = e;
   };
@@ -326,6 +346,19 @@ function CanvasWithInput(): JSX.Element {
     }
   };
 
+  // TODO: Cleanup
+  const finalCursor = () => {
+    if (spacePressed) {
+      return 'grab';
+    }
+
+    if (cursor === 'default') {
+      return getCursorForTool(tool);
+    }
+
+    return cursor;
+  };
+
   return (
     <>
       <StyledCanvas
@@ -339,7 +372,7 @@ function CanvasWithInput(): JSX.Element {
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
         onClick={handleClick}
-        css={{ cursor: spacePressed ? 'grab' : 'default' }}
+        css={{ cursor: finalCursor() }}
       >
         <div>Test</div>
       </StyledCanvas>

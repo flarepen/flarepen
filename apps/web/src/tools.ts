@@ -1,3 +1,4 @@
+import { Property } from '@stitches/react/types/css';
 import _ from 'lodash';
 
 export enum Tool {
@@ -15,3 +16,11 @@ export const SHORTCUT_TO_TOOL = {
   t: Tool.Text,
   s: Tool.Select,
 } as { [i: string]: Tool };
+
+export function getCursorForTool(t: Tool): Property.Cursor {
+  if (t === Tool.Select) {
+    return 'default';
+  } else {
+    return 'crosshair';
+  }
+}
