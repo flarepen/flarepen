@@ -322,23 +322,21 @@ function CanvasWithInput(): JSX.Element {
       }
     }
 
-    if (ctrlKey && e.key === 'a') {
-      actions.selectAll();
-      return null;
-    }
-
-    if (selectedIds.length + selectedGroupIds.length > 0) {
-      if (ctrlKey) {
-        switch (e.key) {
-          case 'c':
+    if (ctrlKey) {
+      switch (e.key) {
+        case 'a':
+          actions.selectAll();
+          break;
+        case 'v':
+          actions.paste();
+          break;
+        case 'c':
+          if (selectedIds.length + selectedGroupIds.length > 0) {
             actions.copy(selectedIds, selectedGroupIds);
-            break;
-          case 'v':
-            actions.paste();
-            break;
-        }
-        return null;
+          }
+          break;
       }
+      return null;
     }
 
     // TODO: Move to App div level
