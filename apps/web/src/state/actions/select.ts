@@ -14,7 +14,16 @@ export const select = (id: string, only: boolean, doSnapshot = true) => {
   }
 
   if (_.includes(useStore.getState().selectedIds, id)) {
-    return null;
+    // Remove from selection if already selected in multi select mode
+    if (!only) {
+      useStore.setState(
+        produce<AppState>((state) => {
+          state.selectedIds = _.without(state.selectedIds, id);
+        })
+      );
+    }
+
+    return;
   }
 
   useStore.setState(
