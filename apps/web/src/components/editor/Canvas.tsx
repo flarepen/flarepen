@@ -120,6 +120,12 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handlePointerDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    // Event gets triggered on contextmenu click also
+    if (e.button === 2 && e.buttons === 2) {
+      e.preventDefault();
+      return;
+    }
+
     if (spacePressed) {
       actions.setCanvasDrag('active');
       return null;
@@ -392,6 +398,11 @@ function CanvasWithInput(): JSX.Element {
         onKeyUp={handleKeyUp}
         onClick={handleClick}
         css={{ cursor: finalCursor() }}
+        onContextMenu={(e) => {
+          // Show custom Context Menu
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       >
         <div>Test</div>
       </StyledCanvas>
