@@ -2,7 +2,7 @@ import { styled } from '../../stitches.config';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element, ElementType, isHorizontalArrow, isHorizontalLine } from '../../element';
 
-const OFFSET = 6;
+const OFFSET = 14;
 
 function getDimensionString(element: Element) {
   switch (element.type) {
@@ -68,8 +68,11 @@ function DimensionIndicator({ className, element }: DimensionIndicatorProps) {
 }
 
 export default styled(DimensionIndicator, {
-  padding: 0,
+  padding: 4,
   margin: 0,
-  color: '$actionText',
+  color: '$toolTipText',
+  background: '$toolTipBg',
+  fontSize: 14,
   userSelect: 'none',
+  borderRadius: 2,
 });

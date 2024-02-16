@@ -4,7 +4,7 @@ import { mauve } from '@radix-ui/colors';
 
 const StyledContent = styled(TooltipPrimitive.Content, {
   fontSize: 14,
-  color: mauve.mauve1,
+  color: '$toolTipText',
   backgroundColor: '$toolTipBg',
   padding: '4px 8px',
   borderRadius: 3,

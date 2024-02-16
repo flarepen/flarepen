@@ -16,6 +16,7 @@ export const { styled, css, theme, createTheme } = createStitches({
       actionTextActive: tomato.tomato11,
       grid: mauveDark.mauve6,
       toolTipBg: mauve.mauve9,
+      toolTipText: mauve.mauve1,
     },
   },
 });
@@ -34,5 +35,6 @@ export const darkTheme = createTheme({
     actionTextActive: tomatoDark.tomato11,
     grid: mauve.mauve9,
     toolTipBg: mauveDark.mauve9,
+    toolTipText: mauve.mauve1,
   },
 });
