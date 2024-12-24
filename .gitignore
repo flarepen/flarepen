@@ -2,3 +2,5 @@ node_modules
 examples.txt
 .turbo
 .DS_Store
+.aider*
+.env

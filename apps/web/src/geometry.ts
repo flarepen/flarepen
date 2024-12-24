@@ -1,9 +1,9 @@
 import {
-  ArrowDirection,
+  LinearDirection,
   Element,
   ElementType,
   IBounds,
-  isHorizontalLine,
+  isHorizontal,
   point,
   Point,
   Rectangle,
@@ -104,22 +104,22 @@ export function line(len: number, horizontal: boolean): Shape {
   return Array(len).fill(SYMBOLS.VERTICAL);
 }
 
-export function arrow(len: number, direction: ArrowDirection): Shape {
+export function arrow(len: number, direction: LinearDirection): Shape {
   let shape = [];
   switch (direction) {
-    case ArrowDirection.Right:
+    case LinearDirection.Right:
       return [line(len - 1, true)[0] + SYMBOLS.ARROW_RIGHT];
-    case ArrowDirection.Left:
+    case LinearDirection.Left:
       return [SYMBOLS.ARROW_LEFT + line(len - 1, true)[0]];
-    case ArrowDirection.Up:
+    case LinearDirection.Up:
       shape = line(len - 1, false);
       shape.unshift(SYMBOLS.ARROW_UP);
       return shape;
-    case ArrowDirection.Down:
+    case LinearDirection.Down:
       shape = line(len - 1, false);
       shape.push(SYMBOLS.ARROW_DOWN);
       return shape;
-    case ArrowDirection.Undecided:
+    case LinearDirection.Undecided:
       return [''];
   }
 }
@@ -134,9 +134,10 @@ function getWidth(element: Element): number {
     case ElementType.Rectangle:
       return element.width;
     case ElementType.Line:
-      return isHorizontalLine(element) ? element.len : 1;
+      return isHorizontal(element) ? element.len : 1;
     case ElementType.Arrow:
-      return element.direction === ArrowDirection.Left || element.direction === ArrowDirection.Right
+      return element.direction === LinearDirection.Left ||
+        element.direction === LinearDirection.Right
         ? element.len
         : 1;
     case ElementType.Text:
@@ -149,9 +150,9 @@ function getHeight(element: Element): number {
     case ElementType.Rectangle:
       return element.height;
     case ElementType.Line:
-      return isHorizontalLine(element) ? 1 : element.len;
+      return isHorizontal(element) ? 1 : element.len;
     case ElementType.Arrow:
-      return element.direction === ArrowDirection.Up || element.direction === ArrowDirection.Down
+      return element.direction === LinearDirection.Up || element.direction === LinearDirection.Down
         ? element.len
         : 1;
     case ElementType.Text:

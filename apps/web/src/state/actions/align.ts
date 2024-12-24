@@ -2,7 +2,7 @@ import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import _, { max } from 'lodash';
 import { X_SCALE, Y_SCALE } from '../../constants';
-import { Element, ElementType, isHorizontalArrow, isHorizontalLine } from '../../element';
+import { Element, ElementType, isHorizontal } from '../../element';
 import { ElementGroup } from '../../types';
 import { AppState, Elements, useStore } from '../store';
 import { snapshot } from './undo';
@@ -58,9 +58,9 @@ function width(element: Element) {
     case ElementType.Rectangle:
       return element.width;
     case ElementType.Line:
-      return isHorizontalLine(element) ? element.len : 1;
+      return isHorizontal(element) ? element.len : 1;
     case ElementType.Arrow:
-      return isHorizontalArrow(element) ? element.len : 1;
+      return isHorizontal(element) ? element.len : 1;
     case ElementType.Text:
       return element.content.length;
   }
@@ -71,9 +71,9 @@ function height(element: Element) {
     case ElementType.Rectangle:
       return element.height;
     case ElementType.Line:
-      return isHorizontalLine(element) ? 1 : element.len;
+      return isHorizontal(element) ? 1 : element.len;
     case ElementType.Arrow:
-      return isHorizontalArrow(element) ? 1 : element.len;
+      return isHorizontal(element) ? 1 : element.len;
     case ElementType.Text:
       return 1;
   }

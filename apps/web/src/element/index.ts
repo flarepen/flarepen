@@ -41,3 +41,4 @@ export * from './line';
 export * from './arrow';
 export * from './text';
 export * from './rectangle';
+export * from './linear';

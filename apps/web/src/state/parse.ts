@@ -1,4 +1,4 @@
-import { Element, ElementType, Rectangle, Line, Arrow, Text, isHorizontalLine } from '../element';
+import { Element, ElementType, Rectangle, Line, Arrow, Text, isHorizontal } from '../element';
 import * as g from '../geometry';
 import { BorderType } from '../types';
 
@@ -56,7 +56,7 @@ function parseLine(obj: any): Line {
     labelEnabled: false,
   };
 
-  elem.shape = g.line(elem.len, isHorizontalLine(elem));
+  elem.shape = g.line(elem.len, isHorizontal(elem));
 
   return elem;
 }
