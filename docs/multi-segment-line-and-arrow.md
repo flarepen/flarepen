@@ -41,151 +41,248 @@ Line and Arrow extend LinearElement, so they inherit this property. Single-segme
 
 **File:** `apps/web/src/geometry.ts`
 
+Added `polyline()` function that creates a grid and draws segments:
+
 ```typescript
-export function line(points: Point[]): Shape {
+export function polyline(points: Point[]): Shape {
   if (points.length < 2) return [[]];
   
+  // Single segment - use existing line function
   if (points.length === 2) {
-    // Single segment - current Bresenham algorithm
-    return lineSegment(points[0], points[1]);
+    const dx = Math.abs(points[1].x - points[0].x) / X_SCALE;
+    const dy = Math.abs(points[1].y - points[0].y) / Y_SCALE;
+    const horizontal = dx > dy;
+    const len = Math.floor(horizontal ? dx : dy);
+    return line(len, horizontal);
   }
   
-  // Multi-segment
-  let result: Shape = [[]];
+  // Multi-segment - calculate bounding box and create grid
+  const minX = Math.min(...points.map(p => p.x));
+  const minY = Math.min(...points.map(p => p.y));
+  const maxX = Math.max(...points.map(p => p.x));
+  const maxY = Math.max(...points.map(p => p.y));
   
+  const width = Math.floor((maxX - minX) / X_SCALE) + 1;
+  const height = Math.floor((maxY - minY) / Y_SCALE) + 1;
+  
+  const grid: string[][] = Array(height).fill(null).map(() => 
+    Array(width).fill(' ')
+  );
+  
+  // Draw each segment with tolerance (snap to dominant direction)
   for (let i = 0; i < points.length - 1; i++) {
-    const segment = lineSegment(points[i], points[i + 1]);
-    result = mergeShapes(result, segment);
+    const p1 = points[i];
+    const p2 = points[i + 1];
     
-    // Add corner character at intermediate points
-    if (i > 0 && i < points.length - 1) {
-      const corner = getCornerChar(points[i - 1], points[i], points[i + 1]);
-      result = placeCharAt(result, points[i], corner);
+    const x1 = Math.floor((p1.x - minX) / X_SCALE);
+    const y1 = Math.floor((p1.y - minY) / Y_SCALE);
+    const x2 = Math.floor((p2.x - minX) / X_SCALE);
+    const y2 = Math.floor((p2.y - minY) / Y_SCALE);
+    
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+    
+    if (dx <= 1 && dy > 0) {
+      // Vertical - snap to x1
+      const startY = Math.min(y1, y2);
+      const endY = Math.max(y1, y2);
+      for (let y = startY; y <= endY; y++) {
+        grid[y][x1] = SYMBOLS.VERTICAL;
+      }
+    } else if (dy <= 1 && dx > 0) {
+      // Horizontal - snap to y1
+      const startX = Math.min(x1, x2);
+      const endX = Math.max(x1, x2);
+      for (let x = startX; x <= endX; x++) {
+        grid[y1][x] = SYMBOLS.HORIZONTAL;
+      }
     }
   }
   
-  return result;
-}
-
-function getCornerChar(prev: Point, current: Point, next: Point): string {
-  // Calculate direction from prev to current
-  const fromDir = getDirection(prev, current);
-  // Calculate direction from current to next
-  const toDir = getDirection(current, next);
+  // Place corners at junction points
+  for (let i = 1; i < points.length - 1; i++) {
+    const corner = getCornerChar(points[i - 1], points[i], points[i + 1]);
+    const gridX = Math.floor((points[i].x - minX) / X_SCALE);
+    const gridY = Math.floor((points[i].y - minY) / Y_SCALE);
+    grid[gridY][gridX] = corner;
+  }
   
-  // Return appropriate corner character
-  if (fromDir === LEFT && toDir === DOWN) return '┐';
-  if (fromDir === UP && toDir === RIGHT) return '└';
-  if (fromDir === RIGHT && toDir === UP) return '┘';
-  if (fromDir === DOWN && toDir === LEFT) return '┌';
-  // ... handle all 8 combinations
+  return grid.map(row => row.join(''));
 }
 ```
 
-**For arrows:** Same as line but add arrowhead at last segment.
+Corner detection uses direction changes to pick the right box-drawing character (┐┘└┌).
 
-### 3. Update DrawingMode
+### 3. Drawing Mode
 
 **File:** `apps/web/src/editor/modes/drawing.ts`
 
+**onPointerDown:** Adds points on click, skips duplicates and double-clicks
 ```typescript
-onPointerDown: (e, mouseMove) => {
-  const { interactionMode } = useStore.getState();
-  if (interactionMode.type !== 'drawing') return;
-
-  // Handle Line/Arrow multi-segment
-  if (interactionMode.element.type === ElementType.Line || 
-      interactionMode.element.type === ElementType.Arrow) {
-    
-    // Only add points in pending mode (click-move-click)
-    if (interactionMode.stage === 'pending') {
-      const newPoint = {
-        x: clipToScale(e.clientX, X_SCALE),
-        y: clipToScale(e.clientY, Y_SCALE)
-      };
-      
-      const updatedElement = {
-        ...interactionMode.element,
-        points: [...interactionMode.element.points, newPoint]
-      };
-      
-      useStore.setState({
-        interactionMode: {
-          ...interactionMode,
-          element: updatedElement
-        }
-      });
-      return;
-    }
-  }
-
-  // Other element types (Rectangle) - current behavior
-  if (interactionMode.stage === 'pending') {
-    // Finalize
-    actions.addElement(sanitizeElement(interactionMode.element), false);
-    // ...
-  }
-}
-
-onPointerMove: (e, mouseMove) => {
-  // If Line/Arrow in pending mode, show preview with temporary point
-  if ((element.type === Line || element.type === Arrow) && 
-      stage === 'pending') {
-    const previewPoint = { x: clipToScale(e.clientX, X_SCALE), y: ... };
-    const previewElement = {
-      ...element,
-      points: [...element.points, previewPoint]
-    };
-    // Update preview
+if (interactionMode.stage === 'pending' && 
+    (interactionMode.element.type === ElementType.Line || 
+     interactionMode.element.type === ElementType.Arrow)) {
+  
+  // Skip double-click (handled by Canvas.tsx)
+  if ((e.nativeEvent as MouseEvent).detail === 2) return;
+  
+  const newPoint = { x: clipToScale(e.clientX, X_SCALE), y: clipToScale(e.clientY, Y_SCALE) };
+  
+  // Initialize points array if first click
+  if (!interactionMode.element.points) {
+    interactionMode.element.points = [{ x: interactionMode.element.x, y: interactionMode.element.y }];
   }
   
-  // Current behavior for active stage (drag)
+  // Skip duplicate points
+  const lastPoint = interactionMode.element.points[interactionMode.element.points.length - 1];
+  if (lastPoint.x === newPoint.x && lastPoint.y === newPoint.y) return;
+  
+  // Add point and update state
+  const updatedElement = {
+    ...interactionMode.element,
+    points: [...interactionMode.element.points, newPoint],
+  };
+  
+  useStore.setState({
+    interactionMode: { ...interactionMode, element: updatedElement },
+    draft: { element: updatedElement, stage: 'pending' },
+  });
+}
+```
+
+**onPointerMove:** Shows preview by calling element's create function
+```typescript
+if (interactionMode.stage === 'pending' &&
+    (interactionMode.element.type === ElementType.Line || 
+     interactionMode.element.type === ElementType.Arrow) &&
+    interactionMode.element.points) {
+  
+  // Use element's create function to generate preview with snapping
+  utilFor(interactionMode.element).create(interactionMode.element, mouseMove, (updated) => {
+    useStore.setState({
+      draft: { element: updated, stage: 'pending' },
+    });
+  });
+}
+```
+
+**File:** `apps/web/src/element/line.ts`
+
+**create function:** Snaps preview point to dominant direction
+```typescript
+if (line.points && line.points.length > 0) {
+  const lastPoint = line.points[line.points.length - 1];
+  let previewPoint = {
+    x: mouseMove.currentEvent?.clientX || line.x,
+    y: mouseMove.currentEvent?.clientY || line.y,
+  };
+  
+  // Snap to dominant direction
+  const dx = Math.abs(previewPoint.x - lastPoint.x);
+  const dy = Math.abs(previewPoint.y - lastPoint.y);
+  
+  if (dx > dy) {
+    previewPoint.y = lastPoint.y; // Lock to horizontal
+  } else {
+    previewPoint.x = lastPoint.x; // Lock to vertical
+  }
+  
+  const allPoints = [...line.points, previewPoint];
+  const minX = Math.min(...allPoints.map(p => p.x));
+  const minY = Math.min(...allPoints.map(p => p.y));
+  
+  callback({
+    ...line,
+    x: minX,
+    y: minY,
+    points: allPoints,
+    shape: g.polyline(allPoints),
+  });
 }
 ```
 
 ### 4. Finalization
 
-**Double-click detection:**
-```typescript
-// In Canvas.tsx handleClick
-if (e.detail === 2 && interactionMode.type === 'drawing') {
-  if (interactionMode.element.type === Line || Arrow) {
-    // Finalize multi-segment line/arrow
-    actions.addElement(sanitizeElement(interactionMode.element), false);
-    useStore.setState({ interactionMode: { type: 'idle' } });
-  }
-}
-```
+**File:** `apps/web/src/editor/Canvas.tsx`
 
-**ESC key:**
+Both ESC and double-click regenerate the shape from points before adding to store:
+
 ```typescript
-// In Canvas.tsx handleKeyDown
+// ESC handler
 if (e.key === 'Escape' && interactionMode.type === 'drawing') {
-  if (interactionMode.element.type === Line || Arrow) {
-    // Finalize if at least 2 points
-    if (interactionMode.element.points.length >= 2) {
-      actions.addElement(sanitizeElement(interactionMode.element), false);
-    }
-    useStore.setState({ interactionMode: { type: 'idle' } });
-  }
-}
-```
-
-### 5. Optional: Backspace to Remove Last Point
-
-```typescript
-if (e.key === 'Backspace' && interactionMode.type === 'drawing') {
-  if (interactionMode.element.points.length > 1) {
-    const updatedElement = {
+  if ((interactionMode.element.type === ElementType.Line || 
+       interactionMode.element.type === ElementType.Arrow) &&
+      interactionMode.element.points && 
+      interactionMode.element.points.length >= 2) {
+    
+    // Regenerate shape from points
+    const finalPoints = interactionMode.element.points;
+    const minX = Math.min(...finalPoints.map(p => p.x));
+    const minY = Math.min(...finalPoints.map(p => p.y));
+    
+    const finalElement = {
       ...interactionMode.element,
-      points: interactionMode.element.points.slice(0, -1)
+      x: minX,
+      y: minY,
+      points: finalPoints,
+      shape: g.polyline(finalPoints),
     };
+    
+    actions.addElement(santizeElement(finalElement), false);
+    actions.select(finalElement.id, true);
+    
+    if (!toolLocked) {
+      actions.setTool(Tool.Select);
+    }
+    
     useStore.setState({
-      interactionMode: { ...interactionMode, element: updatedElement }
+      interactionMode: { type: 'idle' },
+      draft: null,
     });
   }
 }
+
+// Double-click handler (similar logic)
+if (e.detail === 2 && interactionMode.type === 'drawing') {
+  // Same finalization code
+}
 ```
+
+Key: Must regenerate shape with `g.polyline(finalPoints)` because `interactionMode.element` has stale shape from initial creation.
+
+### 5. Dimension Calculation
+
+**File:** `apps/web/src/geometry.ts`
+
+Updated `getWidth()` and `getHeight()` to handle multi-segment lines:
+
+```typescript
+function getWidth(element: Element): number {
+  switch (element.type) {
+    case ElementType.Line:
+      // Multi-segment - use shape width
+      if ((element as any).points) {
+        return Math.max(...element.shape.map(row => row.length));
+      }
+      return isHorizontal(element) ? element.len : 1;
+    // ...
+  }
+}
+
+function getHeight(element: Element): number {
+  switch (element.type) {
+    case ElementType.Line:
+      // Multi-segment - use shape height
+      if ((element as any).points) {
+        return element.shape.length;
+      }
+      return isHorizontal(element) ? 1 : element.len;
+    // ...
+  }
+}
+```
+
+This fixes scene array sizing in `merge()` function.
 
 ## Corner Characters
 
@@ -213,9 +310,10 @@ Point 4 ─────┘ Point 3
 
 ## Migration Notes
 
-- Existing Line/Arrow elements with `x1,y1,x2,y2` need migration to `points: [{x: x1, y: y1}, {x: x2, y: y2}]`
-- Or handle both formats in geometry generation for backward compatibility
-- Draft state already syncs with interactionMode, so no changes needed there
+- Existing single-segment Line/Arrow elements use `len` and `direction` properties
+- Multi-segment lines add `points[]` array alongside these properties
+- Both formats coexist - functions check for `points` to determine which format
+- No migration needed for existing diagrams
 
 ## Testing
 
