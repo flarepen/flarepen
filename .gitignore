@@ -4,3 +4,5 @@ examples.txt
 .DS_Store
 .aider*
 .env
+screenshots/*
+!screenshots/.gitkeep

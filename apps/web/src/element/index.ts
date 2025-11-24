@@ -2,7 +2,7 @@ import { Line, LineUtils } from './line';
 import { Arrow, ArrowUtils } from './arrow';
 import { Text, TextUtils } from './text';
 import { Rectangle, RectangleUtils } from './rectangle';
-import { ElementType, ElementUtils, IBounds } from './base';
+import { ElementType, ElementUtils, IBounds, Point } from './base';
 
 export type Element = Rectangle | Line | Arrow | Text;
 
@@ -25,6 +25,14 @@ export const ElementUtilsMap: { [k in ElementType]: ElementUtils<any> } = {
   [ElementType.Line]: LineUtils,
   [ElementType.Text]: TextUtils,
 };
+
+export function utilFor(element: Element): ElementUtils<any> {
+  return ElementUtilsMap[element.type];
+}
+
+export function inVicinity(p: Point, element: Element): boolean {
+  return utilFor(element).inVicinity(element, p);
+}
 
 export function insideBound(element: Element, bound: IBounds): boolean {
   const outlineBounds = ElementUtilsMap[element.type].outlineBounds(element);

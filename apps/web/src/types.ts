@@ -1,6 +1,6 @@
 import React from 'react';
 import { X_SCALE, Y_SCALE } from './constants';
-import { Element, IBounds } from './element';
+import { Element, IBounds, Text } from './element';
 
 export class MouseMove {
   accX: number;
@@ -103,3 +103,13 @@ export interface Draft {
   element: Element;
   stage: DraftStage;
 }
+
+// New interaction mode state machine
+export type InteractionMode =
+  | { type: 'idle' }
+  | { type: 'panning' }
+  | { type: 'drawing'; element: Element; stage: 'pending' | 'active' }
+  | { type: 'textEditing'; text: Text }
+  | { type: 'dragging'; elementIds: string[] }
+  | { type: 'selecting'; bounds: IBounds }
+  | { type: 'editing'; elementId: string; handleType: EditHandleType };

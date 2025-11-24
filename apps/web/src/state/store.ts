@@ -11,6 +11,7 @@ import {
   SelectionBoxStatus,
   Point,
   Draft,
+  InteractionMode,
 } from '../types';
 import { Tool } from '../tools';
 
@@ -55,6 +56,9 @@ export interface AppSlice {
   groupForElement: ElementToGroupMap;
   selectedGroupIds: string[];
   clipboard: ClipBoard;
+
+  // New state machine (alongside old flags during migration)
+  interactionMode: InteractionMode;
 }
 
 export type AppState = AppSlice & UndoSlice;
@@ -89,6 +93,7 @@ export const getDefaultState = () => {
     groupForElement: {},
     selectedGroupIds: [],
     clipboard: { elementIds: [], elements: [], groups: [] },
+    interactionMode: { type: 'idle' } as InteractionMode,
   };
 };
 
