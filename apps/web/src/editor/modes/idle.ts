@@ -1,9 +1,9 @@
 import React from 'react';
-import { useStore, actions } from '../../../state';
-import { Tool, ElementTypeForTool } from '../../../tools';
-import { createElement, ElementType, Text as TextElement, utilFor, inVicinity } from '../../../element';
-import { X_SCALE, Y_SCALE } from '../../../constants';
-import { MouseMove } from '../../../types';
+import { useStore, actions } from '../../state';
+import { Tool, ElementTypeForTool } from '../../tools';
+import { createElement, ElementType, Text as TextElement, utilFor, inVicinity } from '../../element';
+import { X_SCALE, Y_SCALE } from '../../constants';
+import { MouseMove } from '../../types';
 import { ModeHandler } from './types';
 import _ from 'lodash';
 

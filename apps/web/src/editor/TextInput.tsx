@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { styled } from '../../stitches.config';
-import { X_SCALE, Y_SCALE } from '../../constants';
+import { styled } from '../stitches.config';
+import { X_SCALE, Y_SCALE } from '../constants';
 
 export interface TextInputProps {
   x: number;

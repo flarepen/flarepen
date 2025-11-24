@@ -4,7 +4,7 @@ import _ from 'lodash';
 import UndoRedo from './components/UndoRedo';
 import { ToolBar, ToolGroup, Separator, ActionGroup } from './components/toolbar';
 import React, { useEffect } from 'react';
-import Editor from './components/editor';
+import Editor from './editor';
 import { styled, theme, darkTheme } from './stitches.config';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { Theme } from './types';

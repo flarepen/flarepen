@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
-import * as g from '../../geometry';
-import { SHORTCUT_TO_TOOL, Tool, getCursorForTool, ElementTypeForTool } from '../../tools';
+import * as g from '../geometry';
+import { SHORTCUT_TO_TOOL, Tool, getCursorForTool, ElementTypeForTool } from '../tools';
 import {
   ElementType,
   Element,
   createElement,
   utilFor,
-} from '../../element';
-import { actions, useStore } from '../../state';
-import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '../../constants';
+} from '../element';
+import { actions, useStore } from '../state';
+import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '../constants';
 import _ from 'lodash';
-import { ArrowKey, MouseMove } from '../../types';
+import { ArrowKey, MouseMove } from '../types';
 import { TextInput } from './TextInput';
-import { styled } from '../../stitches.config';
+import { styled } from '../stitches.config';
 import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
 import { Property } from '@stitches/react/types/css';
-import { cursorEnabled, getCursor } from '../../cursor';
+import { cursorEnabled, getCursor } from '../cursor';
 import { getModeHandler } from './modes';
 
 // We cant allow any x and y since everything is ASCII.

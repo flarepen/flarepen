@@ -1,6 +1,6 @@
-import { styled } from '../../stitches.config';
-import { X_SCALE, Y_SCALE } from '../../constants';
-import { Element, ElementType, isHorizontal } from '../../element';
+import { styled } from '../stitches.config';
+import { X_SCALE, Y_SCALE } from '../constants';
+import { Element, ElementType, isHorizontal } from '../element';
 
 const OFFSET = 14;
 

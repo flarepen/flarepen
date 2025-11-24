@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { expandIBound, insideBound } from '../../../element';
-import { actions, useStore } from '../../../state';
-import { MouseMove } from '../../../types';
+import { expandIBound, insideBound } from '../../element';
+import { actions, useStore } from '../../state';
+import { MouseMove } from '../../types';
 
 export function useSelectionBox() {
   const elements = useStore((state) => state.elements);

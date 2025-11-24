@@ -1,4 +1,4 @@
-import { InteractionMode } from '../../../types';
+import { InteractionMode } from '../../types';
 import { IdleMode } from './idle';
 import { PanningMode } from './panning';
 import { DrawingMode } from './drawing';

@@ -1,6 +1,6 @@
 import { debounce } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
-import { actions, useStore } from '../../../state';
+import { actions, useStore } from '../../state';
 import { useCanvasColors } from './useCanvasColors';
 
 export function useHtmlCanvas() {

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useStore, actions } from '../../../state';
-import { utilFor, ElementType } from '../../../element';
-import { X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '../../../constants';
-import { MouseMove } from '../../../types';
-import { Tool } from '../../../tools';
+import { useStore, actions } from '../../state';
+import { utilFor, ElementType } from '../../element';
+import { X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '../../constants';
+import { MouseMove } from '../../types';
+import { Tool } from '../../tools';
 import { ModeHandler } from './types';
 
 function clipToScale(value: number, scale: number) {

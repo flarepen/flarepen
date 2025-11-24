@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { Element } from '../../element';
-import { useStore } from '../../state';
+import { Element } from '../element';
+import { useStore } from '../state';
 import Canvas from './Canvas';
 import DimensionIndicator from './DimensionIndicator';
 import { OverlayGrid } from './SvgGrid';
