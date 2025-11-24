@@ -31,6 +31,43 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   create: function (line, mouseMove, callback) {
+    // Multi-segment line with points array
+    if (line.points && line.points.length > 0) {
+      const lastPoint = line.points[line.points.length - 1];
+      let previewPoint = {
+        x: mouseMove.currentEvent?.clientX || line.x,
+        y: mouseMove.currentEvent?.clientY || line.y,
+      };
+      
+      // Snap to dominant direction from last point
+      const dx = Math.abs(previewPoint.x - lastPoint.x);
+      const dy = Math.abs(previewPoint.y - lastPoint.y);
+      
+      if (dx > dy) {
+        // Horizontal dominant - lock y
+        previewPoint.y = lastPoint.y;
+      } else {
+        // Vertical dominant - lock x
+        previewPoint.x = lastPoint.x;
+      }
+      
+      const allPoints = [...line.points, previewPoint];
+      
+      // Calculate bounding box
+      const minX = Math.min(...allPoints.map(p => p.x));
+      const minY = Math.min(...allPoints.map(p => p.y));
+      
+      callback({
+        ...line,
+        x: minX,
+        y: minY,
+        points: allPoints,
+        shape: g.polyline(allPoints),
+      });
+      return;
+    }
+
+    // Single-segment line (existing behavior)
     const widthIncr =
       mouseMove.accX > 0
         ? Math.floor(mouseMove.accX / X_SCALE)

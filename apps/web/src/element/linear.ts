@@ -22,6 +22,7 @@ export enum LinearDirection {
 export interface LinearElement extends ElementCommons {
   len: number;
   direction: LinearDirection;
+  points?: Point[]; // Optional: for multi-segment lines/arrows
 }
 
 function handle(x: number, y: number, handleType: EditHandleType): EditHandle {

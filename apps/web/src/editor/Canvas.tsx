@@ -149,10 +149,49 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
-    // Cancel pending draft with ESC
-    if (e.key === 'Escape' && draft && draft.stage === 'pending') {
-      setDraft(null);
-      return;
+    // ESC to finalize multi-segment line/arrow or cancel draft
+    if (e.key === 'Escape') {
+      if (interactionMode.type === 'drawing' && 
+          (interactionMode.element.type === ElementType.Line || 
+           interactionMode.element.type === ElementType.Arrow)) {
+        // Finalize if at least 2 points
+        if (interactionMode.element.points && interactionMode.element.points.length >= 2) {
+          console.log('[Canvas ESC] Points:', interactionMode.element.points);
+          
+          // Regenerate shape from points
+          const finalPoints = interactionMode.element.points;
+          const minX = Math.min(...finalPoints.map(p => p.x));
+          const minY = Math.min(...finalPoints.map(p => p.y));
+          
+          const finalElement = {
+            ...interactionMode.element,
+            x: minX,
+            y: minY,
+            points: finalPoints,
+            shape: g.polyline(finalPoints),
+          };
+          
+          console.log('[Canvas ESC] Final element:', finalElement);
+          actions.addElement(santizeElement(finalElement), false);
+          actions.select(finalElement.id, true);
+          
+          if (!toolTocked) {
+            actions.setTool(Tool.Select);
+          }
+        }
+        
+        useStore.setState({
+          interactionMode: { type: 'idle' },
+          draft: null,
+        });
+        return;
+      }
+      
+      // Cancel pending draft (other elements)
+      if (draft && draft.stage === 'pending') {
+        setDraft(null);
+        return;
+      }
     }
 
     // Manually track space press
@@ -225,6 +264,49 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Double-click to finalize multi-segment line/arrow
+    if (e.detail === 2 && interactionMode.type === 'drawing') {
+      console.log('[Canvas] Double-click, interactionMode:', interactionMode.type, interactionMode.element?.type);
+      if (interactionMode.element.type === ElementType.Line || 
+          interactionMode.element.type === ElementType.Arrow) {
+        console.log('[Canvas] Points count:', interactionMode.element.points?.length);
+        // Finalize if at least 2 points
+        if (interactionMode.element.points && interactionMode.element.points.length >= 2) {
+          console.log('[Canvas] Finalizing line/arrow');
+          
+          // Regenerate shape from points
+          const finalPoints = interactionMode.element.points;
+          console.log('[Canvas] Final points:', finalPoints);
+          const minX = Math.min(...finalPoints.map(p => p.x));
+          const minY = Math.min(...finalPoints.map(p => p.y));
+          console.log('[Canvas] Calculated minX/minY:', minX, minY);
+          
+          const finalElement = {
+            ...interactionMode.element,
+            x: minX,
+            y: minY,
+            points: finalPoints,
+            shape: g.polyline(finalPoints),
+          };
+          
+          console.log('[Canvas] Final element:', finalElement);
+          actions.addElement(santizeElement(finalElement), false);
+          actions.select(finalElement.id, true);
+          
+          if (!toolTocked) {
+            actions.setTool(Tool.Select);
+          }
+          
+          useStore.setState({
+            interactionMode: { type: 'idle' },
+            draft: null,
+          });
+        }
+      }
+      return;
+    }
+
+    // Double-click on text to edit
     if (e.detail == 2 && selectedIds.length == 1) {
       const selectedElement = elements[selectedIds[0]];
 
