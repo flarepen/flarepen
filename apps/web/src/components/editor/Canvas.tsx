@@ -250,18 +250,17 @@ function CanvasWithInput(): JSX.Element {
       // Check if we should switch from pending to active (drag mode)
       // Only check threshold if mouse button is still down (e.buttons > 0)
       let currentStage = draft.stage;
-      
+
       if (draft.stage === 'pending' && e.buttons > 0) {
         const distance = Math.sqrt(
-          Math.pow(e.clientX - draft.element.x, 2) + 
-          Math.pow(e.clientY - draft.element.y, 2)
+          Math.pow(e.clientX - draft.element.x, 2) + Math.pow(e.clientY - draft.element.y, 2)
         );
-        
+
         if (distance > DRAGGING_THRESHOLD) {
           currentStage = 'active';
         }
       }
-      
+
       // Update draft element (works for both pending and active)
       utilFor(draft.element).create(draft.element, mouseMove, (updated) => {
         setDraft({ element: updated, stage: currentStage });
@@ -323,6 +322,7 @@ function CanvasWithInput(): JSX.Element {
     if (selectedIds.length + selectedGroupIds.length > 0) {
       switch (e.key) {
         case 'Backspace':
+        case 'Delete':
           actions.deleteAllSelected();
           actions.unSelectAll();
           break;
