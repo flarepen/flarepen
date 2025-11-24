@@ -97,7 +97,7 @@ export enum BorderType {
   Rounded = 'rounded',
 }
 
-export type DraftStage = 'inactive' | 'active';
+export type DraftStage = 'inactive' | 'active' | 'pending';
 
 export interface Draft {
   element: Element;

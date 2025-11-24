@@ -12,7 +12,7 @@ import {
   TextUtils,
 } from '../../element';
 import { actions, useStore } from '../../state';
-import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE } from '../../constants';
+import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '../../constants';
 import _ from 'lodash';
 import { ArrowKey, MouseMove } from '../../types';
 import { TextInput } from './TextInput';
@@ -131,6 +131,7 @@ function CanvasWithInput(): JSX.Element {
       return null;
     }
 
+    // Handle second click for draft (both pending and active modes)
     if (draft && draft.element.type !== ElementType.Text) {
       actions.addElement(santizeElement(draft.element), false);
       select(draft.element.id, true);
@@ -164,7 +165,7 @@ function CanvasWithInput(): JSX.Element {
         clipToScale(e.clientY + Y_SCALE / 2, Y_SCALE)
       );
 
-      setDraft({ element: newElement, stage: 'inactive' });
+      setDraft({ element: newElement, stage: 'pending' });
       return null;
     }
 
@@ -209,12 +210,10 @@ function CanvasWithInput(): JSX.Element {
     }
 
     if (tool !== Tool.Select) {
-      // TODO: Add single zustand action
-      if (draft && draft.element.type !== ElementType.Text) {
-        if (draft.stage === 'active') {
-          actions.addElement(santizeElement(draft.element), false);
-          select(draft.element.id, true);
-        }
+      // Only finalize if in active (drag) mode, not pending (click-move-click) mode
+      if (draft && draft.element.type !== ElementType.Text && draft.stage === 'active') {
+        actions.addElement(santizeElement(draft.element), false);
+        select(draft.element.id, true);
         resetTool();
         setDraft(null);
       }
@@ -248,8 +247,24 @@ function CanvasWithInput(): JSX.Element {
         (mouseMove.previousEvent ? mouseMove.previousEvent.clientY : 0);
       actions.shiftElements(x_by, y_by);
     } else if (draft) {
+      // Check if we should switch from pending to active (drag mode)
+      // Only check threshold if mouse button is still down (e.buttons > 0)
+      let currentStage = draft.stage;
+      
+      if (draft.stage === 'pending' && e.buttons > 0) {
+        const distance = Math.sqrt(
+          Math.pow(e.clientX - draft.element.x, 2) + 
+          Math.pow(e.clientY - draft.element.y, 2)
+        );
+        
+        if (distance > DRAGGING_THRESHOLD) {
+          currentStage = 'active';
+        }
+      }
+      
+      // Update draft element (works for both pending and active)
       utilFor(draft.element).create(draft.element, mouseMove, (updated) => {
-        setDraft({ element: updated, stage: 'active' });
+        setDraft({ element: updated, stage: currentStage });
       });
     } else {
       if (dragging && (selectedIds.length > 0 || selectedGroupIds.length > 0)) {
@@ -291,6 +306,12 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    // Cancel pending draft with ESC
+    if (e.key === 'Escape' && draft && draft.stage === 'pending') {
+      setDraft(null);
+      return;
+    }
+
     // Manually track space press
     if (e.key === ' ') {
       actions.setSpacePressed(true);

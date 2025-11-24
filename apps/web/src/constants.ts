@@ -4,3 +4,4 @@ export const X_SCALE = 13;
 export const Y_SCALE = 30;
 export const PLATFORM = navigator?.platform || 'unknown';
 export const IS_PLATFORM_MAC = PLATFORM.toLowerCase().startsWith('mac');
+export const DRAGGING_THRESHOLD = 10; // pixels
