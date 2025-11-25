@@ -2,92 +2,61 @@
  * Scene Building
  * 
  * Combines multiple positioned shapes into a single scene grid.
- * 
- * Input:                          Output Scene:
- *   [{                              ┌─────┐       ┌─────┐
- *     rows: ['┌─────┐',             │ Box │ ────▶ │ Box │
- *            '│ Box │',             └─────┘       └─────┘
- *            '└─────┘'],
- *     position: {x:0, y:0}
- *   },
- *   {
- *     rows: ['────▶'],
- *     position: {x:104, y:20}
- *   },
- *   {
- *     rows: ['┌─────┐',
- *            '│ Box │',
- *            '└─────┘'],
- *     position: {x:182, y:0}
- *   }]
+ * Works entirely in grid coordinates - no pixel conversion.
  */
 
-import { RenderedRows, PositionedRows, Scene, Point } from './types';
-import { X_SCALE, Y_SCALE, pixelsToGridWidth, pixelsToGridHeight } from './scale';
+import { RenderedShape, PositionedShape, Scene, GridCell } from './types';
+import { boundsOfPositionedShapes } from './bounds';
 
 /**
- * Build a scene by merging multiple positioned rows into a single grid
+ * Build a scene by merging multiple positioned shapes into a single grid
  */
-export function buildScene(positionedRows: PositionedRows[]): Scene {
-  if (positionedRows.length === 0) {
-    return { origin: { x: 0, y: 0 }, content: [[]] };
+export function buildScene(shapes: PositionedShape[]): Scene {
+  if (shapes.length === 0) {
+    return { origin: { col: 0, row: 0 }, content: [[]] };
   }
 
-  // Calculate scene bounds
-  const minX = Math.min(...positionedRows.map(pr => pr.position.x));
-  const minY = Math.min(...positionedRows.map(pr => pr.position.y));
-  
-  const maxX = Math.max(...positionedRows.map(pr => {
-    const width = Math.max(0, ...pr.rows.map(row => row.length));
-    return pr.position.x + width * X_SCALE;
-  }));
-  
-  const maxY = Math.max(...positionedRows.map(pr => {
-    return pr.position.y + pr.rows.length * Y_SCALE;
-  }));
-
-  const width = pixelsToGridWidth(maxX - minX);
-  const height = pixelsToGridHeight(maxY - minY);
+  const bounds = boundsOfPositionedShapes(shapes);
 
   // Create empty grid
-  const grid: string[][] = Array(height)
+  const grid: string[][] = Array(bounds.height)
     .fill(null)
-    .map(() => Array(width).fill(' '));
+    .map(() => Array(bounds.width).fill(' '));
 
-  // Write each positioned rows to grid
-  positionedRows.forEach(pr => {
-    writeToGrid(grid, pr.rows, pr.position, { x: minX, y: minY });
+  // Write each shape to grid
+  shapes.forEach(ps => {
+    writeToGrid(grid, ps.shape, ps.position, bounds.origin);
   });
 
   return {
-    origin: { x: minX, y: minY },
+    origin: bounds.origin,
     content: grid,
   };
 }
 
 /**
- * Write rendered rows to a grid at a specific position
+ * Write rendered shape to a grid at a specific position
  */
 function writeToGrid(
   grid: string[][],
-  rows: RenderedRows,
-  position: Point,
-  sceneOrigin: Point
+  shape: RenderedShape,
+  position: GridCell,
+  sceneOrigin: GridCell
 ): void {
-  const offsetX = pixelsToGridWidth(position.x - sceneOrigin.x);
-  const offsetY = pixelsToGridHeight(position.y - sceneOrigin.y);
+  const offsetCol = position.col - sceneOrigin.col;
+  const offsetRow = position.row - sceneOrigin.row;
 
-  rows.forEach((row, rowNum) => {
+  shape.rows.forEach((row, rowNum) => {
     const chars = row.split('');
     chars.forEach((char, colNum) => {
       if (char !== ' ') {
-        const gridY = rowNum + offsetY;
-        const gridX = colNum + offsetX;
+        const gridRow = rowNum + offsetRow;
+        const gridCol = colNum + offsetCol;
         
         // Bounds check
-        if (gridY >= 0 && gridY < grid.length &&
-            gridX >= 0 && gridX < grid[0].length) {
-          grid[gridY][gridX] = char;
+        if (gridRow >= 0 && gridRow < grid.length &&
+            gridCol >= 0 && gridCol < grid[0].length) {
+          grid[gridRow][gridCol] = char;
         }
       }
     });

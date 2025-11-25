@@ -3,25 +3,33 @@ import { buildScene } from '../scene';
 
 describe('buildScene', () => {
   it('merges rectangle with text inside', () => {
-    const positioned = [
+    const shapes = [
       {
-        rows: [
-          '┌─────────┐',
-          '│         │',
-          '│         │',
-          '└─────────┘',
-        ],
-        position: { x: 0, y: 0 },
+        shape: {
+          rows: [
+            '┌─────────┐',
+            '│         │',
+            '│         │',
+            '└─────────┘',
+          ],
+          width: 11,
+          height: 4,
+        },
+        position: { col: 0, row: 0 },
       },
       {
-        rows: ['Button'],
-        position: { x: 26, y: 20 }, // Centered inside rectangle
+        shape: {
+          rows: ['Button'],
+          width: 6,
+          height: 1,
+        },
+        position: { col: 2, row: 1 },
       },
     ];
 
-    const scene = buildScene(positioned);
+    const scene = buildScene(shapes);
 
-    expect(scene.origin).toEqual({ x: 0, y: 0 });
+    expect(scene.origin).toEqual({ col: 0, row: 0 });
     expect(scene.content.map(row => row.join(''))).toEqual([
       '┌─────────┐',
       '│ Button  │',
@@ -31,32 +39,44 @@ describe('buildScene', () => {
   });
 
   it('merges rectangle with arrow pointing to another rectangle', () => {
-    const positioned = [
+    const shapes = [
       {
-        rows: [
-          '┌─────┐',
-          '│ Box │',
-          '└─────┘',
-        ],
-        position: { x: 0, y: 0 },
+        shape: {
+          rows: [
+            '┌─────┐',
+            '│ Box │',
+            '└─────┘',
+          ],
+          width: 7,
+          height: 3,
+        },
+        position: { col: 0, row: 0 },
       },
       {
-        rows: ['────▶'],
-        position: { x: 104, y: 20 }, // Arrow with space
+        shape: {
+          rows: ['────▶'],
+          width: 5,
+          height: 1,
+        },
+        position: { col: 8, row: 1 },
       },
       {
-        rows: [
-          '┌─────┐',
-          '│ Box │',
-          '└─────┘',
-        ],
-        position: { x: 182, y: 0 }, // Second box with space
+        shape: {
+          rows: [
+            '┌─────┐',
+            '│ Box │',
+            '└─────┘',
+          ],
+          width: 7,
+          height: 3,
+        },
+        position: { col: 14, row: 0 },
       },
     ];
 
-    const scene = buildScene(positioned);
+    const scene = buildScene(shapes);
 
-    expect(scene.origin).toEqual({ x: 0, y: 0 });
+    expect(scene.origin).toEqual({ col: 0, row: 0 });
     expect(scene.content.map(row => row.join(''))).toEqual([
       '┌─────┐       ┌─────┐',
       '│ Box │ ────▶ │ Box │',
@@ -65,36 +85,44 @@ describe('buildScene', () => {
   });
 
   it('merges vertical arrow between rectangles', () => {
-    const positioned = [
+    const shapes = [
       {
-        rows: [
-          '┌──────┐',
-          '│ Top  │',
-          '└──────┘',
-        ],
-        position: { x: 0, y: 0 },
+        shape: {
+          rows: [
+            '┌──────┐',
+            '│ Top  │',
+            '└──────┘',
+          ],
+          width: 8,
+          height: 3,
+        },
+        position: { col: 0, row: 0 },
       },
       {
-        rows: [
-          '│',
-          '│',
-          '▼'
-        ],
-        position: { x: 39, y: 60 }, // Arrow down from center
+        shape: {
+          rows: ['│', '│', '▼'],
+          width: 1,
+          height: 3,
+        },
+        position: { col: 3, row: 3 },
       },
       {
-        rows: [
-          '┌──────┐',
-          '│Bottom│',
-          '└──────┘',
-        ],
-        position: { x: 0, y: 120 },
+        shape: {
+          rows: [
+            '┌──────┐',
+            '│Bottom│',
+            '└──────┘',
+          ],
+          width: 8,
+          height: 3,
+        },
+        position: { col: 0, row: 6 },
       },
     ];
 
-    const scene = buildScene(positioned);
+    const scene = buildScene(shapes);
 
-    expect(scene.origin).toEqual({ x: 0, y: 0 });
+    expect(scene.origin).toEqual({ col: 0, row: 0 });
     expect(scene.content.map(row => row.join(''))).toEqual([
       '┌──────┐',
       '│ Top  │',
@@ -108,29 +136,41 @@ describe('buildScene', () => {
     ]);
   });
 
-  it('handles empty positioned rows array', () => {
+  it('handles empty shapes array', () => {
     const scene = buildScene([]);
     
     expect(scene.content).toEqual([[]]);
   });
 
   it('merges multiple text labels', () => {
-    const positioned = [
+    const shapes = [
       {
-        rows: ['Label 1'],
-        position: { x: 0, y: 0 },
+        shape: {
+          rows: ['Label 1'],
+          width: 7,
+          height: 1,
+        },
+        position: { col: 0, row: 0 },
       },
       {
-        rows: ['Label 2'],
-        position: { x: 0, y: 20 },
+        shape: {
+          rows: ['Label 2'],
+          width: 7,
+          height: 1,
+        },
+        position: { col: 0, row: 1 },
       },
       {
-        rows: ['Label 3'],
-        position: { x: 0, y: 40 },
+        shape: {
+          rows: ['Label 3'],
+          width: 7,
+          height: 1,
+        },
+        position: { col: 0, row: 2 },
       },
     ];
 
-    const scene = buildScene(positioned);
+    const scene = buildScene(shapes);
 
     expect(scene.content.map(row => row.join(''))).toEqual([
       'Label 1',

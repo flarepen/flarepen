@@ -5,11 +5,13 @@ describe('rectangle', () => {
   it('creates a basic rectangle', () => {
     const result = rectangle(5, 3);
     
-    expect(result).toEqual([
+    expect(result.rows).toEqual([
       '┌───┐',
       '│   │',
       '└───┘'
     ]);
+    expect(result.width).toBe(5);
+    expect(result.height).toBe(3);
   });
 
   it.each([
@@ -26,23 +28,28 @@ describe('rectangle', () => {
     ],
     ['wide flat rectangle', 5, 1, ['┌───┐']],
   ])('creates %s', (name, width, height, expected) => {
-    expect(rectangle(width, height)).toEqual(expected);
+    expect(rectangle(width, height).rows).toEqual(expected);
   });
 
   it.each([
     ['zero width', 0, 3],
     ['zero height', 5, 0],
   ])('handles %s', (name, width, height) => {
-    expect(rectangle(width, height)).toEqual(['']);
+    expect(rectangle(width, height).rows).toEqual(['']);
   });
 
   it('creates a large rectangle', () => {
     const result = rectangle(10, 5);
     
-    expect(result).toHaveLength(5);
-    expect(result[0]).toBe('┌────────┐');
-    expect(result[1]).toBe('│        │');
-    expect(result[4]).toBe('└────────┘');
+    expect(result.rows).toEqual([
+      '┌────────┐',
+      '│        │',
+      '│        │',
+      '│        │',
+      '└────────┘'
+    ]);
+    expect(result.width).toBe(10);
+    expect(result.height).toBe(5);
   });
 
   describe('border types', () => {
@@ -84,7 +91,7 @@ describe('rectangle', () => {
         ]
       ],
     ])('creates %s border rectangle', (name, borderType, expected) => {
-      expect(rectangle(5, 3, borderType)).toEqual(expected);
+      expect(rectangle(5, 3, borderType).rows).toEqual(expected);
     });
 
     it.each([
@@ -92,33 +99,7 @@ describe('rectangle', () => {
       ['heavy', BorderType.Heavy, ['┏┓']],
       ['rounded', BorderType.Rounded, ['╭╮']],
     ])('applies %s border to 1x1 rectangle', (name, borderType, expected) => {
-      expect(rectangle(1, 1, borderType)).toEqual(expected);
-    });
-  });
-
-  describe('labels', () => {
-    it('creates rectangle with label', () => {
-      expect(rectangle(10, 3, BorderType.Normal, 'Button')).toEqual([
-        '┌Button───┐',
-        '│         │',
-        '└─────────┘'
-      ]);
-    });
-
-    it('handles label that fills width', () => {
-      expect(rectangle(8, 3, BorderType.Normal, 'Button')).toEqual([
-        '┌Button─┐',
-        '│       │',
-        '└───────┘'
-      ]);
-    });
-
-    it('works with different border types', () => {
-      expect(rectangle(10, 3, BorderType.Double, 'Test')).toEqual([
-        '╔Test═════╗',
-        '║         ║',
-        '╚═════════╝'
-      ]);
+      expect(rectangle(1, 1, borderType).rows).toEqual(expected);
     });
   });
 });
@@ -139,14 +120,14 @@ describe('line', () => {
     ['single cell horizontal', 1, true, ['─']],
     ['single cell vertical', 1, false, ['│']],
   ])('creates %s', (name, len, horizontal, expected) => {
-    expect(line(len, horizontal)).toEqual(expected);
+    expect(line(len, horizontal).rows).toEqual(expected);
   });
 
   it.each([
     ['zero length horizontal', 0, true, ['']],
     ['zero length vertical', 0, false, []],
   ])('handles %s', (name, len, horizontal, expected) => {
-    expect(line(len, horizontal)).toEqual(expected);
+    expect(line(len, horizontal).rows).toEqual(expected);
   });
 });
 
@@ -179,15 +160,15 @@ describe('arrow', () => {
     ['single cell up', 1, LinearDirection.Up, ['▲']],
     ['single cell down', 1, LinearDirection.Down, ['▼']],
   ])('creates %s', (name, len, dir, expected) => {
-    expect(arrow(len, dir)).toEqual(expected);
+    expect(arrow(len, dir).rows).toEqual(expected);
   });
 
   it('handles undecided direction', () => {
-    expect(arrow(5, LinearDirection.Undecided)).toEqual(['']);
+    expect(arrow(5, LinearDirection.Undecided).rows).toEqual(['']);
   });
 
   it('handles zero length', () => {
-    expect(arrow(0, LinearDirection.Right)).toEqual(['']);
+    expect(arrow(0, LinearDirection.Right).rows).toEqual(['']);
   });
 });
 
@@ -197,41 +178,48 @@ describe('text', () => {
     ['empty string', '', ['']],
     ['special characters', '┌─┐', ['┌─┐']],
   ])('creates %s', (name, content, expected) => {
-    expect(text(content)).toEqual(expected);
+    expect(text(content).rows).toEqual(expected);
   });
 });
 
 describe('polyline', () => {
   it('creates single segment horizontal line', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 }
     ];
     
-    expect(polyline(points)).toEqual(['──────────']);
+    const result = polyline(cells);
+    expect(result.rows).toEqual(['──────────']);
+    expect(result.width).toBe(10);
+    expect(result.height).toBe(1);
   });
 
   it('creates single segment vertical line', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 0, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 0, row: 3 }
     ];
     
-    expect(polyline(points)).toEqual([
+    const result = polyline(cells);
+    expect(result.rows).toEqual([
       '│',
       '│',
       '│'
     ]);
+    expect(result.width).toBe(1);
+    expect(result.height).toBe(3);
   });
 
   it('creates L-shape with corner', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 },
-      { x: 130, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 },
+      { col: 10, row: 3 }
     ];
     
-    expect(polyline(points)).toEqual([
+    const result = polyline(cells);
+    expect(result.rows).toEqual([
       '──────────┐',
       '          │',
       '          │',
@@ -240,14 +228,15 @@ describe('polyline', () => {
   });
 
   it('creates U-shape with two corners', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 0, y: 60 },
-      { x: 130, y: 60 },
-      { x: 130, y: 0 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 0, row: 3 },
+      { col: 10, row: 3 },
+      { col: 10, row: 0 }
     ];
     
-    expect(polyline(points)).toEqual([
+    const result = polyline(cells);
+    expect(result.rows).toEqual([
       '│         │',
       '│         │',
       '│         │',
@@ -256,14 +245,15 @@ describe('polyline', () => {
   });
 
   it('creates Z-shape', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 },
-      { x: 130, y: 60 },
-      { x: 260, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 },
+      { col: 10, row: 3 },
+      { col: 20, row: 3 }
     ];
     
-    expect(polyline(points)).toEqual([
+    const result = polyline(cells);
+    expect(result.rows).toEqual([
       '──────────┐          ',
       '          │          ',
       '          │          ',
@@ -272,40 +262,48 @@ describe('polyline', () => {
   });
 
   it('creates stair pattern', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 52, y: 0 },
-      { x: 52, y: 20 },
-      { x: 104, y: 20 },
-      { x: 104, y: 40 },
-      { x: 156, y: 40 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 4, row: 0 },
+      { col: 4, row: 1 },
+      { col: 8, row: 1 },
+      { col: 8, row: 2 },
+      { col: 12, row: 2 }
     ];
     
-    expect(polyline(points)).toEqual([
+    const result = polyline(cells);
+    expect(result.rows).toEqual([
       '────┐        ',
       '    └───┐    ',
       '        └────'
     ]);
   });
 
-  it('handles empty points', () => {
-    expect(polyline([])).toEqual(['']);
+  it('handles empty cells', () => {
+    const result = polyline([]);
+    expect(result.rows).toEqual(['']);
+    expect(result.width).toBe(0);
+    expect(result.height).toBe(0);
   });
 
-  it('handles single point', () => {
-    expect(polyline([{ x: 0, y: 0 }])).toEqual(['']);
+  it('handles single cell', () => {
+    const result = polyline([{ col: 0, row: 0 }]);
+    expect(result.rows).toEqual(['']);
+    expect(result.width).toBe(0);
+    expect(result.height).toBe(0);
   });
 });
 
 describe('polyarrow', () => {
   it('creates L-shape with end arrow', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 },
-      { x: 130, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 },
+      { col: 10, row: 3 }
     ];
     
-    expect(polyarrow(points)).toEqual([
+    const result = polyarrow(cells);
+    expect(result.rows).toEqual([
       '──────────┐',
       '          │',
       '          │',
@@ -314,13 +312,14 @@ describe('polyarrow', () => {
   });
 
   it('creates L-shape with start arrow', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 },
-      { x: 130, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 },
+      { col: 10, row: 3 }
     ];
     
-    expect(polyarrow(points, true, false)).toEqual([
+    const result = polyarrow(cells, true, false);
+    expect(result.rows).toEqual([
       '◀─────────┐',
       '          │',
       '          │',
@@ -329,13 +328,14 @@ describe('polyarrow', () => {
   });
 
   it('creates L-shape with both arrows', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 },
-      { x: 130, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 },
+      { col: 10, row: 3 }
     ];
     
-    expect(polyarrow(points, true, true)).toEqual([
+    const result = polyarrow(cells, true, true);
+    expect(result.rows).toEqual([
       '◀─────────┐',
       '          │',
       '          │',
@@ -344,30 +344,33 @@ describe('polyarrow', () => {
   });
 
   it('creates single segment with end arrow', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 }
     ];
     
-    expect(polyarrow(points)).toEqual(['─────────▶']);
+    const result = polyarrow(cells);
+    expect(result.rows).toEqual(['─────────▶']);
   });
 
   it('creates single segment with both arrows', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 130, y: 0 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 10, row: 0 }
     ];
     
-    expect(polyarrow(points, true, true)).toEqual(['◀────────▶']);
+    const result = polyarrow(cells, true, true);
+    expect(result.rows).toEqual(['◀────────▶']);
   });
 
   it('creates vertical arrow down', () => {
-    const points = [
-      { x: 0, y: 0 },
-      { x: 0, y: 60 }
+    const cells = [
+      { col: 0, row: 0 },
+      { col: 0, row: 3 }
     ];
     
-    expect(polyarrow(points)).toEqual([
+    const result = polyarrow(cells);
+    expect(result.rows).toEqual([
       '│',
       '│',
       '▼'

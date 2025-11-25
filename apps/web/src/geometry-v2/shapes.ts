@@ -1,20 +1,20 @@
 /**
  * Shape Generation
- * 
- * Pure functions that generate ASCII shapes as arrays of strings.
- * 
+ *
+ * Pure functions that generate ASCII shapes.
+ *
  * rectangle(8, 4):        line(10, true):      arrow(5, Down):
  *   ┌──────┐                ──────────           │
  *   │      │                                     │
  *   │      │                                     │
  *   └──────┘                                     │
  *                                                ▼
- * 
+ *
  * text('Hello World'):
  *   Hello World
  */
 
-import { RenderedRows } from './types';
+import { RenderedShape, rendered } from './types';
 
 // ============================================================================
 // Enums
@@ -91,21 +91,27 @@ export function rectangle(
   height: number,
   borderType: BorderType = BorderType.Normal,
   label?: string
-): RenderedRows {
-  if (width <= 0 || height <= 0) return [''];
+): RenderedShape {
+  if (width <= 0 || height <= 0) {
+    return rendered([''], 0, 0);
+  }
 
   const box = BOX[borderType];
 
   if (width === 1 && height === 1) {
-    return [box.LEFT_TOP + box.RIGHT_TOP];
+    return rendered([box.LEFT_TOP + box.RIGHT_TOP], 1, 1);
   }
 
   if (width === 1) {
-    return [box.LEFT_TOP, ...Array(height - 2).fill(box.VERTICAL), box.LEFT_BOTTOM];
+    return rendered(
+      [box.LEFT_TOP, ...Array(height - 2).fill(box.VERTICAL), box.LEFT_BOTTOM],
+      1,
+      height
+    );
   }
 
   if (height === 1) {
-    return [box.LEFT_TOP + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_TOP];
+    return rendered([box.LEFT_TOP + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_TOP], width, 1);
   }
 
   // Top row with optional label
@@ -113,7 +119,11 @@ export function rectangle(
   if (label) {
     const labelLen = label.length;
     const remainingWidth = width - labelLen - 2;
-    top = box.LEFT_TOP + label + (remainingWidth > 0 ? box.HORIZONTAL.repeat(remainingWidth) : '') + box.RIGHT_TOP;
+    top =
+      box.LEFT_TOP +
+      label +
+      (remainingWidth > 0 ? box.HORIZONTAL.repeat(remainingWidth) : '') +
+      box.RIGHT_TOP;
   } else {
     top = box.LEFT_TOP + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_TOP;
   }
@@ -121,38 +131,44 @@ export function rectangle(
   const middle = box.VERTICAL + ' '.repeat(width - 2) + box.VERTICAL;
   const bottom = box.LEFT_BOTTOM + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_BOTTOM;
 
-  return [top, ...Array(height - 2).fill(middle), bottom];
+  return rendered([top, ...Array(height - 2).fill(middle), bottom], width, height);
 }
 
-export function line(len: number, horizontal: boolean): RenderedRows {
+export function line(len: number, horizontal: boolean): RenderedShape {
   if (horizontal) {
-    return [HORIZONTAL.repeat(len)];
+    return rendered([HORIZONTAL.repeat(len)], len, 1);
   }
-  return Array(len).fill(VERTICAL);
+  return rendered(Array(len).fill(VERTICAL), 1, len);
 }
 
-export function arrow(len: number, direction: LinearDirection): RenderedRows {
-  if (len <= 0) return [''];
-  
+export function arrow(len: number, direction: LinearDirection): RenderedShape {
+  if (len <= 0) {
+    return rendered([''], 0, 0);
+  }
+
+  const lineShape = line(
+    len - 1,
+    direction === LinearDirection.Right || direction === LinearDirection.Left
+  );
+
   switch (direction) {
     case LinearDirection.Right:
-      return [line(len - 1, true)[0] + ARROW_RIGHT];
+      return rendered([lineShape.rows[0] + ARROW_RIGHT], len, 1);
     case LinearDirection.Left:
-      return [ARROW_LEFT + line(len - 1, true)[0]];
+      return rendered([ARROW_LEFT + lineShape.rows[0]], len, 1);
     case LinearDirection.Up:
-      return [ARROW_UP, ...line(len - 1, false)];
+      return rendered([ARROW_UP, ...lineShape.rows], 1, len);
     case LinearDirection.Down:
-      return [...line(len - 1, false), ARROW_DOWN];
+      return rendered([...lineShape.rows, ARROW_DOWN], 1, len);
     case LinearDirection.Undecided:
-      return [''];
+      return rendered([''], 0, 0);
   }
 }
 
-export function text(content: string): RenderedRows {
-  return [content];
+export function text(content: string): RenderedShape {
+  return rendered([content], content.length, 1);
 }
 
 // Re-export polyline and polyarrow
 export { polyline } from './polyline';
 export { polyarrow } from './polyarrow';
-

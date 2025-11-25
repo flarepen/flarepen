@@ -4,39 +4,84 @@
  */
 
 /**
- * Rendered character rows - the visual output of shape generation
- */
-export type RenderedRows = string[];
-
-/**
  * 2D point in pixel coordinates
  */
-export interface Point {
+export interface PixelPoint {
+  /** X coordinate in pixels */
   x: number;
+  /** Y coordinate in pixels */
   y: number;
 }
 
 /**
- * Bounding box
+ * 2D position in grid cell coordinates
  */
-export interface Bounds {
-  origin: Point;   // Top-left corner in pixels
-  width: number;   // Width in grid cells
-  height: number;  // Height in grid cells
+export interface GridCell {
+  /** Column (horizontal position) */
+  col: number;
+  /** Row (vertical position) */
+  row: number;
 }
 
 /**
- * Rendered rows with position
+ * Bounding box in grid cell coordinates
  */
-export interface PositionedRows {
-  rows: RenderedRows;
-  position: Point;
+export interface GridBounds {
+  /** Top-left corner in grid cells */
+  origin: GridCell;
+  /** Width in grid cells */
+  width: number;
+  /** Height in grid cells */
+  height: number;
 }
 
 /**
- * Merged scene - multiple positioned rows combined into one grid
+ * Bounding box in pixel coordinates (for drawing)
+ */
+export interface PixelBounds {
+  /** Top-left corner in pixels */
+  origin: PixelPoint;
+  /** Width in pixels */
+  width: number;
+  /** Height in pixels */
+  height: number;
+}
+
+/**
+ * Rendered ASCII shape
+ */
+export interface RenderedShape {
+  /** ASCII character rows */
+  rows: string[];
+  /** Width in grid cells */
+  width: number;
+  /** Height in grid cells */
+  height: number;
+}
+
+/**
+ * Helper to create a RenderedShape
+ */
+export function rendered(rows: string[], width: number, height: number): RenderedShape {
+  return { rows, width, height };
+}
+
+/**
+ * Rendered shape with position
+ */
+export interface PositionedShape {
+  /** Rendered ASCII shape */
+  shape: RenderedShape;
+  /** Position in grid cells */
+  position: GridCell;
+}
+
+/**
+ * Merged scene - multiple positioned shapes combined into one grid
  */
 export interface Scene {
-  origin: Point;
-  content: string[][];  // 2D grid of characters
+  /** Top-left corner in grid cells */
+  origin: GridCell;
+  /** 2D grid of characters */
+  content: string[][];
 }

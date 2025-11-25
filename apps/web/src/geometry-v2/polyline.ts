@@ -1,103 +1,116 @@
-import { RenderedRows, Point } from './types';
-import { pointToGrid, pixelDeltaToGridWidth, pixelDeltaToGridHeight, isHorizontalMovement } from './scale';
+import { RenderedShape, GridCell, rendered } from './types';
 import { line } from './shapes';
-import { boundsOfPoints } from './bounds';
+import { boundsOfCells } from './bounds';
 
 const HORIZONTAL = '─';
 const VERTICAL = '│';
 
-export function polyline(points: Point[]): RenderedRows {
-  if (points.length < 2) return [''];
+/**
+ * Create a polyline from grid cell positions
+ */
+export function polyline(cells: GridCell[]): RenderedShape {
+  if (cells.length < 2) {
+    return rendered([''], 0, 0);
+  }
   
   // Single segment - use line function
-  if (points.length === 2) {
-    const dx = points[1].x - points[0].x;
-    const dy = points[1].y - points[0].y;
-    const horizontal = isHorizontalMovement(dx, dy);
-    const len = Math.floor(horizontal ? pixelDeltaToGridWidth(dx) : pixelDeltaToGridHeight(dy));
+  if (cells.length === 2) {
+    const dCol = Math.abs(cells[1].col - cells[0].col);
+    const dRow = Math.abs(cells[1].row - cells[0].row);
+    const horizontal = dCol > dRow;
+    const len = horizontal ? dCol : dRow;
     return line(len, horizontal);
   }
   
-  return buildPolyline(points);
+  return buildPolyline(cells);
 }
 
-export function buildPolyline(points: Point[]): RenderedRows {
-  const bounds = boundsOfPoints(points);
+function buildPolyline(cells: GridCell[]): RenderedShape {
+  const bounds = boundsOfCells(cells);
   const grid = createEmptyGrid(bounds.width, bounds.height);
   
-  drawSegments(grid, points, bounds.origin);
-  placeCorners(grid, points, bounds.origin);
+  drawSegments(grid, cells, bounds.origin);
+  placeCorners(grid, cells, bounds.origin);
   
-  return gridToRows(grid);
+  return rendered(gridToRows(grid), bounds.width, bounds.height);
 }
 
 function createEmptyGrid(width: number, height: number): string[][] {
   return Array(height).fill(null).map(() => Array(width).fill(' '));
 }
 
-function drawSegments(grid: string[][], points: Point[], origin: Point): void {
-  for (let i = 0; i < points.length - 1; i++) {
-    drawSegment(grid, points[i], points[i + 1], origin);
+function drawSegments(grid: string[][], cells: GridCell[], origin: GridCell): void {
+  for (let i = 0; i < cells.length - 1; i++) {
+    drawSegment(grid, cells[i], cells[i + 1], origin);
   }
 }
 
-function drawSegment(grid: string[][], p1: Point, p2: Point, origin: Point): void {
-  const { x: x1, y: y1 } = pointToGrid(p1, origin);
-  const { x: x2, y: y2 } = pointToGrid(p2, origin);
+function drawSegment(grid: string[][], c1: GridCell, c2: GridCell, origin: GridCell): void {
+  const col1 = c1.col - origin.col;
+  const row1 = c1.row - origin.row;
+  const col2 = c2.col - origin.col;
+  const row2 = c2.row - origin.row;
   
-  const dx = Math.abs(x2 - x1);
-  const dy = Math.abs(y2 - y1);
+  const dCol = Math.abs(col2 - col1);
+  const dRow = Math.abs(row2 - row1);
   
-  // Draw line segment with tolerance (snap to dominant direction)
-  if (dx <= 1 && dy > 0) {
-    // Vertical or near-vertical
-    drawVerticalLine(grid, x1, Math.min(y1, y2), Math.max(y1, y2));
-  } else if (dy <= 1 && dx > 0) {
-    // Horizontal or near-horizontal
-    drawHorizontalLine(grid, y1, Math.min(x1, x2), Math.max(x1, x2));
+  // Draw line segment
+  if (dCol === 0 && dRow > 0) {
+    // Vertical
+    drawVerticalLine(grid, col1, Math.min(row1, row2), Math.max(row1, row2));
+  } else if (dRow === 0 && dCol > 0) {
+    // Horizontal
+    drawHorizontalLine(grid, row1, Math.min(col1, col2), Math.max(col1, col2));
   }
 }
 
-function drawVerticalLine(grid: string[][], x: number, startY: number, endY: number): void {
-  for (let y = startY; y <= endY; y++) {
-    grid[y][x] = VERTICAL;
+function drawVerticalLine(grid: string[][], col: number, startRow: number, endRow: number): void {
+  for (let row = startRow; row <= endRow; row++) {
+    if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+      grid[row][col] = VERTICAL;
+    }
   }
 }
 
-function drawHorizontalLine(grid: string[][], y: number, startX: number, endX: number): void {
-  for (let x = startX; x <= endX; x++) {
-    grid[y][x] = HORIZONTAL;
+function drawHorizontalLine(grid: string[][], row: number, startCol: number, endCol: number): void {
+  for (let col = startCol; col <= endCol; col++) {
+    if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+      grid[row][col] = HORIZONTAL;
+    }
   }
 }
 
-function placeCorners(grid: string[][], points: Point[], origin: Point): void {
-  for (let i = 1; i < points.length - 1; i++) {
-    const corner = getCornerChar(points[i - 1], points[i], points[i + 1]);
-    const { x, y } = pointToGrid(points[i], origin);
-    grid[y][x] = corner;
+function placeCorners(grid: string[][], cells: GridCell[], origin: GridCell): void {
+  for (let i = 1; i < cells.length - 1; i++) {
+    const corner = getCornerChar(cells[i - 1], cells[i], cells[i + 1]);
+    const col = cells[i].col - origin.col;
+    const row = cells[i].row - origin.row;
+    if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+      grid[row][col] = corner;
+    }
   }
 }
 
-function gridToRows(grid: string[][]): RenderedRows {
+function gridToRows(grid: string[][]): string[] {
   return grid.map(row => row.join(''));
 }
 
-function getCornerChar(prev: Point, current: Point, next: Point): string {
-  const fromDx = current.x - prev.x;
-  const fromDy = current.y - prev.y;
-  const toDx = next.x - current.x;
-  const toDy = next.y - current.y;
+function getCornerChar(prev: GridCell, current: GridCell, next: GridCell): string {
+  const fromDCol = current.col - prev.col;
+  const fromDRow = current.row - prev.row;
+  const toDCol = next.col - current.col;
+  const toDRow = next.row - current.row;
   
   // Determine directions
-  const fromRight = fromDx > 0;
-  const fromLeft = fromDx < 0;
-  const fromDown = fromDy > 0;
-  const fromUp = fromDy < 0;
+  const fromRight = fromDCol > 0;
+  const fromLeft = fromDCol < 0;
+  const fromDown = fromDRow > 0;
+  const fromUp = fromDRow < 0;
   
-  const toRight = toDx > 0;
-  const toLeft = toDx < 0;
-  const toDown = toDy > 0;
-  const toUp = toDy < 0;
+  const toRight = toDCol > 0;
+  const toLeft = toDCol < 0;
+  const toDown = toDRow > 0;
+  const toUp = toDRow < 0;
   
   // Return appropriate corner
   if (fromLeft && toDown) return '┐';
