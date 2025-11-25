@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rectangle, BorderType, line, arrow, LinearDirection, text } from '../shapes';
+import { rectangle, BorderType, line, arrow, LinearDirection, text, polyline, polyarrow } from '../shapes';
 
 describe('rectangle', () => {
   it('creates a basic rectangle', () => {
@@ -172,5 +172,179 @@ describe('text', () => {
     ['special characters', '┌─┐', ['┌─┐']],
   ])('creates %s', (name, content, expected) => {
     expect(text(content)).toEqual(expected);
+  });
+});
+
+describe('polyline', () => {
+  it('creates single segment horizontal line', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 }
+    ];
+    
+    expect(polyline(points)).toEqual(['──────────']);
+  });
+
+  it('creates single segment vertical line', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 0, y: 60 }
+    ];
+    
+    expect(polyline(points)).toEqual([
+      '│',
+      '│',
+      '│'
+    ]);
+  });
+
+  it('creates L-shape with corner', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 },
+      { x: 130, y: 60 }
+    ];
+    
+    expect(polyline(points)).toEqual([
+      '──────────┐',
+      '          │',
+      '          │',
+      '          │'
+    ]);
+  });
+
+  it('creates U-shape with two corners', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 0, y: 60 },
+      { x: 130, y: 60 },
+      { x: 130, y: 0 }
+    ];
+    
+    expect(polyline(points)).toEqual([
+      '│         │',
+      '│         │',
+      '│         │',
+      '└─────────┘'
+    ]);
+  });
+
+  it('creates Z-shape', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 },
+      { x: 130, y: 60 },
+      { x: 260, y: 60 }
+    ];
+    
+    expect(polyline(points)).toEqual([
+      '──────────┐          ',
+      '          │          ',
+      '          │          ',
+      '          └──────────'
+    ]);
+  });
+
+  it('creates stair pattern', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 52, y: 0 },
+      { x: 52, y: 20 },
+      { x: 104, y: 20 },
+      { x: 104, y: 40 },
+      { x: 156, y: 40 }
+    ];
+    
+    expect(polyline(points)).toEqual([
+      '────┐        ',
+      '    └───┐    ',
+      '        └────'
+    ]);
+  });
+
+  it('handles empty points', () => {
+    expect(polyline([])).toEqual(['']);
+  });
+
+  it('handles single point', () => {
+    expect(polyline([{ x: 0, y: 0 }])).toEqual(['']);
+  });
+});
+
+describe('polyarrow', () => {
+  it('creates L-shape with end arrow', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 },
+      { x: 130, y: 60 }
+    ];
+    
+    expect(polyarrow(points)).toEqual([
+      '──────────┐',
+      '          │',
+      '          │',
+      '          ▼'
+    ]);
+  });
+
+  it('creates L-shape with start arrow', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 },
+      { x: 130, y: 60 }
+    ];
+    
+    expect(polyarrow(points, true, false)).toEqual([
+      '◀─────────┐',
+      '          │',
+      '          │',
+      '          │'
+    ]);
+  });
+
+  it('creates L-shape with both arrows', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 },
+      { x: 130, y: 60 }
+    ];
+    
+    expect(polyarrow(points, true, true)).toEqual([
+      '◀─────────┐',
+      '          │',
+      '          │',
+      '          ▼'
+    ]);
+  });
+
+  it('creates single segment with end arrow', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 }
+    ];
+    
+    expect(polyarrow(points)).toEqual(['─────────▶']);
+  });
+
+  it('creates single segment with both arrows', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 130, y: 0 }
+    ];
+    
+    expect(polyarrow(points, true, true)).toEqual(['◀────────▶']);
+  });
+
+  it('creates vertical arrow down', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 0, y: 60 }
+    ];
+    
+    expect(polyarrow(points)).toEqual([
+      '│',
+      '│',
+      '▼'
+    ]);
   });
 });

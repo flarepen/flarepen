@@ -141,3 +141,8 @@ export function arrow(len: number, direction: LinearDirection): RenderedRows {
 export function text(content: string): RenderedRows {
   return [content];
 }
+
+// Re-export polyline and polyarrow
+export { polyline } from './polyline';
+export { polyarrow } from './polyarrow';
+
