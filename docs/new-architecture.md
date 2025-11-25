@@ -17,18 +17,11 @@ Two independent loops connected by store state:
 │  User Action          Mode Handler              Element Handler    Store    │
 │  ───────────          ────────────              ───────────────    ─────    │
 │                                                                             │
-│  mousedown ─────────▶ drawing.onPointerDown()                               │
-│                           │                                                 │
-│                           ├─▶ createElement() ──────────────────▶ draft     │
-│                           │                                                 │
-│  mousemove ─────────▶ drawing.onPointerMove()                               │
-│                           │                                                 │
-│                           └─▶ elementHandlerFor()                           │
-│                                   .preview() ───────────────────▶ draft     │
+│  mousedown ─────────▶ onPointerDown() ─────────▶ create() ────────▶ draft   │
 │                                                                             │
-│  mouseup ───────────▶ drawing.onPointerUp()                                 │
-│                           │                                                 │
-│                           └─▶ addElement(draft) ────────────────▶ elements  │
+│  mousemove ─────────▶ onPointerMove() ─────────▶ preview() ───────▶ draft   │
+│                                                                             │
+│  mouseup ───────────▶ onPointerUp() ──────────────────────────────▶ elements│
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
@@ -66,8 +59,8 @@ They never call each other directly. Store is the single source of truth.
 ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
 │  Canvas.tsx + ModeHandlers                                                                    │
 │  - Event handling                                                                             │
-│  - Calls element handlers: generate(), preview(), applyEdit()                                 │
-│  - Stores elements with correct shapes                                                        │
+│  - Calls element handlers: create(), preview(), applyEdit()                                   │
+│  - Stores elements with correct rows                                                          │
 └───────────────┬───────────────────────────────────────────┬───────────────────────────────────┘
                 │                                           │
                 │ store.elements                            │ element handler calls
@@ -75,9 +68,9 @@ They never call each other directly. Store is the single source of truth.
 ┌───────────────────────────────────┐   ┌───────────────────────────────────┐   ┌──────────────────────────┐
 │  useRenderLoop                    │   │  Element Handlers                 │   │  geometry-v2             │
 │  - Render loop                    │   │                                   │   │  - rectangle()           │
-│  - Reads element.shape            │   │  generate()   ◄── Canvas          │──▶│  - polyline()            │
+│  - Reads element.rows             │   │  create()     ◄── Canvas          │──▶│  - polyline()            │
 │  - buildScene() → canvasDraw      │──▶│  preview()    ◄── Canvas          │   │  - buildScene()          │
-│    .scene()                       │   │  applyEdit()  ◄── Canvas          │   │  - boundsFromShape()     │
+│    .scene()                       │   │  applyEdit()  ◄── Canvas          │   │  - boundsFromRows()      │
 │  - Calls element handlers:        │   │  bounds()     ◄── useRenderLoop   │   │                          │
 │    bounds(), editHandles()        │   │  editHandles()◄── useRenderLoop   │   │  (pure shape functions)  │
 │  - Calls canvasDraw.*             │   │  inVicinity() ◄── Select          │   └──────────────────────────┘
@@ -102,8 +95,8 @@ interface Element {
   type: ElementType;
   x: number;
   y: number;
-  shape: RenderedRows;    // Always correct
-  data: ElementData;      // Type-specific
+  rows: RenderedRows;     // ASCII representation
+  data: ElementData;      // Type-specific data
   labelEnabled: boolean;
   label?: string;
 }
@@ -141,8 +134,11 @@ interface TextData {
 
 ```typescript
 interface ElementHandler<T extends ElementData> {
-  // Generate shape from data
-  generate(data: T, origin: Point): { shape: RenderedRows; bounds: Bounds };
+  // Create new element with initial rows
+  create(x: number, y: number): Element;
+  
+  // Live preview with snapping/constraints
+  preview(element: Element, mouseMove: MouseMove): Element;
   
   // Selection bounds
   bounds(element: Element): IBounds;
@@ -151,7 +147,6 @@ interface ElementHandler<T extends ElementData> {
   inVicinity(element: Element, point: Point): boolean;
   
   // Optional
-  preview?(element: Element, mouseMove: MouseMove): Element;
   editHandles?(element: Element): EditHandle[];
   applyEdit?(element: Element, handle: EditHandle, delta: Point): Element;
 }
@@ -163,11 +158,9 @@ interface ElementHandler<T extends ElementData> {
 ┌─────────────────┬──────────────────────────────┬─────────────────┬─────────────────────────────┐
 │ Method          │ Purpose                      │ Called by       │ When                        │
 ├─────────────────┼──────────────────────────────┼─────────────────┼─────────────────────────────┤
-│ generate()      │ Pure: data → shape           │ preview(),      │ Need shape from raw data    │
-│                 │                              │ applyEdit(),    │                             │
-│                 │                              │ load file       │                             │
+│ create()        │ New element with init rows   │ Mode handlers   │ mousedown starts drawing    │
 ├─────────────────┼──────────────────────────────┼─────────────────┼─────────────────────────────┤
-│ preview()       │ Live drawing with snapping   │ Mode handlers   │ Mouse moving during draw    │
+│ preview()       │ Live drawing with snapping   │ Mode handlers   │ mousemove during draw       │
 ├─────────────────┼──────────────────────────────┼─────────────────┼─────────────────────────────┤
 │ applyEdit()     │ Resize/reshape element       │ Mode handlers   │ Dragging edit handle        │
 ├─────────────────┼──────────────────────────────┼─────────────────┼─────────────────────────────┤
@@ -179,23 +172,7 @@ interface ElementHandler<T extends ElementData> {
 └─────────────────┴──────────────────────────────┴─────────────────┴─────────────────────────────┘
 ```
 
-### generate() vs preview()
-
-`generate()` is the core pure function - give it data, get a shape:
-
-```typescript
-generate({ type: 'line', points: [...] }, origin) → { shape, bounds }
-```
-
-`preview()` wraps `generate()` with interaction logic (snapping, constraints):
-
-```typescript
-preview(element, mouseMove) {
-  const snappedPoint = snapToDirection(lastPoint, mouse);
-  const { shape } = this.generate(newData, origin);
-  return { ...element, shape, data: newData };
-}
-```
+Internally, `create()`, `preview()`, and `applyEdit()` call geometry functions (e.g., `g.polyline()`) to generate `RenderedRows`.
 
 ## File Structure
 
@@ -215,7 +192,7 @@ geometry-v2/
 ├── types.ts              # RenderedRows, Point, Bounds, Scene
 ├── shapes.ts             # rectangle(), polyline(), polyarrow(), text()
 ├── scene.ts              # buildScene()
-├── bounds.ts             # boundsFromShape()
+├── bounds.ts             # boundsFromRows()
 └── scale.ts              # X_SCALE, Y_SCALE, conversions
 ```
 
@@ -233,13 +210,40 @@ export interface LineData {
 }
 
 export const LineHandler: ElementHandler<LineData> = {
-  generate(data, origin) {
-    const shape = g.polyline(data.points);
-    return { shape, bounds: g.boundsFromShape(shape, origin) };
+  create(x, y) {
+    const points = [{ x, y }];
+    return {
+      id: generateId(),
+      type: ElementType.Line,
+      x, y,
+      rows: g.polyline(points),
+      data: { type: 'line', points },
+      labelEnabled: false,
+    };
+  },
+
+  preview(element, mouseMove) {
+    const data = element.data as LineData;
+    const lastPoint = data.points[data.points.length - 1];
+    
+    // Snap to dominant direction
+    const snappedPoint = snapToDirection(lastPoint, mouseMove);
+    const newPoints = [...data.points, snappedPoint];
+    
+    const minX = Math.min(...newPoints.map(p => p.x));
+    const minY = Math.min(...newPoints.map(p => p.y));
+    
+    return {
+      ...element,
+      x: minX,
+      y: minY,
+      rows: g.polyline(newPoints),  // calls geometry directly
+      data: { type: 'line', points: newPoints },
+    };
   },
 
   bounds(element) {
-    return g.boundsFromShape(element.shape, { x: element.x, y: element.y });
+    return g.boundsFromRows(element.rows, { x: element.x, y: element.y });
   },
 
   inVicinity(element, point) {
@@ -262,11 +266,16 @@ export const LineHandler: ElementHandler<LineData> = {
     const newPoints = [...data.points];
     newPoints[idx] = { x: newPoints[idx].x + delta.x, y: newPoints[idx].y + delta.y };
     
-    const { shape, bounds } = this.generate({ type: 'line', points: newPoints }, { x: 0, y: 0 });
     const minX = Math.min(...newPoints.map(p => p.x));
     const minY = Math.min(...newPoints.map(p => p.y));
     
-    return { ...element, x: minX, y: minY, shape, data: { type: 'line', points: newPoints } };
+    return {
+      ...element,
+      x: minX,
+      y: minY,
+      rows: g.polyline(newPoints),  // calls geometry directly
+      data: { type: 'line', points: newPoints },
+    };
   },
 };
 ```
@@ -308,7 +317,7 @@ export function elementHandlerFor(element: Element): ElementHandler<any> {
 
 ```typescript
 // User clicks to start line
-const element = createElement('line', x, y);
+const element = elementHandlerFor(type).create('line', x, y);
 store.setDraft(element);
 
 // User moves mouse - mode handler calls element handler
@@ -316,7 +325,7 @@ const updated = elementHandlerFor(element).preview(element, mouseMove);
 store.setDraft(updated);  // shape is correct
 
 // User finalizes
-store.addElement(draft);  // shape already correct
+store.addElement(draft);  // rows already correct
 ```
 
 ### 2. Rendering (useRenderLoop)
@@ -325,7 +334,7 @@ store.addElement(draft);  // shape already correct
 function drawScene() {
   // ASCII content - type agnostic
   const positionedRows = Object.values(elements).map(e => ({
-    rows: e.shape,
+    rows: e.rows,
     position: { x: e.x, y: e.y }
   }));
   const scene = buildScene(positionedRows);
@@ -333,7 +342,7 @@ function drawScene() {
 
   // Draft
   if (draft) {
-    canvasDraw.scene(ctx, buildScene([{ rows: draft.shape, position: { x: draft.x, y: draft.y } }]));
+    canvasDraw.scene(ctx, buildScene([{ rows: draft.rows, position: { x: draft.x, y: draft.y } }]));
   }
 
   // Selection bounds - uses element handler
@@ -371,10 +380,17 @@ export interface DiamondData {
 }
 
 export const DiamondHandler: ElementHandler<DiamondData> = {
-  generate(data, origin) {
-    const shape = g.diamond(data.size);
-    return { shape, bounds: g.boundsFromShape(shape, origin) };
+  create(x, y) {
+    return {
+      id: generateId(),
+      type: ElementType.Diamond,
+      x, y,
+      rows: g.diamond(1),
+      data: { type: 'diamond', size: 1 },
+      labelEnabled: false,
+    };
   },
+  preview(element, mouseMove) { ... },
   bounds(element) { ... },
   inVicinity(element, point) { ... },
 };
@@ -408,7 +424,7 @@ Done. No changes to Canvas, useRenderLoop, canvasDraw.ts, or buildScene.
 - Keep old element code working
 
 ### Phase 2: Switch useRenderLoop
-- Rename useRenderLoop → useRenderLoop
+- Rename useDraw → useRenderLoop
 - Rename draw.ts → canvasDraw.ts
 - Update to use `elementHandlerFor().bounds()` instead of `utilFor().outlineBounds()`
 - Update buildScene call (trivial conversion)
