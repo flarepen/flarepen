@@ -64,23 +64,25 @@ export const BOX = {
 export function rectangle(rect: Rectangle): Shape {
   const width = Math.abs(rect.width);
   const height = Math.abs(rect.height);
-  return g2.rectangle(width, height, rect.borderType, rect.label);
+  return g2.rectangle(width, height, rect.borderType, rect.label).rows;
 }
 
 export function line(len: number, horizontal: boolean): Shape {
-  return g2.line(len, horizontal);
+  return g2.line(len, horizontal).rows;
 }
 
 export function polyline(points: Point[]): Shape {
-  return g2.polyline(points);
+  // Convert pixel points to grid cells
+  const cells = points.map(p => ({ col: Math.floor(p.x / X_SCALE), row: Math.floor(p.y / Y_SCALE) }));
+  return g2.polyline(cells).rows;
 }
 
 export function arrow(len: number, direction: LinearDirection): Shape {
-  return g2.arrow(len, direction as g2.LinearDirection);
+  return g2.arrow(len, direction as g2.LinearDirection).rows;
 }
 
 export function text(content: string): Shape {
-  return g2.text(content);
+  return g2.text(content).rows;
 }
 
 // TODO: Where to keep this implementation?
