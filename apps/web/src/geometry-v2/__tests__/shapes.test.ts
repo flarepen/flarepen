@@ -95,6 +95,32 @@ describe('rectangle', () => {
       expect(rectangle(1, 1, borderType)).toEqual(expected);
     });
   });
+
+  describe('labels', () => {
+    it('creates rectangle with label', () => {
+      expect(rectangle(10, 3, BorderType.Normal, 'Button')).toEqual([
+        '┌Button───┐',
+        '│         │',
+        '└─────────┘'
+      ]);
+    });
+
+    it('handles label that fills width', () => {
+      expect(rectangle(8, 3, BorderType.Normal, 'Button')).toEqual([
+        '┌Button─┐',
+        '│       │',
+        '└───────┘'
+      ]);
+    });
+
+    it('works with different border types', () => {
+      expect(rectangle(10, 3, BorderType.Double, 'Test')).toEqual([
+        '╔Test═════╗',
+        '║         ║',
+        '╚═════════╝'
+      ]);
+    });
+  });
 });
 
 describe('line', () => {

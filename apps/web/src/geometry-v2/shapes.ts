@@ -89,7 +89,8 @@ const BOX = {
 export function rectangle(
   width: number,
   height: number,
-  borderType: BorderType = BorderType.Normal
+  borderType: BorderType = BorderType.Normal,
+  label?: string
 ): RenderedRows {
   if (width <= 0 || height <= 0) return [''];
 
@@ -107,7 +108,16 @@ export function rectangle(
     return [box.LEFT_TOP + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_TOP];
   }
 
-  const top = box.LEFT_TOP + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_TOP;
+  // Top row with optional label
+  let top: string;
+  if (label) {
+    const labelLen = label.length;
+    const remainingWidth = width - labelLen - 2;
+    top = box.LEFT_TOP + label + (remainingWidth > 0 ? box.HORIZONTAL.repeat(remainingWidth) : '') + box.RIGHT_TOP;
+  } else {
+    top = box.LEFT_TOP + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_TOP;
+  }
+
   const middle = box.VERTICAL + ' '.repeat(width - 2) + box.VERTICAL;
   const bottom = box.LEFT_BOTTOM + box.HORIZONTAL.repeat(width - 2) + box.RIGHT_BOTTOM;
 

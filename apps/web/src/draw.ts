@@ -32,8 +32,8 @@ function element(ctx: CanvasRenderingContext2D, element: Element) {
 
 // Overriding Y for any kind of customizations before render.
 function overrideY(ch: string, y: number): number {
-  // ARROW_RIGHT U+25B6 is not properly centered.
-  return ch == SYMBOLS.ARROW_RIGHT ? y + 2 : y;
+  // ARROW_RIGHT U+25B6 and ARROW_LEFT U+25C0 are not properly centered.
+  return ch == SYMBOLS.ARROW_RIGHT || ch == SYMBOLS.ARROW_LEFT ? y + 2 : y;
 }
 
 export function withOpacity(radix_color: string, opacity: number) {
