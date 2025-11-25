@@ -1,19 +1,18 @@
 {
-    "private": true,
-    "workspaces": [
-      "apps/*",
-      "packages/*"
-    ],
-    "engines": {
-      "node": ">=18.0.0"
-    },
-    "scripts": {
-      "build": "turbo run build",
-      "start": "turbo run start",
-      "build:ci": "./ci_install.sh && turbo run build"
-    },
-    "devDependencies": {
-      "turbo": "^1.6.1"
-    }
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "build:ci": "./ci_install.sh && turbo run build"
+  },
+  "devDependencies": {
+    "turbo": "^1.6.1"
   }
-  
+}
