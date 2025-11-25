@@ -1,3 +1,18 @@
+/**
+ * Multi-segment arrows with optional start/end arrowheads
+ * 
+ * Arrow direction follows point order:
+ * 
+ *   [{x:0,y:0}, {x:130,y:0}, {x:130,y:60}]
+ *        ↓          ↓            ↓
+ *      start   →  right    →   down
+ * 
+ *   End arrow:              Start arrow:           Both arrows:
+ *   ──────────┐             ◀─────────┐            ◀─────────┐
+ *             │                       │                      │
+ *             ▼                       │                      ▼
+ */
+
 import { RenderedRows, Point } from './types';
 import { X_SCALE, Y_SCALE } from './scale';
 import { line, arrow, LinearDirection } from './shapes';
@@ -49,6 +64,32 @@ export function polyarrow(
   return buildPolyarrow(points, startArrow, endArrow);
 }
 
+/**
+ * Build multi-segment arrow with arrowheads
+ * 
+ * Direction logic:
+ * 
+ *   Points: [A, B, C]
+ *            ↓  ↓  ↓
+ *   
+ *   Start arrow at A:
+ *     - Look at segment A→B
+ *     - If A→B goes right (dx>0), arrow points left: ◀
+ *     - If A→B goes down (dy>0), arrow points up: ▲
+ *   
+ *   End arrow at C:
+ *     - Look at segment B→C
+ *     - If B→C goes right (dx>0), arrow points right: ▶
+ *     - If B→C goes down (dy>0), arrow points down: ▼
+ * 
+ *   Example L-shape: [{x:0,y:0}, {x:130,y:0}, {x:130,y:60}]
+ *     
+ *     Start: A→B is right, so ◀     End: B→C is down, so ▼
+ *     
+ *     ◀─────────┐
+ *               │
+ *               ▼
+ */
 function buildPolyarrow(
   points: Point[],
   startArrow: boolean,
@@ -63,21 +104,25 @@ function buildPolyarrow(
   
   // Add arrowheads
   if (startArrow) {
-    const dx = points[1].x - points[0].x;
+    // Start arrow points opposite to first segment direction
+    // Example: if first segment goes right (→), arrow points left (◀)
+    const dx = points[1].x - points[0].x;  // Delta from point[0] to point[1]
     const dy = points[1].y - points[0].y;
-    const dir = getDirection(dx, dy);
-    const head = getArrowhead(dir, true);
+    const dir = getDirection(dx, dy);      // Get segment direction (e.g., Right)
+    const head = getArrowhead(dir, true);  // Reverse it (Right → Left = ◀)
     const gridX = Math.floor((points[0].x - minX) / X_SCALE);
     const gridY = Math.floor((points[0].y - minY) / Y_SCALE);
     grid[gridY][gridX] = head;
   }
   
   if (endArrow) {
+    // End arrow points in last segment direction
+    // Example: if last segment goes down (↓), arrow points down (▼)
     const lastIdx = points.length - 1;
-    const dx = points[lastIdx].x - points[lastIdx - 1].x;
+    const dx = points[lastIdx].x - points[lastIdx - 1].x;  // Delta from second-to-last to last
     const dy = points[lastIdx].y - points[lastIdx - 1].y;
-    const dir = getDirection(dx, dy);
-    const head = getArrowhead(dir, false);
+    const dir = getDirection(dx, dy);      // Get segment direction (e.g., Down)
+    const head = getArrowhead(dir, false); // Use as-is (Down = ▼)
     const gridX = Math.floor((points[lastIdx].x - minX) / X_SCALE);
     const gridY = Math.floor((points[lastIdx].y - minY) / Y_SCALE);
     grid[gridY][gridX] = head;
