@@ -3,6 +3,36 @@
  * 
  * Combines multiple positioned shapes into a single scene grid.
  * Works entirely in grid coordinates - no pixel conversion.
+ * 
+ * Input:                          Output Scene:
+ *   [{                              ┌─────┐       ┌─────┐
+ *     shape: {                      │ Box │ ────▶ │ Box │
+ *       rows: ['┌─────┐',           └─────┘       └─────┘
+ *              '│ Box │',
+ *              '└─────┘'],
+ *       width: 7,
+ *       height: 3
+ *     },
+ *     position: {col:0, row:0}
+ *   },
+ *   {
+ *     shape: {
+ *       rows: ['────▶'],
+ *       width: 5,
+ *       height: 1
+ *     },
+ *     position: {col:8, row:1}
+ *   },
+ *   {
+ *     shape: {
+ *       rows: ['┌─────┐',
+ *              '│ Box │',
+ *              '└─────┘'],
+ *       width: 7,
+ *       height: 3
+ *     },
+ *     position: {col:14, row:0}
+ *   }]
  */
 
 import { RenderedShape, PositionedShape, Scene, GridCell } from './types';

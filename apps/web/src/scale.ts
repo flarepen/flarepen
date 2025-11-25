@@ -3,7 +3,29 @@
  * Converts between pixel coordinates and grid cells
  */
 
-import { Point } from './types';
+import { GridCell } from './geometry-v2/types';
+
+/**
+ * 2D point in pixel coordinates
+ */
+export interface PixelPoint {
+  /** X coordinate in pixels */
+  x: number;
+  /** Y coordinate in pixels */
+  y: number;
+}
+
+/**
+ * Bounding box in pixel coordinates (for drawing)
+ */
+export interface PixelBounds {
+  /** Top-left corner in pixels */
+  origin: PixelPoint;
+  /** Width in pixels */
+  width: number;
+  /** Height in pixels */
+  height: number;
+}
 
 /**
  * Width of one grid cell in pixels
@@ -51,27 +73,23 @@ export function gridToPixelHeight(cells: number): number {
 }
 
 /**
- * Convert absolute pixel point to grid coordinates relative to origin
+ * Convert pixel point to grid cell
  */
-export function pointToGrid(point: Point, origin: Point): { x: number; y: number } {
+export function pixelToGrid(point: PixelPoint): GridCell {
   return {
-    x: Math.floor((point.x - origin.x) / X_SCALE),
-    y: Math.floor((point.y - origin.y) / Y_SCALE),
+    col: Math.floor(point.x / X_SCALE),
+    row: Math.floor(point.y / Y_SCALE),
   };
 }
 
 /**
- * Calculate grid width from pixel delta
+ * Convert grid cell to pixel point (top-left corner of cell)
  */
-export function pixelDeltaToGridWidth(deltaX: number): number {
-  return Math.abs(deltaX) / X_SCALE;
-}
-
-/**
- * Calculate grid height from pixel delta
- */
-export function pixelDeltaToGridHeight(deltaY: number): number {
-  return Math.abs(deltaY) / Y_SCALE;
+export function gridToPixel(cell: GridCell): PixelPoint {
+  return {
+    x: cell.col * X_SCALE,
+    y: cell.row * Y_SCALE,
+  };
 }
 
 /**

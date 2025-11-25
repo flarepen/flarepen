@@ -1,17 +1,7 @@
 /**
  * Core geometry types for FlarePen
- * Pure types with no element coupling
+ * Pure grid-based types with no pixel coupling
  */
-
-/**
- * 2D point in pixel coordinates
- */
-export interface PixelPoint {
-  /** X coordinate in pixels */
-  x: number;
-  /** Y coordinate in pixels */
-  y: number;
-}
 
 /**
  * 2D position in grid cell coordinates
@@ -32,18 +22,6 @@ export interface GridBounds {
   /** Width in grid cells */
   width: number;
   /** Height in grid cells */
-  height: number;
-}
-
-/**
- * Bounding box in pixel coordinates (for drawing)
- */
-export interface PixelBounds {
-  /** Top-left corner in pixels */
-  origin: PixelPoint;
-  /** Width in pixels */
-  width: number;
-  /** Height in pixels */
   height: number;
 }
 
