@@ -1,3 +1,19 @@
+/**
+ * Shape Generation
+ * 
+ * Pure functions that generate ASCII shapes as arrays of strings.
+ * 
+ * rectangle(8, 4):        line(10, true):      arrow(5, Down):
+ *   ┌──────┐                ──────────           │
+ *   │      │                                     │
+ *   │      │                                     │
+ *   └──────┘                                     │
+ *                                                ▼
+ * 
+ * text('Hello World'):
+ *   Hello World
+ */
+
 import { RenderedRows } from './types';
 
 // ============================================================================

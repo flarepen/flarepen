@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { mergeScene } from '../scene';
+import { buildScene } from '../scene';
 
-describe('mergeScene', () => {
+describe('buildScene', () => {
   it('merges rectangle with text inside', () => {
     const positioned = [
       {
@@ -19,7 +19,7 @@ describe('mergeScene', () => {
       },
     ];
 
-    const scene = mergeScene(positioned);
+    const scene = buildScene(positioned);
 
     expect(scene.origin).toEqual({ x: 0, y: 0 });
     expect(scene.content.map(row => row.join(''))).toEqual([
@@ -54,7 +54,7 @@ describe('mergeScene', () => {
       },
     ];
 
-    const scene = mergeScene(positioned);
+    const scene = buildScene(positioned);
 
     expect(scene.origin).toEqual({ x: 0, y: 0 });
     expect(scene.content.map(row => row.join(''))).toEqual([
@@ -92,7 +92,7 @@ describe('mergeScene', () => {
       },
     ];
 
-    const scene = mergeScene(positioned);
+    const scene = buildScene(positioned);
 
     expect(scene.origin).toEqual({ x: 0, y: 0 });
     expect(scene.content.map(row => row.join(''))).toEqual([
@@ -109,7 +109,7 @@ describe('mergeScene', () => {
   });
 
   it('handles empty positioned rows array', () => {
-    const scene = mergeScene([]);
+    const scene = buildScene([]);
     
     expect(scene.content).toEqual([[]]);
   });
@@ -130,7 +130,7 @@ describe('mergeScene', () => {
       },
     ];
 
-    const scene = mergeScene(positioned);
+    const scene = buildScene(positioned);
 
     expect(scene.content.map(row => row.join(''))).toEqual([
       'Label 1',

@@ -1,10 +1,34 @@
+/**
+ * Scene Building
+ * 
+ * Combines multiple positioned shapes into a single scene grid.
+ * 
+ * Input:                          Output Scene:
+ *   [{                              ┌─────┐       ┌─────┐
+ *     rows: ['┌─────┐',             │ Box │ ────▶ │ Box │
+ *            '│ Box │',             └─────┘       └─────┘
+ *            '└─────┘'],
+ *     position: {x:0, y:0}
+ *   },
+ *   {
+ *     rows: ['────▶'],
+ *     position: {x:104, y:20}
+ *   },
+ *   {
+ *     rows: ['┌─────┐',
+ *            '│ Box │',
+ *            '└─────┘'],
+ *     position: {x:182, y:0}
+ *   }]
+ */
+
 import { RenderedRows, PositionedRows, Scene, Point } from './types';
 import { X_SCALE, Y_SCALE, pixelsToGridWidth, pixelsToGridHeight } from './scale';
 
 /**
- * Merge multiple positioned rows into a single scene grid
+ * Build a scene by merging multiple positioned rows into a single grid
  */
-export function mergeScene(positionedRows: PositionedRows[]): Scene {
+export function buildScene(positionedRows: PositionedRows[]): Scene {
   if (positionedRows.length === 0) {
     return { origin: { x: 0, y: 0 }, content: [[]] };
   }
