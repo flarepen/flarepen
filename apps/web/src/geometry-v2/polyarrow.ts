@@ -14,7 +14,7 @@
  */
 
 import { RenderedRows, Point } from './types';
-import { X_SCALE, Y_SCALE } from './scale';
+import { pointToGrid, pixelDeltaToGridWidth, pixelDeltaToGridHeight, isHorizontalMovement } from './scale';
 import { line, arrow, LinearDirection } from './shapes';
 import { buildPolyline } from './polyline';
 
@@ -35,8 +35,8 @@ export function polyarrow(
   if (points.length === 2) {
     const dx = points[1].x - points[0].x;
     const dy = points[1].y - points[0].y;
-    const horizontal = Math.abs(dx) > Math.abs(dy);
-    const len = Math.floor(horizontal ? Math.abs(dx) / X_SCALE : Math.abs(dy) / Y_SCALE);
+    const horizontal = isHorizontalMovement(dx, dy);
+    const len = Math.floor(horizontal ? pixelDeltaToGridWidth(dx) : pixelDeltaToGridHeight(dy));
     
     if (startArrow && endArrow) {
       // Double-headed arrow
@@ -110,8 +110,7 @@ function buildPolyarrow(
     const dy = points[1].y - points[0].y;
     const dir = getDirection(dx, dy);      // Get segment direction (e.g., Right)
     const head = getArrowhead(dir, true);  // Reverse it (Right → Left = ◀)
-    const gridX = Math.floor((points[0].x - minX) / X_SCALE);
-    const gridY = Math.floor((points[0].y - minY) / Y_SCALE);
+    const { x: gridX, y: gridY } = pointToGrid(points[0], { x: minX, y: minY });
     grid[gridY][gridX] = head;
   }
   
@@ -123,8 +122,7 @@ function buildPolyarrow(
     const dy = points[lastIdx].y - points[lastIdx - 1].y;
     const dir = getDirection(dx, dy);      // Get segment direction (e.g., Down)
     const head = getArrowhead(dir, false); // Use as-is (Down = ▼)
-    const gridX = Math.floor((points[lastIdx].x - minX) / X_SCALE);
-    const gridY = Math.floor((points[lastIdx].y - minY) / Y_SCALE);
+    const { x: gridX, y: gridY } = pointToGrid(points[lastIdx], { x: minX, y: minY });
     grid[gridY][gridX] = head;
   }
   

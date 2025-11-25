@@ -1,6 +1,7 @@
 import { RenderedRows, Point } from './types';
-import { X_SCALE, Y_SCALE } from './scale';
+import { pointToGrid, pixelDeltaToGridWidth, pixelDeltaToGridHeight, isHorizontalMovement } from './scale';
 import { line } from './shapes';
+import { boundsOfPoints } from './bounds';
 
 const HORIZONTAL = '─';
 const VERTICAL = '│';
@@ -10,10 +11,10 @@ export function polyline(points: Point[]): RenderedRows {
   
   // Single segment - use line function
   if (points.length === 2) {
-    const dx = Math.abs(points[1].x - points[0].x) / X_SCALE;
-    const dy = Math.abs(points[1].y - points[0].y) / Y_SCALE;
-    const horizontal = dx > dy;
-    const len = Math.floor(horizontal ? dx : dy);
+    const dx = points[1].x - points[0].x;
+    const dy = points[1].y - points[0].y;
+    const horizontal = isHorizontalMovement(dx, dy);
+    const len = Math.floor(horizontal ? pixelDeltaToGridWidth(dx) : pixelDeltaToGridHeight(dy));
     return line(len, horizontal);
   }
   
@@ -21,62 +22,63 @@ export function polyline(points: Point[]): RenderedRows {
 }
 
 export function buildPolyline(points: Point[]): RenderedRows {
-  // Calculate bounding box
-  const minX = Math.min(...points.map(p => p.x));
-  const minY = Math.min(...points.map(p => p.y));
-  const maxX = Math.max(...points.map(p => p.x));
-  const maxY = Math.max(...points.map(p => p.y));
+  const bounds = boundsOfPoints(points);
+  const grid = createEmptyGrid(bounds.width, bounds.height);
   
-  const width = Math.floor((maxX - minX) / X_SCALE) + 1;
-  const height = Math.floor((maxY - minY) / Y_SCALE) + 1;
+  drawSegments(grid, points, bounds.origin);
+  placeCorners(grid, points, bounds.origin);
   
-  // Create empty grid
-  const grid: string[][] = Array(height)
-    .fill(null)
-    .map(() => Array(width).fill(' '));
-  
-  // Draw each segment
+  return gridToRows(grid);
+}
+
+function createEmptyGrid(width: number, height: number): string[][] {
+  return Array(height).fill(null).map(() => Array(width).fill(' '));
+}
+
+function drawSegments(grid: string[][], points: Point[], origin: Point): void {
   for (let i = 0; i < points.length - 1; i++) {
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    
-    // Convert to grid coordinates (relative to minX, minY)
-    const x1 = Math.floor((p1.x - minX) / X_SCALE);
-    const y1 = Math.floor((p1.y - minY) / Y_SCALE);
-    const x2 = Math.floor((p2.x - minX) / X_SCALE);
-    const y2 = Math.floor((p2.y - minY) / Y_SCALE);
-    
-    const dx = Math.abs(x2 - x1);
-    const dy = Math.abs(y2 - y1);
-    
-    // Draw line segment with tolerance (snap to dominant direction)
-    if (dx <= 1 && dy > 0) {
-      // Vertical or near-vertical
-      const x = x1;
-      const startY = Math.min(y1, y2);
-      const endY = Math.max(y1, y2);
-      for (let y = startY; y <= endY; y++) {
-        grid[y][x] = VERTICAL;
-      }
-    } else if (dy <= 1 && dx > 0) {
-      // Horizontal or near-horizontal
-      const y = y1;
-      const startX = Math.min(x1, x2);
-      const endX = Math.max(x1, x2);
-      for (let x = startX; x <= endX; x++) {
-        grid[y][x] = HORIZONTAL;
-      }
-    }
+    drawSegment(grid, points[i], points[i + 1], origin);
   }
+}
+
+function drawSegment(grid: string[][], p1: Point, p2: Point, origin: Point): void {
+  const { x: x1, y: y1 } = pointToGrid(p1, origin);
+  const { x: x2, y: y2 } = pointToGrid(p2, origin);
   
-  // Place corners at junction points
+  const dx = Math.abs(x2 - x1);
+  const dy = Math.abs(y2 - y1);
+  
+  // Draw line segment with tolerance (snap to dominant direction)
+  if (dx <= 1 && dy > 0) {
+    // Vertical or near-vertical
+    drawVerticalLine(grid, x1, Math.min(y1, y2), Math.max(y1, y2));
+  } else if (dy <= 1 && dx > 0) {
+    // Horizontal or near-horizontal
+    drawHorizontalLine(grid, y1, Math.min(x1, x2), Math.max(x1, x2));
+  }
+}
+
+function drawVerticalLine(grid: string[][], x: number, startY: number, endY: number): void {
+  for (let y = startY; y <= endY; y++) {
+    grid[y][x] = VERTICAL;
+  }
+}
+
+function drawHorizontalLine(grid: string[][], y: number, startX: number, endX: number): void {
+  for (let x = startX; x <= endX; x++) {
+    grid[y][x] = HORIZONTAL;
+  }
+}
+
+function placeCorners(grid: string[][], points: Point[], origin: Point): void {
   for (let i = 1; i < points.length - 1; i++) {
     const corner = getCornerChar(points[i - 1], points[i], points[i + 1]);
-    const gridX = Math.floor((points[i].x - minX) / X_SCALE);
-    const gridY = Math.floor((points[i].y - minY) / Y_SCALE);
-    grid[gridY][gridX] = corner;
+    const { x, y } = pointToGrid(points[i], origin);
+    grid[y][x] = corner;
   }
-  
+}
+
+function gridToRows(grid: string[][]): RenderedRows {
   return grid.map(row => row.join(''));
 }
 

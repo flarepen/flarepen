@@ -3,6 +3,8 @@
  * Converts between pixel coordinates and grid cells
  */
 
+import { Point } from './types';
+
 /**
  * Width of one grid cell in pixels
  */
@@ -46,4 +48,35 @@ export function gridToPixelWidth(cells: number): number {
  */
 export function gridToPixelHeight(cells: number): number {
   return cells * Y_SCALE;
+}
+
+/**
+ * Convert absolute pixel point to grid coordinates relative to origin
+ */
+export function pointToGrid(point: Point, origin: Point): { x: number; y: number } {
+  return {
+    x: Math.floor((point.x - origin.x) / X_SCALE),
+    y: Math.floor((point.y - origin.y) / Y_SCALE),
+  };
+}
+
+/**
+ * Calculate grid width from pixel delta
+ */
+export function pixelDeltaToGridWidth(deltaX: number): number {
+  return Math.abs(deltaX) / X_SCALE;
+}
+
+/**
+ * Calculate grid height from pixel delta
+ */
+export function pixelDeltaToGridHeight(deltaY: number): number {
+  return Math.abs(deltaY) / Y_SCALE;
+}
+
+/**
+ * Determine if movement is more horizontal than vertical
+ */
+export function isHorizontalMovement(dx: number, dy: number): boolean {
+  return Math.abs(dx) > Math.abs(dy);
 }
