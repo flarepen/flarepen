@@ -111,9 +111,6 @@ export const LineHandler: ElementHandler<Line> = {
     return LinearElementHandler.allEditHandles(line);
   },
 
-  getEditHandleId: function (line, e) {
-    return LinearElementHandler.getEditHandleId(line, e);
-  },
 
   edit: function (line, mouseMove, handleId) {
     const result = LinearElementHandler.edit(line, mouseMove, handleId, 1);

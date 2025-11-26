@@ -50,9 +50,6 @@ export const TextHandler: ElementHandler<Text> = {
   allEditHandles: function () {
     return [];
   },
-  getEditHandleId: function (text, e) {
-    return null;
-  },
   edit: function (text, mouseMove, handleId) {
     return text;
   },

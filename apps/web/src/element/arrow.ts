@@ -94,9 +94,6 @@ export const ArrowHandler: ElementHandler<Arrow> = {
     return LinearElementHandler.allEditHandles(arrow);
   },
 
-  getEditHandleId: function (arrow, e) {
-    return LinearElementHandler.getEditHandleId(arrow, e);
-  },
 
   edit: function (arrow, mouseMove, handleId) {
     const result = LinearElementHandler.edit(arrow, mouseMove, handleId, 2);

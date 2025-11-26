@@ -101,10 +101,6 @@ export interface ElementHandler<T extends ElementCommons> {
   inVicinity: (t: T, p: Point) => boolean;
   create: (t: T, mouseMove: MouseMove, callback: (updated: T) => void) => void;
   allEditHandles: (t: T) => EditHandle[];
-  getEditHandleId: (
-    t: T,
-    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-  ) => null | string;
   edit: (t: T, mouseMove: MouseMove, handleId: string) => T;
   getGuideAnchors: (t: T) => Point[];
 }

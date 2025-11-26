@@ -176,19 +176,6 @@ export const RectangleHandler: ElementHandler<Rectangle> = {
     ];
   },
 
-  getEditHandleId: function (rectangle, e) {
-    const point = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-
-    const handle = _.find(RectangleHandler.allEditHandles(rectangle), (handle) =>
-      isPointInsideBound(point, handle.bounds)
-    );
-
-    return handle?.handleId || null;
-  },
-
   edit: function (rectangle, mouseMove, handleId) {
     const { widthIncr, heightIncr } = pixelDeltaToGrid(mouseMove.accX, mouseMove.accY);
     

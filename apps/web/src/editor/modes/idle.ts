@@ -1,14 +1,20 @@
 import React from 'react';
 import { useStore, actions } from '../../state';
 import { Tool, ElementTypeForTool } from '../../tools';
-import { createElement, ElementType, Text as TextElement, utilFor, inVicinity } from '../../element';
+import { createElement, ElementType, Text as TextElement, handlerFor, inVicinity, isPointInsideBound } from '../../element';
 import { X_SCALE, Y_SCALE } from '../../constants';
-import { MouseMove } from '../../types';
+import { MouseMove, EditHandle } from '../../types';
 import { ModeHandler } from './types';
 import _ from 'lodash';
 
 function clipToScale(value: number, scale: number) {
   return Math.floor(value / scale) * scale;
+}
+
+function getEditHandleId(handles: EditHandle[], clientX: number, clientY: number): string | null {
+  const point = { x: clientX, y: clientY };
+  const handle = handles.find(h => isPointInsideBound(point, h.bounds));
+  return handle?.handleId || null;
 }
 
 export const IdleMode: ModeHandler = {
@@ -58,7 +64,8 @@ export const IdleMode: ModeHandler = {
       // Check if clicking on edit handle of selected element
       if (selectedIds.length === 1 && selectedGroupIds.length === 0) {
         const selectedElement = elements[selectedIds[0]];
-        const editHandleId = utilFor(selectedElement).getEditHandleId(selectedElement, e);
+        const handles = handlerFor(selectedElement).allEditHandles(selectedElement);
+        const editHandleId = getEditHandleId(handles, e.clientX, e.clientY);
         if (editHandleId) {
           useStore.setState({
             interactionMode: { type: 'editing', elementId: selectedElement.id, handleId: editHandleId },

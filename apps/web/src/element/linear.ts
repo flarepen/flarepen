@@ -78,18 +78,6 @@ export const LinearElementHandler = {
     ];
   },
 
-  getEditHandleId: function (element: LinearElement, e: { clientX: number; clientY: number }) {
-    const point = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-
-    const handle = _.find(LinearElementHandler.allEditHandles(element), (handle) =>
-      isPointInsideBound(point, handle.bounds)
-    );
-
-    return handle?.handleId || null;
-  },
 
   handleDirectionChange: function (
     element: LinearElement,
