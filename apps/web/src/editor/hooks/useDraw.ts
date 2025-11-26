@@ -22,6 +22,7 @@ export function useDraw() {
   const currentCell = useStore((state) => state.currentCell);
   const editingContext = useStore((state) => state.editingContext);
   const tool = useStore((state) => state.tool);
+  const hoveredElementId = useStore((state) => state.hoveredElementId);
 
   const canvasColors = useCanvasColors();
 
@@ -31,7 +32,7 @@ export function useDraw() {
   // Refresh scene
   useEffect(() => {
     window.requestAnimationFrame(drawScene);
-  }, [elements, draft, dimensions, selectedIds, selectedGroupIds, canvasColors, selectionBox]);
+  }, [elements, draft, dimensions, selectedIds, selectedGroupIds, canvasColors, selectionBox, hoveredElementId]);
 
   function getBoundsForGroup(group: ElementGroup) {
     const elementsInGroup = _.map(group.elementIds, (selectedId) => elements[selectedId]);
@@ -145,6 +146,20 @@ export function useDraw() {
 
       // draw current draft
       draft && draw.element(ctx, draft.element);
+
+      // Draw hover highlight (only if not selected and not dragging)
+      if (hoveredElementId && !selectedIds.includes(hoveredElementId) && !dragging) {
+        const hoveredElement = elements[hoveredElementId];
+        if (hoveredElement) {
+          const bounds = handlerFor(hoveredElement).outlineBounds(hoveredElement);
+          draw.rect(
+            ctx,
+            bounds,
+            withOpacity(canvasColors.selectionBackground, 0.3),
+            canvasColors.selectionBackground
+          );
+        }
+      }
 
       drawSelectionOutlines();
 

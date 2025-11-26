@@ -51,6 +51,7 @@ export interface AppSlice {
   spacePressed: boolean;
   toolLocked: boolean;
   currentCell: null | Point;
+  hoveredElementId: null | string;
 
   groups: Groups;
   groupForElement: ElementToGroupMap;
@@ -89,6 +90,7 @@ export const getDefaultState = () => {
     spacePressed: false,
     toolLocked: false,
     currentCell: null,
+    hoveredElementId: null,
     groups: {},
     groupForElement: {},
     selectedGroupIds: [],

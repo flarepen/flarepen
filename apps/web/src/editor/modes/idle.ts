@@ -111,7 +111,7 @@ export const IdleMode: ModeHandler = {
   },
 
   onPointerMove: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
-    const { dragging, selectedIds, selectedGroupIds } = useStore.getState();
+    const { dragging, selectedIds, selectedGroupIds, elements } = useStore.getState();
     
     // If mouse button is down and elements are selected, start dragging
     if (e.buttons > 0 && !dragging && (selectedIds.length > 0 || selectedGroupIds.length > 0)) {
@@ -121,6 +121,14 @@ export const IdleMode: ModeHandler = {
     // Handle dragging if flag is set
     if (dragging && (selectedIds.length > 0 || selectedGroupIds.length > 0)) {
       actions.drag(mouseMove);
+    }
+    
+    // Update hovered element (only when not dragging)
+    if (!dragging) {
+      const hoveredElement = _.values(elements).find((element) =>
+        inVicinity({ x: e.clientX, y: e.clientY }, element)
+      );
+      useStore.setState({ hoveredElementId: hoveredElement?.id || null });
     }
     
     // Update current cell

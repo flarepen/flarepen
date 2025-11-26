@@ -128,12 +128,12 @@ export const RectangleHandler: ElementHandler<Rectangle> = {
   },
 
   inVicinity: function (rectangle: Rectangle, p: Point) {
-    const { x, y, width, height } = rectangle;
+    const bounds = RectangleHandler.outlineBounds(rectangle);
     return (
-      inLinearVicinity(p, point(x, y), width, true) ||
-      inLinearVicinity(p, point(x, y), height, false) ||
-      inLinearVicinity(p, point(x, y + height * Y_SCALE - Y_SCALE), width, true) ||
-      inLinearVicinity(p, point(x + width * X_SCALE - X_SCALE, y), height, false)
+      p.x >= bounds.x &&
+      p.x <= bounds.x + bounds.width &&
+      p.y >= bounds.y &&
+      p.y <= bounds.y + bounds.height
     );
   },
 
