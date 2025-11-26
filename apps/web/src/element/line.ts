@@ -1,14 +1,14 @@
-import { ElementType, ElementUtils } from './base';
+import { ElementType, ElementHandler } from './base';
 import { elementIDGenerator } from '../id';
 import { X_SCALE, Y_SCALE } from '../constants';
 import * as g from '../geometry';
-import { LinearDirection, LinearElement, LinearElementUtils, isHorizontal } from './linear';
+import { LinearDirection, LinearElement, LinearElementHandler, isHorizontal } from './linear';
 
 export interface Line extends LinearElement {
   type: ElementType.Line;
 }
 
-export const LineUtils: ElementUtils<Line> = {
+export const LineHandler: ElementHandler<Line> = {
   new: function (x: number, y: number) {
     return {
       id: elementIDGenerator.getNextID(),
@@ -23,11 +23,11 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   outlineBounds: function (line: Line) {
-    return LinearElementUtils.outlineBounds(line);
+    return LinearElementHandler.outlineBounds(line);
   },
 
   inVicinity: function (line, p) {
-    return LinearElementUtils.inVicinity(line, p);
+    return LinearElementHandler.inVicinity(line, p);
   },
 
   create: function (line, mouseMove, callback) {
@@ -77,7 +77,7 @@ export const LineUtils: ElementUtils<Line> = {
         ? Math.floor(mouseMove.accY / Y_SCALE)
         : Math.ceil(mouseMove.accY / Y_SCALE);
 
-    const result = LinearElementUtils.handleDirectionChange(line, widthIncr, heightIncr, 1);
+    const result = LinearElementHandler.handleDirectionChange(line, widthIncr, heightIncr, 1);
     if (result) {
       Object.assign(line, result);
     }
@@ -108,15 +108,15 @@ export const LineUtils: ElementUtils<Line> = {
   },
 
   allEditHandles: function (line) {
-    return LinearElementUtils.allEditHandles(line);
+    return LinearElementHandler.allEditHandles(line);
   },
 
   getEditHandleId: function (line, e) {
-    return LinearElementUtils.getEditHandleId(line, e);
+    return LinearElementHandler.getEditHandleId(line, e);
   },
 
   edit: function (line, mouseMove, handleId) {
-    const result = LinearElementUtils.edit(line, mouseMove, handleId, 1);
+    const result = LinearElementHandler.edit(line, mouseMove, handleId, 1);
     return {
       ...line,
       ...result,

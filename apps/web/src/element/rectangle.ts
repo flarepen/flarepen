@@ -3,7 +3,7 @@ import * as g from '../geometry';
 import {
   ElementCommons,
   ElementType,
-  ElementUtils,
+  ElementHandler,
   IBounds,
   Point,
   inLinearVicinity,
@@ -11,8 +11,13 @@ import {
   isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
+import { pixelDeltaToGrid } from '../scale';
 import { BorderType, EditHandle,  MouseMove } from '../types';
 import _ from 'lodash';
+
+// ============================================================================
+// Edit Handle Helpers
+// ============================================================================
 
 const HANDLE_SIZE = 8;
 
@@ -23,6 +28,69 @@ function handle(x: number, y: number, handleId: string): EditHandle {
   };
 }
 
+// ============================================================================
+// Rectangle Update Helper
+// ============================================================================
+
+function updateRectangle(rectangle: Rectangle, updates: Partial<Rectangle>): Rectangle {
+  const updated = { ...rectangle, ...updates };
+  updated.shape = g.rectangle(updated);
+  return updated;
+}
+
+// ============================================================================
+// Resize Context and Pure Resize Functions
+// ============================================================================
+
+interface ResizeContext {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  widthIncr: number;
+  heightIncr: number;
+  minWidth: number;
+  minHeight: number;
+}
+
+function resizeLeft(ctx: ResizeContext): Partial<ResizeContext> {
+  if (ctx.width - ctx.widthIncr >= ctx.minWidth) {
+    return {
+      x: ctx.x + ctx.widthIncr * X_SCALE,
+      width: ctx.width - ctx.widthIncr,
+    };
+  }
+  return {};
+}
+
+function resizeRight(ctx: ResizeContext): Partial<ResizeContext> {
+  if (ctx.width + ctx.widthIncr >= ctx.minWidth) {
+    return { width: ctx.width + ctx.widthIncr };
+  }
+  return {};
+}
+
+function resizeTop(ctx: ResizeContext): Partial<ResizeContext> {
+  if (ctx.height - ctx.heightIncr >= ctx.minHeight) {
+    return {
+      y: ctx.y + ctx.heightIncr * Y_SCALE,
+      height: ctx.height - ctx.heightIncr,
+    };
+  }
+  return {};
+}
+
+function resizeBottom(ctx: ResizeContext): Partial<ResizeContext> {
+  if (ctx.height + ctx.heightIncr >= ctx.minHeight) {
+    return { height: ctx.height + ctx.heightIncr };
+  }
+  return {};
+}
+
+// ============================================================================
+// Rectangle Interface and Handler
+// ============================================================================
+
 export interface Rectangle extends ElementCommons {
   width: number;
   height: number;
@@ -30,7 +98,7 @@ export interface Rectangle extends ElementCommons {
   type: ElementType.Rectangle;
 }
 
-export const RectangleUtils: ElementUtils<Rectangle> = {
+export const RectangleHandler: ElementHandler<Rectangle> = {
   new: function (x: number, y: number): Rectangle {
     const newRect: Rectangle = {
       id: elementIDGenerator.getNextID(),
@@ -70,61 +138,31 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
   },
 
   create: function (rectangle, mouseMove, callback) {
-    const widthIncr =
-      mouseMove.accX > 0
-        ? Math.floor(mouseMove.accX / X_SCALE)
-        : Math.ceil(mouseMove.accX / X_SCALE);
-    const heightIncr =
-      mouseMove.accY > 0
-        ? Math.floor(mouseMove.accY / Y_SCALE)
-        : Math.ceil(mouseMove.accY / Y_SCALE);
+    const { widthIncr, heightIncr } = pixelDeltaToGrid(mouseMove.accX, mouseMove.accY);
+
     let { x, y, width, height } = rectangle;
-    width = width + widthIncr;
-    height = height + heightIncr;
+    width += widthIncr;
+    height += heightIncr;
 
-    // Min width and height is 2.
-    // We need to skip 1,0 and -1 to any kind of jumpiness when moving from positive to negative or vice versa
-    if (width <= 1 && width >= -1) {
-      if (widthIncr < 0) {
-        // if decreasing
-        width = -3;
-      } else {
-        width = 3;
-      }
+    // Skip -1, 0, 1 to avoid jumpiness when crossing zero
+    // Jump directly to -3 or 3 to maintain minimum size
+    if (width >= -1 && width <= 1) {
+      width = widthIncr < 0 ? -3 : 3;
+    }
+    if (height >= -1 && height <= 1) {
+      height = heightIncr < 0 ? -3 : 3;
     }
 
-    if (height <= 1 && height >= -1) {
-      if (heightIncr < 0) {
-        // if decreasing
-        height = -3;
-      } else {
-        height = 3;
-      }
-    }
+    // If negative, flip position to opposite corner
+    // This allows dragging left/up from the starting point
+    if (width < 0) x += widthIncr * X_SCALE;
+    if (height < 0) y += heightIncr * Y_SCALE;
 
-    if (width < 0) {
-      x = x + widthIncr * X_SCALE;
-    }
-
-    if (height < 0) {
-      y = y + heightIncr * Y_SCALE;
-    }
-
-    const newRect = {
-      ...rectangle,
-      x,
-      y,
-      width,
-      height,
-    };
-
-    newRect.shape = g.rectangle(newRect);
-
-    callback(newRect);
+    callback(updateRectangle(rectangle, { x, y, width, height }));
   },
 
   allEditHandles: function (rectangle) {
-    const { x, y, width, height } = RectangleUtils.outlineBounds(rectangle);
+    const { x, y, width, height } = RectangleHandler.outlineBounds(rectangle);
 
     return [
       handle(x + width / 2 - 5, y - HANDLE_SIZE, 'top'),
@@ -144,7 +182,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       y: e.clientY,
     };
 
-    const handle = _.find(RectangleUtils.allEditHandles(rectangle), (handle) =>
+    const handle = _.find(RectangleHandler.allEditHandles(rectangle), (handle) =>
       isPointInsideBound(point, handle.bounds)
     );
 
@@ -152,117 +190,63 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
   },
 
   edit: function (rectangle, mouseMove, handleId) {
-    let { x, y, width, height } = rectangle;
+    const { widthIncr, heightIncr } = pixelDeltaToGrid(mouseMove.accX, mouseMove.accY);
+    
+    const ctx: ResizeContext = {
+      x: rectangle.x,
+      y: rectangle.y,
+      width: rectangle.width,
+      height: rectangle.height,
+      widthIncr,
+      heightIncr,
+      minWidth: 2 + (rectangle.label?.length || 0),
+      minHeight: 2,
+    };
 
-    const widthIncr =
-      mouseMove.accX > 0
-        ? Math.floor(mouseMove.accX / X_SCALE)
-        : Math.ceil(mouseMove.accX / X_SCALE);
-    const heightIncr =
-      mouseMove.accY > 0
-        ? Math.floor(mouseMove.accY / Y_SCALE)
-        : Math.ceil(mouseMove.accY / Y_SCALE);
-
-    let minWidth = 2 + (rectangle.label ? rectangle.label?.length : 0);
-
+    let changes = {};
+    
     switch (handleId) {
       case 'left':
-        if (width - widthIncr >= minWidth) {
-          x = x + widthIncr * X_SCALE;
-          width = width - widthIncr;
-        }
+        changes = resizeLeft(ctx);
         break;
       case 'right':
-        if (width + widthIncr >= minWidth) {
-          width = width + widthIncr;
-        }
+        changes = resizeRight(ctx);
         break;
       case 'top':
-        if (height - heightIncr >= 2) {
-          y = y + heightIncr * Y_SCALE;
-          height = height - heightIncr;
-        }
+        changes = resizeTop(ctx);
         break;
       case 'bottom':
-        if (height + heightIncr >= 2) {
-          height = height + heightIncr;
-        }
+        changes = resizeBottom(ctx);
         break;
       case 'topLeft':
-        if (width - widthIncr >= minWidth) {
-          x = x + widthIncr * X_SCALE;
-          width = width - widthIncr;
-        }
-        if (height - heightIncr >= 2) {
-          y = y + heightIncr * Y_SCALE;
-          height = height - heightIncr;
-        }
+        changes = { ...resizeLeft(ctx), ...resizeTop(ctx) };
         break;
       case 'topRight':
-        if (width + widthIncr >= minWidth) {
-          width = width + widthIncr;
-        }
-        if (height - heightIncr >= 2) {
-          y = y + heightIncr * Y_SCALE;
-          height = height - heightIncr;
-        }
+        changes = { ...resizeRight(ctx), ...resizeTop(ctx) };
         break;
       case 'bottomLeft':
-        if (width - widthIncr >= minWidth) {
-          x = x + widthIncr * X_SCALE;
-          width = width - widthIncr;
-        }
-        if (height + heightIncr >= 2) {
-          height = height + heightIncr;
-        }
+        changes = { ...resizeLeft(ctx), ...resizeBottom(ctx) };
         break;
       case 'bottomRight':
-        if (width + widthIncr >= minWidth) {
-          width = width + widthIncr;
-        }
-        if (height + heightIncr >= 2) {
-          height = height + heightIncr;
-        }
+        changes = { ...resizeRight(ctx), ...resizeBottom(ctx) };
         break;
     }
 
-    const newRect = {
-      ...rectangle,
-      x,
-      y,
-      width,
-      height,
-    };
-
-    newRect.shape = g.rectangle(newRect);
-
-    return newRect;
+    return updateRectangle(rectangle, changes);
   },
 
   getGuideAnchors: function (rectangle) {
     const x = rectangle.x;
     const y = rectangle.y - Y_SCALE / 2;
-
-    const width = rectangle.width;
-    const height = rectangle.height;
+    const w = rectangle.width * X_SCALE;
+    const h = rectangle.height * Y_SCALE;
 
     return [
-      // Top Left
-      { x, y: y },
-      // Top Right
-      { x: x + width * X_SCALE, y },
-      // Bottom Left
-      { x, y: y + height * Y_SCALE },
-      // Bottom Right
-      {
-        x: x + width * X_SCALE,
-        y: y + height * Y_SCALE,
-      },
-      // Center
-      {
-        x: x + (width / 2) * X_SCALE,
-        y: y + (height / 2) * Y_SCALE,
-      },
+      { x, y },                     // Top Left
+      { x: x + w, y },              // Top Right
+      { x, y: y + h },              // Bottom Left
+      { x: x + w, y: y + h },       // Bottom Right
+      { x: x + w / 2, y: y + h / 2 }, // Center
     ];
   },
 };

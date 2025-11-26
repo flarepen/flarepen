@@ -36,7 +36,7 @@ export function isHorizontal(element: LinearElement): boolean {
   return element.direction === LinearDirection.Left || element.direction === LinearDirection.Right;
 }
 
-export const LinearElementUtils = {
+export const LinearElementHandler = {
   outlineBounds: function (element: LinearElement) {
     let { xMin, xMax, yMin, yMax } = getLinearBounding(
       { x: element.x, y: element.y },
@@ -63,7 +63,7 @@ export const LinearElementUtils = {
   },
 
   allEditHandles: function (element: LinearElement) {
-    const { x, y, width, height } = LinearElementUtils.outlineBounds(element);
+    const { x, y, width, height } = LinearElementHandler.outlineBounds(element);
 
     if (isHorizontal(element)) {
       return [
@@ -84,7 +84,7 @@ export const LinearElementUtils = {
       y: e.clientY,
     };
 
-    const handle = _.find(LinearElementUtils.allEditHandles(element), (handle) =>
+    const handle = _.find(LinearElementHandler.allEditHandles(element), (handle) =>
       isPointInsideBound(point, handle.bounds)
     );
 

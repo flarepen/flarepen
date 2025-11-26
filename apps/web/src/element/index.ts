@@ -1,41 +1,44 @@
-import { Line, LineUtils } from './line';
-import { Arrow, ArrowUtils } from './arrow';
-import { Text, TextUtils } from './text';
-import { Rectangle, RectangleUtils } from './rectangle';
-import { ElementType, ElementUtils, IBounds, Point } from './base';
+import { Line, LineHandler } from './line';
+import { Arrow, ArrowHandler } from './arrow';
+import { Text, TextHandler } from './text';
+import { Rectangle, RectangleHandler } from './rectangle';
+import { ElementType, ElementHandler, IBounds, Point } from './base';
 
 export type Element = Rectangle | Line | Arrow | Text;
 
 export function createElement(type: ElementType, x: number, y: number): Element {
   switch (type) {
     case ElementType.Rectangle:
-      return RectangleUtils.new(x, y);
+      return RectangleHandler.new(x, y);
     case ElementType.Arrow:
-      return ArrowUtils.new(x, y);
+      return ArrowHandler.new(x, y);
     case ElementType.Line:
-      return LineUtils.new(x, y);
+      return LineHandler.new(x, y);
     case ElementType.Text:
-      return TextUtils.new(x, y);
+      return TextHandler.new(x, y);
   }
 }
 
-export const ElementUtilsMap: { [k in ElementType]: ElementUtils<any> } = {
-  [ElementType.Rectangle]: RectangleUtils,
-  [ElementType.Arrow]: ArrowUtils,
-  [ElementType.Line]: LineUtils,
-  [ElementType.Text]: TextUtils,
+export const ElementHandlerMap: { [k in ElementType]: ElementHandler<any> } = {
+  [ElementType.Rectangle]: RectangleHandler,
+  [ElementType.Arrow]: ArrowHandler,
+  [ElementType.Line]: LineHandler,
+  [ElementType.Text]: TextHandler,
 };
 
-export function utilFor(element: Element): ElementUtils<any> {
-  return ElementUtilsMap[element.type];
+export function handlerFor(element: Element): ElementHandler<any> {
+  return ElementHandlerMap[element.type];
 }
 
+// Legacy alias for backward compatibility
+export const utilFor = handlerFor;
+
 export function inVicinity(p: Point, element: Element): boolean {
-  return utilFor(element).inVicinity(element, p);
+  return handlerFor(element).inVicinity(element, p);
 }
 
 export function insideBound(element: Element, bound: IBounds): boolean {
-  const outlineBounds = ElementUtilsMap[element.type].outlineBounds(element);
+  const outlineBounds = ElementHandlerMap[element.type].outlineBounds(element);
   return (
     bound.x < outlineBounds.x &&
     bound.y < outlineBounds.y &&

@@ -3,7 +3,7 @@ import { elementIDGenerator } from '../id';
 import {
   ElementCommons,
   ElementType,
-  ElementUtils,
+  ElementHandler,
   getLinearBounding,
   IBounds,
   inLinearVicinity,
@@ -15,7 +15,7 @@ export interface Text extends ElementCommons {
   type: ElementType.Text;
 }
 
-export const TextUtils: ElementUtils<Text> = {
+export const TextHandler: ElementHandler<Text> = {
   new: function (x: number, y: number): Text {
     return {
       id: elementIDGenerator.getNextID(),

@@ -3,7 +3,7 @@ import { elementIDGenerator } from '../id';
 import {
   ElementCommons,
   ElementType,
-  ElementUtils,
+  ElementHandler,
   getLinearBounding,
   IBounds,
   inLinearVicinity,
@@ -23,13 +23,13 @@ function handle(x: number, y: number, handleId: string): EditHandle {
   };
 }
 
-import { LinearDirection, LinearElement, LinearElementUtils } from './linear';
+import { LinearDirection, LinearElement, LinearElementHandler } from './linear';
 
 export interface Arrow extends LinearElement {
   type: ElementType.Arrow;
 }
 
-export const ArrowUtils: ElementUtils<Arrow> = {
+export const ArrowHandler: ElementHandler<Arrow> = {
   new: function (x: number, y: number): Arrow {
     return {
       id: elementIDGenerator.getNextID(),
@@ -43,11 +43,11 @@ export const ArrowUtils: ElementUtils<Arrow> = {
     };
   },
   outlineBounds: function (arrow: Arrow) {
-    return LinearElementUtils.outlineBounds(arrow);
+    return LinearElementHandler.outlineBounds(arrow);
   },
 
   inVicinity: function (arrow: Arrow, p: Point) {
-    return LinearElementUtils.inVicinity(arrow, p);
+    return LinearElementHandler.inVicinity(arrow, p);
   },
 
   create: function (arrow, mouseMove, callback) {
@@ -60,7 +60,7 @@ export const ArrowUtils: ElementUtils<Arrow> = {
         ? Math.floor(mouseMove.accY / Y_SCALE)
         : Math.ceil(mouseMove.accY / Y_SCALE);
 
-    const result = LinearElementUtils.handleDirectionChange(arrow, widthIncr, heightIncr, 2);
+    const result = LinearElementHandler.handleDirectionChange(arrow, widthIncr, heightIncr, 2);
     if (result) {
       Object.assign(arrow, result);
     }
@@ -91,15 +91,15 @@ export const ArrowUtils: ElementUtils<Arrow> = {
   },
 
   allEditHandles: function (arrow) {
-    return LinearElementUtils.allEditHandles(arrow);
+    return LinearElementHandler.allEditHandles(arrow);
   },
 
   getEditHandleId: function (arrow, e) {
-    return LinearElementUtils.getEditHandleId(arrow, e);
+    return LinearElementHandler.getEditHandleId(arrow, e);
   },
 
   edit: function (arrow, mouseMove, handleId) {
-    const result = LinearElementUtils.edit(arrow, mouseMove, handleId, 2);
+    const result = LinearElementHandler.edit(arrow, mouseMove, handleId, 2);
     return {
       ...arrow,
       ...result,

@@ -4,6 +4,7 @@
  */
 
 import { GridCell } from './geometry-v2/types';
+import { X_SCALE, Y_SCALE } from './constants';
 
 /**
  * 2D point in pixel coordinates
@@ -27,15 +28,8 @@ export interface PixelBounds {
   height: number;
 }
 
-/**
- * Width of one grid cell in pixels
- */
-export const X_SCALE = 13;
-
-/**
- * Height of one grid cell in pixels
- */
-export const Y_SCALE = 20;
+// Re-export scale constants for convenience
+export { X_SCALE, Y_SCALE };
 
 /**
  * Snap a pixel value to the nearest grid cell
@@ -97,4 +91,14 @@ export function gridToPixel(cell: GridCell): PixelPoint {
  */
 export function isHorizontalMovement(dx: number, dy: number): boolean {
   return Math.abs(dx) > Math.abs(dy);
+}
+
+/**
+ * Convert accumulated pixel movement to grid cell increments
+ * Handles positive and negative movements correctly
+ */
+export function pixelDeltaToGrid(accX: number, accY: number): { widthIncr: number; heightIncr: number } {
+  const widthIncr = accX > 0 ? Math.floor(accX / X_SCALE) : Math.ceil(accX / X_SCALE);
+  const heightIncr = accY > 0 ? Math.floor(accY / Y_SCALE) : Math.ceil(accY / Y_SCALE);
+  return { widthIncr, heightIncr };
 }

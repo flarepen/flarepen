@@ -1,17 +1,13 @@
 import { useEffect } from 'react';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import draw, { withOpacity } from '../../draw';
-import { ElementType, ElementUtils, ElementUtilsMap } from '../../element';
+import { ElementType, handlerFor } from '../../element';
 import { useStore } from '../../state';
 import { useCanvasColors } from './useCanvasColors';
 import * as g from '../../geometry';
 import _ from 'lodash';
 import { ElementGroup, Point } from '../../types';
 import { Tool } from '../../tools';
-
-function utilFor(elementType: ElementType): ElementUtils<any> {
-  return ElementUtilsMap[elementType]!;
-}
 
 export function useDraw() {
   const elements = useStore((state) => state.elements);
@@ -41,7 +37,7 @@ export function useDraw() {
     const elementsInGroup = _.map(group.elementIds, (selectedId) => elements[selectedId]);
 
     const bounds = g.getBoundingRectForBounds(
-      _.map(elementsInGroup, (element) => utilFor(element.type).outlineBounds(element))
+      _.map(elementsInGroup, (element) => handlerFor(element).outlineBounds(element))
     );
 
     return {
@@ -69,7 +65,7 @@ export function useDraw() {
       if (selectedElement) {
         draw.rect(
           ctx!,
-          utilFor(selectedElement.type).outlineBounds(selectedElement),
+          handlerFor(selectedElement).outlineBounds(selectedElement),
           canvasColors.selection,
           canvasColors.selectionBackground
         );
@@ -88,7 +84,7 @@ export function useDraw() {
     }
 
     const elementBounds = _.map(selectedElements, (element) =>
-      utilFor(element.type).outlineBounds(element)
+      handlerFor(element).outlineBounds(element)
     );
     const groupBounds = _.map(selectedGroups, (group) => getBoundsForGroup(group));
 
@@ -177,7 +173,7 @@ export function useDraw() {
       ) {
         const element = elements[selectedIds[0]];
         if (element.type !== ElementType.Text) {
-          utilFor(element.type)
+          handlerFor(element)
             .allEditHandles(element)
             .forEach((handle) =>
               draw.rect(
@@ -200,10 +196,10 @@ export function useDraw() {
           (element) => element.id !== selectedElement.id
         );
 
-        const elementAnchors = utilFor(selectedElement.type).getGuideAnchors(selectedElement);
+        const elementAnchors = handlerFor(selectedElement).getGuideAnchors(selectedElement);
 
         const otherAnchors = _.flatMap(otherElements, (element) => {
-          return utilFor(element.type).getGuideAnchors(element);
+          return handlerFor(element).getGuideAnchors(element);
         });
 
         elementAnchors.forEach((anchor) => {
