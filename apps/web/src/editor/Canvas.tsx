@@ -17,6 +17,7 @@ import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
 import { Property } from '@stitches/react/types/css';
 import { cursorEnabled, getCursor } from '../cursor';
 import { getModeHandler } from './modes';
+import { getCanvasCoordinates } from './utils/coordinates';
 
 // We cant allow any x and y since everything is ASCII.
 // Instead x and y should be multiples of respective scale values.
@@ -49,6 +50,10 @@ const StyledCanvas = styled('canvas', {
   display: 'block',
   background: '$canvasBg',
   zIndex: -2,
+  outline: 'none', // Remove blue focus outline
+  '&:focus': {
+    outline: 'none',
+  },
 });
 
 // TODO: Clean this up. Improve names, add better abstractions.
@@ -107,19 +112,36 @@ function CanvasWithInput(): JSX.Element {
       return;
     }
 
-    modeHandler.onPointerDown(e, mouseMove);
+    // Convert viewport coordinates to canvas-relative coordinates
+    const canvasCoords = getCanvasCoordinates(e, e.currentTarget);
+    const adjustedEvent = {
+      ...e,
+      clientX: canvasCoords.x,
+      clientY: canvasCoords.y,
+    } as React.MouseEvent<HTMLCanvasElement, MouseEvent>;
+
+    modeHandler.onPointerDown(adjustedEvent, mouseMove);
   };
 
   const handlePointerUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    modeHandler.onPointerUp(e, mouseMove);
+    // Convert viewport coordinates to canvas-relative coordinates
+    const canvasCoords = getCanvasCoordinates(e, e.currentTarget);
+    const adjustedEvent = {
+      ...e,
+      clientX: canvasCoords.x,
+      clientY: canvasCoords.y,
+    } as React.MouseEvent<HTMLCanvasElement, MouseEvent>;
+
+    modeHandler.onPointerUp(adjustedEvent, mouseMove);
   };
 
   const updateCursorForEditHandles = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (!dragging && selectedIds.length > 0 && selectedGroupIds.length === 0) {
       const selectedElement = elements[selectedIds[0]];
+      const canvasCoords = getCanvasCoordinates(e, e.currentTarget);
       const editHandles = utilFor(selectedElement).allEditHandles(selectedElement);
       const activeHandle = _.find(editHandles, (handle) => {
-        return cursorEnabled({ x: e.clientX, y: e.clientY }, handle.bounds);
+        return cursorEnabled({ x: canvasCoords.x, y: canvasCoords.y }, handle.bounds);
       });
 
       if (activeHandle) {
@@ -133,19 +155,27 @@ function CanvasWithInput(): JSX.Element {
   };
 
   const handlePointerMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    // Convert viewport coordinates to canvas-relative coordinates
+    const canvasCoords = getCanvasCoordinates(e, e.currentTarget);
+    const adjustedEvent = {
+      ...e,
+      clientX: canvasCoords.x,
+      clientY: canvasCoords.y,
+    } as React.MouseEvent<HTMLCanvasElement, MouseEvent>;
+
     // Accumulate mouse movement into batches of scale
-    mouseMove.currentEvent = e;
+    mouseMove.currentEvent = adjustedEvent;
     mouseMove.acc();
 
-    modeHandler.onPointerMove(e, mouseMove);
+    modeHandler.onPointerMove(adjustedEvent, mouseMove);
 
     // Update cursor for edit handles (only in idle mode with selected element)
     if (interactionMode.type === 'idle') {
-      updateCursorForEditHandles(e);
+      updateCursorForEditHandles(adjustedEvent);
     }
 
     mouseMove.flushAcc();
-    mouseMove.previousEvent = e;
+    mouseMove.previousEvent = adjustedEvent;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {

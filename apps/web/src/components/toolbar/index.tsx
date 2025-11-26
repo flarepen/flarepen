@@ -5,19 +5,31 @@ import ToolGroup from './ToolGroup';
 import ActionGroup from './ActionGroup';
 
 const Separator = styled(ToolbarPrimitive.Separator, {
-  width: 1,
   backgroundColor: '$seperator',
-  margin: '0 10px',
+
+  variants: {
+    orientation: {
+      horizontal: {
+        height: 1,
+        width: 'auto',
+        margin: '10px 0',
+      },
+      vertical: {
+        width: 1,
+        height: 'auto',
+        margin: '0 10px',
+      },
+    },
+  },
+
+  defaultVariants: {
+    orientation: 'horizontal',
+  },
 });
 
 const ToolBar = styled(ToolbarPrimitive.Root, {
   display: 'flex',
-  padding: 6,
-  borderRadius: 6,
-  backgroundColor: '$panelBg',
-  border: `1px solid $panelBorder`,
-  zIndex: 10,
-  marginLeft: 4,
+  alignItems: 'center',
 });
 
 export { ToolBar, Separator, ToolGroup, ActionGroup };

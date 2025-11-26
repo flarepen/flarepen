@@ -80,7 +80,7 @@ export const getDefaultState = () => {
     showGrid: true,
     dimensions: {
       width: window.innerWidth,
-      height: window.innerHeight,
+      height: window.innerHeight - 48, // Subtract toolbar height
     },
     selectionBox: {
       bounds: null,

@@ -11,11 +11,12 @@ const SectionTitle = styled('div', {
   display: 'flex',
   alignContent: 'center',
   justifyContent: 'center',
-  fontSize: 15,
+  fontSize: 12,
   fontWeight: '500',
   fontFamily: 'Cascadia',
   color: '$actionText',
   userSelect: 'none',
+  padding: '2px 0',
 });
 
 function RawSidePanel({ className }: SidePanelProps): JSX.Element {
@@ -51,7 +52,8 @@ export const SidePanel = styled(RawSidePanel, {
   position: 'absolute',
   border: '1px solid $panelBorder',
   backgroundColor: '$panelBg',
-  padding: 6,
+  padding: 4,
   borderRadius: 6,
   zIndex: 10,
+  gap: 4, // Space between title and content
 });

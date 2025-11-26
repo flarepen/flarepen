@@ -10,12 +10,6 @@ const StyledContent = styled(TooltipPrimitive.Content, {
   borderRadius: 3,
   marginLeft: 2,
 });
-const StyledTrigger = styled(TooltipPrimitive.Trigger, {
-  padding: 0,
-  border: 0,
-  backgroundColor: 'transparent',
-});
-
 export interface ToolTipProps {
   children: JSX.Element;
   toolTip: string;
@@ -26,11 +20,13 @@ export interface ToolTipProps {
 function ToolTip({ children, toolTip, sideOffset, side }: ToolTipProps) {
   sideOffset = sideOffset || 10;
   return (
-    <TooltipPrimitive.Root>
-      <StyledTrigger>{children}</StyledTrigger>
-      <StyledContent sideOffset={sideOffset} side={side}>
-        {toolTip}
-      </StyledContent>
+    <TooltipPrimitive.Root delayDuration={300}>
+      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Portal>
+        <StyledContent sideOffset={sideOffset} side={side}>
+          {toolTip}
+        </StyledContent>
+      </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>
   );
 }

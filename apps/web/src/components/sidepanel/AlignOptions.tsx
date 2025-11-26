@@ -88,7 +88,5 @@ function AlignOptions({ className }: AlignOptionsProps): JSX.Element {
 export default styled(AlignOptions, {
   display: 'flex',
   flexDirection: 'column',
-  padding: 6,
-  borderRadius: 6,
-  zIndex: 10,
+  gap: 2, // Small gap between rows
 });

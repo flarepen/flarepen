@@ -6,13 +6,16 @@ export const buttonStyles = {
   padding: '0 5px',
   borderRadius: 4,
   display: 'inline-flex',
-  color: '$actionText',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: '$actionBg',
-  marginLeft: 2,
+  backgroundColor: 'transparent',
+  margin: '0 2px',
   cursor: 'pointer',
-  '&:hover': { backgroundColor: '$actionBgHover' },
+  color: '$actionText',
+
+  '&:hover': {
+    backgroundColor: '$actionBgHover',
+  },
   '&:active': {
     backgroundColor: '$actionBgActive',
     color: '$actionTextActive',

@@ -5,6 +5,8 @@ export const { styled, css, theme, createTheme } = createStitches({
   theme: {
     colors: {
       canvasBg: mauve.mauve2,
+      toolbarBg: mauve.mauve4,
+      toolbarBorder: mauve.mauve6,
       panelBg: mauve.mauve3,
       panelBorder: mauve.mauve6,
       seperator: mauve.mauve6,
@@ -24,6 +26,8 @@ export const { styled, css, theme, createTheme } = createStitches({
 export const darkTheme = createTheme({
   colors: {
     canvasBg: mauveDark.mauve2,
+    toolbarBg: mauveDark.mauve4,
+    toolbarBorder: mauveDark.mauve6,
     panelBg: mauveDark.mauve3,
     panelBorder: mauveDark.mauve6,
     seperator: mauveDark.mauve6,

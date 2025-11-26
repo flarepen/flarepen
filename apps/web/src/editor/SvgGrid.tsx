@@ -22,6 +22,8 @@ export const OverlayGrid = styled(Grid, {
   position: 'absolute',
   left: 0,
   top: 0,
+  right: 0,
+  bottom: 0,
   pointerEvents: 'none',
   opacity: '0.3',
   color: '$grid',

@@ -13,18 +13,25 @@ export function useHtmlCanvas() {
   // Handle Resize
   useEffect(() => {
     function handleWindowResize() {
+      // Get toolbar height dynamically or use a fixed value
+      // The toolbar is roughly 48-56px high (content + padding + border)
+      const toolbarHeight = document.querySelector('[class*="ToolbarContainer"]')?.clientHeight || 48;
+
       actions.setDimensions({
         width: window.innerWidth,
-        height: window.innerHeight,
+        height: window.innerHeight - toolbarHeight,
       });
     }
+
+    // Set initial dimensions
+    handleWindowResize();
 
     const debouncedHandler = debounce(handleWindowResize, 100);
 
     window.addEventListener('resize', debouncedHandler);
 
     return () => window.removeEventListener('resize', debouncedHandler);
-  });
+  }, []);
 
   function setupCanvas() {
     if (canvasRef.current) {

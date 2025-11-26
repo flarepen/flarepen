@@ -2,7 +2,7 @@ import './App.css';
 import { useStore, actions } from './state';
 import _ from 'lodash';
 import UndoRedo from './components/UndoRedo';
-import { ToolBar, ToolGroup, Separator, ActionGroup } from './components/toolbar';
+import { ToolBar, ToolGroup, ActionGroup } from './components/toolbar';
 import React, { useEffect } from 'react';
 import Editor from './editor';
 import { styled, theme, darkTheme } from './stitches.config';
@@ -15,27 +15,44 @@ import { ToolLock } from './components/ToolLock';
 
 import init, { render } from 'text-render';
 
-const ToolBarWrapper = styled('div', {
+const ToolbarContainer = styled('div', {
   display: 'flex',
+  justifyContent: 'space-between',
   alignItems: 'center',
+  backgroundColor: '$toolbarBg',
+  borderBottom: '1px solid $toolbarBorder',
+  padding: '0 16px',
+  minHeight: '40px',
+  flexShrink: 0, // Prevent toolbar from shrinking
 });
 
-const ToolBarAlignContainer = styled('div', {
-  position: 'absolute',
+const ToolbarSection = styled('div', {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  width: '100%',
-  marginTop: 10,
+  gap: '8px',
+  flexShrink: 0, // Prevent sections from shrinking
 });
 
-const UndoRedoWrapper = styled('div', {
-  left: 10,
-  bottom: 10,
-  float: 'left',
-  position: 'absolute',
-  display: 'flex',
-  alignItems: 'center',
+const AppTitle = styled('h1', {
+  fontSize: 14,
+  fontWeight: 500,
+  fontFamily: 'Cascadia',
+  color: '$actionText',
+  margin: 0,
+  userSelect: 'none',
+});
+
+const Divider = styled('div', {
+  width: 1,
+  height: '20px',
+  backgroundColor: '$actionText',
+  opacity: 0.2,
+});
+
+const EditorContainer = styled('div', {
+  position: 'relative',
+  flex: 1,
+  overflow: 'hidden',
 });
 
 function App() {
@@ -78,25 +95,37 @@ function App() {
   const themeClass = selectedTheme === Theme.light ? theme : darkTheme;
 
   return (
-    <div className={`App ${themeClass}`} onKeyDown={handleKeyPress}>
+    <div className={`App ${themeClass}`} onKeyDown={handleKeyPress} style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
       <TooltipProvider>
-        <ToolBarAlignContainer>
-          <ToolBarWrapper>
+        <ToolbarContainer>
+          <ToolbarSection>
             <ToolLock />
+            <Divider />
             <ToolBar>
               <ToolGroup selected={selected} />
-              <Separator />
+            </ToolBar>
+          </ToolbarSection>
+
+          <ToolbarSection>
+            <AppTitle>ASCII Drawing</AppTitle>
+          </ToolbarSection>
+
+          <ToolbarSection>
+            <ToolBar>
               <ActionGroup />
             </ToolBar>
+            <Divider />
+            <UndoRedo />
+            <Divider />
+            <GridSwitcher />
             <ThemeSwitcher />
-          </ToolBarWrapper>
-        </ToolBarAlignContainer>
-        <UndoRedoWrapper>
-          <UndoRedo />
-          <GridSwitcher />
-        </UndoRedoWrapper>
-        {showSidePanel && <SidePanel />}
-        <Editor />
+          </ToolbarSection>
+        </ToolbarContainer>
+
+        <EditorContainer>
+          {showSidePanel && <SidePanel />}
+          <Editor />
+        </EditorContainer>
       </TooltipProvider>
     </div>
   );
