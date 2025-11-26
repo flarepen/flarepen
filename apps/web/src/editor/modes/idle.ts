@@ -5,6 +5,7 @@ import { createElement, ElementType, Text as TextElement, handlerFor, inVicinity
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { MouseMove, EditHandle } from '../../types';
 import { ModeHandler } from './types';
+import { getCursor, cursorEnabled } from '../../cursor';
 import _ from 'lodash';
 
 function clipToScale(value: number, scale: number) {
@@ -142,12 +143,49 @@ export const IdleMode: ModeHandler = {
       actions.drag(mouseMove);
     }
     
-    // Update hovered element (only when not dragging)
+    // Update hovered element and cursor (only when not dragging)
     if (!dragging) {
-      const hoveredElement = _.values(elements).find((element) =>
-        inVicinity({ x: e.clientX, y: e.clientY }, element)
-      );
-      useStore.setState({ hoveredElementId: hoveredElement?.id || null });
+      const { selectedIds, selectedGroupIds, editingContext } = useStore.getState();
+
+      let newCursor = 'default';
+
+      // Check for edit handle hover on selected element (highest priority)
+      if (selectedIds.length === 1 && selectedGroupIds.length === 0) {
+        const selectedElement = elements[selectedIds[0]];
+        const editHandles = handlerFor(selectedElement).allEditHandles(selectedElement);
+        const activeHandle = _.find(editHandles, (handle) => {
+          return cursorEnabled({ x: e.clientX, y: e.clientY }, handle.bounds);
+        });
+
+        if (activeHandle) {
+          newCursor = getCursor(activeHandle.handleId);
+        }
+      }
+
+      // If no edit handle, check for element hover
+      if (newCursor === 'default') {
+        const hoveredElement = _.values(elements).find((element) =>
+          inVicinity({ x: e.clientX, y: e.clientY }, element)
+        );
+
+        const newHoveredId = hoveredElement?.id || null;
+        const { hoveredElementId: currentHoveredId } = useStore.getState();
+
+        if (hoveredElement) {
+          newCursor = 'move';
+        }
+
+        // Update hovered element ID if changed
+        if (newHoveredId !== currentHoveredId) {
+          useStore.setState({ hoveredElementId: newHoveredId });
+        }
+      }
+
+      // Update cursor if changed
+      const currentCursor = useStore.getState().cursor;
+      if (newCursor !== currentCursor) {
+        useStore.setState({ cursor: newCursor });
+      }
     }
     
     // Update current cell

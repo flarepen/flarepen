@@ -1,21 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import * as g from '../geometry';
-import { SHORTCUT_TO_TOOL, Tool, getCursorForTool, ElementTypeForTool } from '../tools';
+import { SHORTCUT_TO_TOOL, Tool, getCursorForTool } from '../tools';
 import {
   ElementType,
   Element,
-  createElement,
-  utilFor,
 } from '../element';
 import { actions, useStore } from '../state';
-import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '../constants';
+import { IS_PLATFORM_MAC, X_SCALE, Y_SCALE } from '../constants';
 import _ from 'lodash';
 import { ArrowKey, MouseMove } from '../types';
 import { TextInput } from './TextInput';
 import { styled } from '../stitches.config';
 import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
-import { Property } from '@stitches/react/types/css';
-import { cursorEnabled, getCursor } from '../cursor';
 import { getModeHandler } from './modes';
 import { getCanvasCoordinates } from './utils/coordinates';
 
@@ -58,12 +54,11 @@ const StyledCanvas = styled('canvas', {
 
 // TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
-  const [cursor, setCursor] = useState<Property.Cursor>('default');
-
   const [selectionBox, selectionBoxHandlers] = useSelectionBox();
   const canvasRef = useHtmlCanvas();
 
   const elements = useStore((state) => state.elements);
+  const cursor = useStore((state) => state.cursor);
 
   const deleteElement = actions.deleteElement;
 
@@ -135,25 +130,6 @@ function CanvasWithInput(): JSX.Element {
     modeHandler.onPointerUp(adjustedEvent, mouseMove);
   };
 
-  const updateCursorForEditHandles = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    if (!dragging && selectedIds.length > 0 && selectedGroupIds.length === 0) {
-      const selectedElement = elements[selectedIds[0]];
-      const canvasCoords = getCanvasCoordinates(e, e.currentTarget);
-      const editHandles = utilFor(selectedElement).allEditHandles(selectedElement);
-      const activeHandle = _.find(editHandles, (handle) => {
-        return cursorEnabled({ x: canvasCoords.x, y: canvasCoords.y }, handle.bounds);
-      });
-
-      if (activeHandle) {
-        setCursor(getCursor(activeHandle.handleId));
-      } else {
-        if (!editingContext.id) {
-          setCursor('default');
-        }
-      }
-    }
-  };
-
   const handlePointerMove = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     // Convert viewport coordinates to canvas-relative coordinates
     const canvasCoords = getCanvasCoordinates(e, e.currentTarget);
@@ -168,11 +144,6 @@ function CanvasWithInput(): JSX.Element {
     mouseMove.acc();
 
     modeHandler.onPointerMove(adjustedEvent, mouseMove);
-
-    // Update cursor for edit handles (only in idle mode with selected element)
-    if (interactionMode.type === 'idle') {
-      updateCursorForEditHandles(adjustedEvent);
-    }
 
     mouseMove.flushAcc();
     mouseMove.previousEvent = adjustedEvent;
