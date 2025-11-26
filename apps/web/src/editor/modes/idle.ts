@@ -18,13 +18,19 @@ function getEditHandleId(handles: EditHandle[], clientX: number, clientY: number
   return handle?.handleId || null;
 }
 
+/**
+ * Idle Mode - Default state that handles mode transitions
+ *
+ * Transitions:
+ *   space pressed + click  ─→  panning mode
+ */
 export const IdleMode: ModeHandler = {
   onPointerDown: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
     const { tool, spacePressed } = useStore.getState();
 
     // Start panning
     if (spacePressed) {
-      useStore.setState({ 
+      useStore.setState({
         interactionMode: { type: 'panning' },
         canvasDrag: 'active',
       });

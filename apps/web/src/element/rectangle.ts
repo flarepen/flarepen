@@ -11,7 +11,6 @@ import {
   isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
-import { pixelDeltaToGrid } from '../scale';
 import { BorderType, EditHandle,  MouseMove } from '../types';
 import _ from 'lodash';
 
@@ -138,7 +137,7 @@ export const RectangleHandler: ElementHandler<Rectangle> = {
   },
 
   create: function (rectangle, mouseMove, callback) {
-    const { widthIncr, heightIncr } = pixelDeltaToGrid(mouseMove.accX, mouseMove.accY);
+    const { cols: widthIncr, rows: heightIncr } = mouseMove.getGridCellsMoved();
 
     let { x, y, width, height } = rectangle;
     width += widthIncr;
@@ -177,7 +176,7 @@ export const RectangleHandler: ElementHandler<Rectangle> = {
   },
 
   edit: function (rectangle, mouseMove, handleId) {
-    const { widthIncr, heightIncr } = pixelDeltaToGrid(mouseMove.accX, mouseMove.accY);
+    const { cols: widthIncr, rows: heightIncr } = mouseMove.getGridCellsMoved();
     
     const ctx: ResizeContext = {
       x: rectangle.x,

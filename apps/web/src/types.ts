@@ -2,6 +2,23 @@ import React from 'react';
 import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds, Text } from './element';
 
+/**
+ * MouseMove - Accumulates mouse movement for grid-snapped operations
+ *
+ * Flow (Canvas.tsx on each pointer move):
+ *   1. acc()                - Accumulate pixel delta into accX/accY
+ *   2. mode.onPointerMove() - Mode reads accX/accY, calculates grid cells moved
+ *   3. flushAcc()           - Remove consumed grid cells, keep sub-grid remainder
+ *
+ * Example (X_SCALE=10):
+ *   accX = 3 (remainder from before)
+ *   Mouse moves 20px → acc() → accX = 23
+ *   Mode reads: Math.floor(23 / 10) = 2 grid cells → move element 20px
+ *   flushAcc() → accX = 23 % 10 = 3 (removes consumed 20px, keeps 3px remainder)
+ *
+ * flushAcc() assumes modes consumed what they needed. It removes full grid cells
+ * via modulo regardless of whether the mode actually used accX/accY.
+ */
 export class MouseMove {
   kind: 'mouse' = 'mouse';
   accX: number;
@@ -28,6 +45,16 @@ export class MouseMove {
   flushAcc() {
     this.accX = this.accX % X_SCALE;
     this.accY = this.accY % Y_SCALE;
+  }
+
+  /**
+   * Convert accumulated pixels to grid cells moved
+   * Handles positive and negative movement correctly
+   */
+  getGridCellsMoved(): { cols: number; rows: number } {
+    const cols = this.accX > 0 ? Math.floor(this.accX / X_SCALE) : Math.ceil(this.accX / X_SCALE);
+    const rows = this.accY > 0 ? Math.floor(this.accY / Y_SCALE) : Math.ceil(this.accY / Y_SCALE);
+    return { cols, rows };
   }
 }
 

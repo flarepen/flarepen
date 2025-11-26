@@ -92,13 +92,3 @@ export function gridToPixel(cell: GridCell): PixelPoint {
 export function isHorizontalMovement(dx: number, dy: number): boolean {
   return Math.abs(dx) > Math.abs(dy);
 }
-
-/**
- * Convert accumulated pixel movement to grid cell increments
- * Handles positive and negative movements correctly
- */
-export function pixelDeltaToGrid(accX: number, accY: number): { widthIncr: number; heightIncr: number } {
-  const widthIncr = accX > 0 ? Math.floor(accX / X_SCALE) : Math.ceil(accX / X_SCALE);
-  const heightIncr = accY > 0 ? Math.floor(accY / Y_SCALE) : Math.ceil(accY / Y_SCALE);
-  return { widthIncr, heightIncr };
-}

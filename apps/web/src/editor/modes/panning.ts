@@ -2,39 +2,27 @@ import React from 'react';
 import { useStore, actions } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { MouseMove } from '../../types';
-import { ModeHandler } from './types';
-
-function clipToScale(value: number, scale: number) {
-  return Math.floor(value / scale) * scale;
-}
-
-let previousEvent: React.MouseEvent<HTMLCanvasElement, MouseEvent> | null = null;
+import { ModeHandler, PointerEvent } from './types';
 
 export const PanningMode: ModeHandler = {
-  onPointerDown: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
-    previousEvent = e;
+  onPointerDown: (e: PointerEvent, mouseMove: MouseMove) => {
+    // Never called - mode transition happens in idle's onPointerDown
   },
 
-  onPointerMove: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
-    // Initialize on first move
-    if (!previousEvent) {
-      previousEvent = e;
-      return;
+  onPointerMove: (e: PointerEvent, mouseMove: MouseMove) => {
+    // Grid-stepped panning - only move in full grid cells
+    const { cols, rows } = mouseMove.getGridCellsMoved();
+
+    if (cols !== 0 || rows !== 0) {
+      actions.shiftElements(cols * X_SCALE, rows * Y_SCALE);
     }
-    
-    const x_by = e.clientX - previousEvent.clientX;
-    const y_by = e.clientY - previousEvent.clientY;
-    actions.shiftElements(x_by, y_by);
-    
-    previousEvent = e;
   },
 
-  onPointerUp: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
-    actions.sanitizeElements();
+  onPointerUp: (e: PointerEvent, mouseMove: MouseMove) => {
+    // No sanitize needed - already grid-aligned
     useStore.setState({
       interactionMode: { type: 'idle' },
       canvasDrag: 'inactive',
     });
-    previousEvent = null;
   },
 };
