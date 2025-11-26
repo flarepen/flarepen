@@ -4,7 +4,7 @@ import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { elementIDGenerator, groupIDGenerator } from '../../id';
 import { Tool } from '../../tools';
-import { CanvasDrag, EditingContext, MouseMove, ISelectionBox, Point, Theme } from '../../types';
+import { EditingContext, MouseMove, ISelectionBox, Point, Theme } from '../../types';
 import { parse } from '../parse';
 import { AppState, Elements, getDefaultState, IDimensions, useStore } from '../store';
 
@@ -45,10 +45,6 @@ export const setEditingContext = (updates: Partial<EditingContext>) => {
 
 export const setDragging = (dragging: boolean) => {
   useStore.setState((state) => ({ dragging }));
-};
-
-export const setCanvasDrag = (canvasDrag: CanvasDrag) => {
-  useStore.setState((state) => ({ canvasDrag }));
 };
 
 export const setSpacePressed = (spacePressed: boolean) => {

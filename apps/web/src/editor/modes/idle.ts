@@ -31,8 +31,7 @@ export const IdleMode: ModeHandler = {
     // Start panning
     if (spacePressed) {
       useStore.setState({
-        interactionMode: { type: 'panning' },
-        canvasDrag: 'active',
+        interactionMode: { type: 'panning' }
       });
       return;
     }

@@ -104,8 +104,6 @@ export enum ArrowKey {
   'Right' = 'ArrowRight',
 }
 
-export type CanvasDrag = 'inactive' | 'active';
-
 export interface ElementGroup {
   id: string;
   elementIds: string[];

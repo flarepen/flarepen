@@ -5,7 +5,6 @@ import {
   EditingContext,
   ISelectionBox,
   Theme,
-  CanvasDrag,
   ElementGroup,
   ElementToGroupMap,
   SelectionBoxStatus,
@@ -47,7 +46,6 @@ export interface AppSlice {
   showGrid: boolean;
   dimensions: IDimensions;
   selectionBox: ISelectionBox;
-  canvasDrag: CanvasDrag;
   spacePressed: boolean;
   toolLocked: boolean;
   currentCell: null | Point;
@@ -66,7 +64,6 @@ export interface AppSlice {
 export type AppState = AppSlice & UndoSlice;
 
 const defaultSelectionBoxStatus: SelectionBoxStatus = 'inactive';
-const defaultCanvasDrag: CanvasDrag = 'inactive';
 
 export const getDefaultState = () => {
   return {
@@ -87,7 +84,6 @@ export const getDefaultState = () => {
       bounds: null,
       status: defaultSelectionBoxStatus,
     },
-    canvasDrag: defaultCanvasDrag,
     spacePressed: false,
     toolLocked: false,
     currentCell: null,

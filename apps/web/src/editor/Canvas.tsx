@@ -77,7 +77,6 @@ function CanvasWithInput(): JSX.Element {
 
   const editingContext = useStore((state) => state.editingContext);
 
-  const canvasDrag = useStore((state) => state.canvasDrag);
   const spacePressed = useStore((state) => state.spacePressed);
   const toolTocked = useStore((state) => state.toolLocked);
 

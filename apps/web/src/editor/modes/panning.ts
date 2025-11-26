@@ -1,4 +1,3 @@
-import React from 'react';
 import { useStore, actions } from '../../state';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { MouseMove } from '../../types';
@@ -14,6 +13,8 @@ export const PanningMode: ModeHandler = {
     const { cols, rows } = mouseMove.getGridCellsMoved();
 
     if (cols !== 0 || rows !== 0) {
+      // TODO: Scaling wont be needed once we switch elements to 
+      // be positioned based on grid cells instead of raw points.
       actions.shiftElements(cols * X_SCALE, rows * Y_SCALE);
     }
   },
@@ -21,8 +22,7 @@ export const PanningMode: ModeHandler = {
   onPointerUp: (e: PointerEvent, mouseMove: MouseMove) => {
     // No sanitize needed - already grid-aligned
     useStore.setState({
-      interactionMode: { type: 'idle' },
-      canvasDrag: 'inactive',
+      interactionMode: { type: 'idle' }
     });
   },
 };
