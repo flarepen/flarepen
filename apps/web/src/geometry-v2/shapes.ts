@@ -39,13 +39,13 @@ export enum LinearDirection {
 // Constants
 // ============================================================================
 
-const HORIZONTAL = '─';
-const VERTICAL = '│';
+export const HORIZONTAL = '─';
+export const VERTICAL = '│';
 
-const ARROW_UP = '▲';
-const ARROW_DOWN = '▼';
-const ARROW_LEFT = '◀';
-const ARROW_RIGHT = '▶';
+export const ARROW_UP = '▲';
+export const ARROW_DOWN = '▼';
+export const ARROW_LEFT = '◀';
+export const ARROW_RIGHT = '▶';
 
 const BOX = {
   [BorderType.Normal]: {

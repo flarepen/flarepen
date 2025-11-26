@@ -58,14 +58,14 @@ export const IdleMode: ModeHandler = {
       // Check if clicking on edit handle of selected element
       if (selectedIds.length === 1 && selectedGroupIds.length === 0) {
         const selectedElement = elements[selectedIds[0]];
-        const editHandleType = utilFor(selectedElement).getEditHandleType(selectedElement, e);
-        if (editHandleType) {
+        const editHandleId = utilFor(selectedElement).getEditHandleId(selectedElement, e);
+        if (editHandleId) {
           useStore.setState({
-            interactionMode: { type: 'editing', elementId: selectedElement.id, handleType: editHandleType },
+            interactionMode: { type: 'editing', elementId: selectedElement.id, handleId: editHandleId },
           });
           actions.setEditingContext({
             id: selectedElement.id,
-            handleType: editHandleType,
+            handleId: editHandleId,
           });
           return;
         }

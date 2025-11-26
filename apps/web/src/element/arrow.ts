@@ -11,15 +11,15 @@ import {
   Point,
 } from './base';
 import * as g from '../geometry';
-import { EditHandle, EditHandleType } from '../types';
+import { EditHandle } from '../types';
 import _ from 'lodash';
 
 const HANDLE_SIZE = 8;
 
-function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
+function handle(x: number, y: number, handleId: string): EditHandle {
   return {
     bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
-    handleType,
+    handleId,
   };
 }
 
@@ -94,12 +94,12 @@ export const ArrowUtils: ElementUtils<Arrow> = {
     return LinearElementUtils.allEditHandles(arrow);
   },
 
-  getEditHandleType: function (arrow, e) {
-    return LinearElementUtils.getEditHandleType(arrow, e);
+  getEditHandleId: function (arrow, e) {
+    return LinearElementUtils.getEditHandleId(arrow, e);
   },
 
-  edit: function (arrow, mouseMove, handleType) {
-    const result = LinearElementUtils.edit(arrow, mouseMove, handleType, 2);
+  edit: function (arrow, mouseMove, handleId) {
+    const result = LinearElementUtils.edit(arrow, mouseMove, handleId, 2);
     return {
       ...arrow,
       ...result,

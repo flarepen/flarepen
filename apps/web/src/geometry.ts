@@ -16,50 +16,6 @@ import * as g2 from './geometry-v2/shapes';
 export type Row = string;
 export type Shape = Row[];
 
-export const SYMBOLS = {
-  HORIZONTAL: '─',
-  VERTICAL: '│',
-  ARROW_LEFT: '◀',
-  ARROW_RIGHT: '▶',
-  ARROW_UP: '▲',
-  ARROW_DOWN: '▼',
-};
-
-export const BOX = {
-  [BorderType.Normal]: {
-    LEFT_TOP: '┌',
-    RIGHT_TOP: '┐',
-    LEFT_BOTTOM: '└',
-    RIGHT_BOTTOM: '┘',
-    HORIZONTAL: '─',
-    VERTICAL: '│',
-  },
-  [BorderType.Double]: {
-    LEFT_TOP: '╔',
-    RIGHT_TOP: '╗',
-    LEFT_BOTTOM: '╚',
-    RIGHT_BOTTOM: '╝',
-    HORIZONTAL: '═',
-    VERTICAL: '║',
-  },
-  [BorderType.Heavy]: {
-    LEFT_TOP: '┏',
-    RIGHT_TOP: '┓',
-    LEFT_BOTTOM: '┗',
-    RIGHT_BOTTOM: '┛',
-    HORIZONTAL: '━',
-    VERTICAL: '┃',
-  },
-  [BorderType.Rounded]: {
-    LEFT_TOP: '╭',
-    RIGHT_TOP: '╮',
-    LEFT_BOTTOM: '╰',
-    RIGHT_BOTTOM: '╯',
-    HORIZONTAL: '─',
-    VERTICAL: '│',
-  },
-};
-
 // TODO: Add better validations and edge case handling
 export function rectangle(rect: Rectangle): Shape {
   const width = Math.abs(rect.width);

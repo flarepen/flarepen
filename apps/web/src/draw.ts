@@ -1,6 +1,6 @@
 import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds } from './element';
-import { SYMBOLS } from './geometry';
+import { ARROW_LEFT, ARROW_RIGHT } from './geometry-v2/shapes';
 import { MergedElements, Point } from './types';
 
 function merged(ctx: CanvasRenderingContext2D, merged: MergedElements) {
@@ -33,7 +33,7 @@ function element(ctx: CanvasRenderingContext2D, element: Element) {
 // Overriding Y for any kind of customizations before render.
 function overrideY(ch: string, y: number): number {
   // ARROW_RIGHT U+25B6 and ARROW_LEFT U+25C0 are not properly centered.
-  return ch == SYMBOLS.ARROW_RIGHT || ch == SYMBOLS.ARROW_LEFT ? y + 2 : y;
+  return ch == ARROW_RIGHT || ch == ARROW_LEFT ? y + 2 : y;
 }
 
 export function withOpacity(radix_color: string, opacity: number) {

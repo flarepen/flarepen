@@ -6,7 +6,7 @@ import {
   Point,
   isPointInsideBound,
 } from './base';
-import { EditHandle, EditHandleType } from '../types';
+import { EditHandle } from '../types';
 import _ from 'lodash';
 
 const HANDLE_SIZE = 8;
@@ -25,10 +25,10 @@ export interface LinearElement extends ElementCommons {
   points?: Point[]; // Optional: for multi-segment lines/arrows
 }
 
-function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
+function handle(x: number, y: number, handleId: string): EditHandle {
   return {
     bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
-    handleType,
+    handleId,
   };
 }
 
@@ -78,7 +78,7 @@ export const LinearElementUtils = {
     ];
   },
 
-  getEditHandleType: function (element: LinearElement, e: { clientX: number; clientY: number }) {
+  getEditHandleId: function (element: LinearElement, e: { clientX: number; clientY: number }) {
     const point = {
       x: e.clientX,
       y: e.clientY,
@@ -88,7 +88,7 @@ export const LinearElementUtils = {
       isPointInsideBound(point, handle.bounds)
     );
 
-    return handle?.handleType || null;
+    return handle?.handleId || null;
   },
 
   handleDirectionChange: function (
@@ -131,7 +131,7 @@ export const LinearElementUtils = {
   edit: function (
     element: LinearElement,
     mouseMove: { accX: number; accY: number },
-    handleType: EditHandleType,
+    handleId: string,
     minLength: number
   ) {
     let { x, y, len } = element;
@@ -145,7 +145,7 @@ export const LinearElementUtils = {
         ? Math.floor(mouseMove.accY / Y_SCALE)
         : Math.ceil(mouseMove.accY / Y_SCALE);
 
-    switch (handleType) {
+    switch (handleId) {
       case 'left':
         if (len - widthIncr >= minLength) {
           x = x + widthIncr * X_SCALE;

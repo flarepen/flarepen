@@ -23,7 +23,7 @@ export const EditingMode: ModeHandler = {
     if (element) {
       actions.updateElement(
         interactionMode.elementId,
-        utilFor(element).edit(element, mouseMove, interactionMode.handleType)
+        utilFor(element).edit(element, mouseMove, interactionMode.handleId)
       );
     }
 
@@ -39,7 +39,7 @@ export const EditingMode: ModeHandler = {
   onPointerUp: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
     // End editing, sanitize elements
     actions.sanitizeElements();
-    actions.setEditingContext({ id: null, handleType: null });
+    actions.setEditingContext({ id: null, handleId: null });
     useStore.setState({
       interactionMode: { type: 'idle' },
     });

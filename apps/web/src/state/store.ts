@@ -69,7 +69,7 @@ const defaultCanvasDrag: CanvasDrag = 'inactive';
 export const getDefaultState = () => {
   return {
     elements: {},
-    editingContext: { id: null, handleType: null },
+    editingContext: { id: null, handleId: null },
     draft: null,
     selectedIds: [],
     dragging: false,

@@ -130,7 +130,7 @@ export function useDraw() {
         !(selectionBox.status === 'active') &&
         !draft &&
         !editingContext.id &&
-        !editingContext.handleType &&
+        !editingContext.handleId &&
         !dragging &&
         !(tool === Tool.Select)
       ) {

@@ -1,5 +1,5 @@
 import { X_SCALE, Y_SCALE } from '../constants';
-import { EditHandle, EditHandleType, MouseMove } from '../types';
+import { EditHandle,  MouseMove } from '../types';
 
 // TODO: Use it instead of x,y in other places
 export interface Point {
@@ -101,10 +101,10 @@ export interface ElementUtils<T extends ElementCommons> {
   inVicinity: (t: T, p: Point) => boolean;
   create: (t: T, mouseMove: MouseMove, callback: (updated: T) => void) => void;
   allEditHandles: (t: T) => EditHandle[];
-  getEditHandleType: (
+  getEditHandleId: (
     t: T,
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-  ) => null | EditHandleType;
-  edit: (t: T, mouseMove: MouseMove, handleType: EditHandleType) => T;
+  ) => null | string;
+  edit: (t: T, mouseMove: MouseMove, handleId: string) => T;
   getGuideAnchors: (t: T) => Point[];
 }

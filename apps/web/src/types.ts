@@ -3,6 +3,7 @@ import { X_SCALE, Y_SCALE } from './constants';
 import { Element, IBounds, Text } from './element';
 
 export class MouseMove {
+  kind: 'mouse' = 'mouse';
   accX: number;
   accY: number;
   currentEvent: null | React.MouseEvent;
@@ -30,6 +31,13 @@ export class MouseMove {
   }
 }
 
+export interface KeyboardInput {
+  kind: 'keyboard';
+  content: string;
+}
+
+export type EditInput = MouseMove | KeyboardInput;
+
 export enum Theme {
   dark = 'dark',
   light = 'light',
@@ -42,24 +50,14 @@ export interface ISelectionBox {
   status: SelectionBoxStatus;
 }
 
-export type EditHandleType =
-  | 'top'
-  | 'bottom'
-  | 'left'
-  | 'right'
-  | 'topLeft'
-  | 'topRight'
-  | 'bottomLeft'
-  | 'bottomRight';
-
 export interface EditHandle {
-  handleType: EditHandleType;
+  handleId: string;
   bounds: IBounds;
 }
 
 export interface EditingContext {
   id: null | string;
-  handleType: null | EditHandleType;
+  handleId: null | string;
 }
 
 export interface Point {
@@ -112,4 +110,4 @@ export type InteractionMode =
   | { type: 'textEditing'; text: Text }
   | { type: 'dragging'; elementIds: string[] }
   | { type: 'selecting'; bounds: IBounds }
-  | { type: 'editing'; elementId: string; handleType: EditHandleType };
+  | { type: 'editing'; elementId: string; handleId: string };

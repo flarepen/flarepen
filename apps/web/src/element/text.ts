@@ -50,10 +50,10 @@ export const TextUtils: ElementUtils<Text> = {
   allEditHandles: function () {
     return [];
   },
-  getEditHandleType: function (text, e) {
+  getEditHandleId: function (text, e) {
     return null;
   },
-  edit: function (text, mouseMove, handleType) {
+  edit: function (text, mouseMove, handleId) {
     return text;
   },
   getGuideAnchors: function (text) {

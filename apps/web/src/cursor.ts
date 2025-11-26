@@ -1,9 +1,9 @@
 import { Property } from '@stitches/react/types/css';
-import { EditHandleType, Point } from './types';
+import { Point } from './types';
 import { IBounds } from './element';
 
-export function getCursor(editHandleType: EditHandleType): Property.Cursor {
-  switch (editHandleType) {
+export function getCursor(editHandleId: string): Property.Cursor {
+  switch (editHandleId) {
     case 'top':
       return 'ns-resize';
     case 'bottom':

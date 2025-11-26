@@ -11,15 +11,15 @@ import {
   isPointInsideBound,
 } from './base';
 import { X_SCALE, Y_SCALE } from '../constants';
-import { BorderType, EditHandle, EditHandleType, MouseMove } from '../types';
+import { BorderType, EditHandle,  MouseMove } from '../types';
 import _ from 'lodash';
 
 const HANDLE_SIZE = 8;
 
-function handle(x: number, y: number, handleType: EditHandleType): EditHandle {
+function handle(x: number, y: number, handleId: string): EditHandle {
   return {
     bounds: { x, y, width: HANDLE_SIZE, height: HANDLE_SIZE },
-    handleType,
+    handleId,
   };
 }
 
@@ -138,7 +138,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
     ];
   },
 
-  getEditHandleType: function (rectangle, e) {
+  getEditHandleId: function (rectangle, e) {
     const point = {
       x: e.clientX,
       y: e.clientY,
@@ -148,10 +148,10 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
       isPointInsideBound(point, handle.bounds)
     );
 
-    return handle?.handleType || null;
+    return handle?.handleId || null;
   },
 
-  edit: function (rectangle, mouseMove, handleType) {
+  edit: function (rectangle, mouseMove, handleId) {
     let { x, y, width, height } = rectangle;
 
     const widthIncr =
@@ -165,7 +165,7 @@ export const RectangleUtils: ElementUtils<Rectangle> = {
 
     let minWidth = 2 + (rectangle.label ? rectangle.label?.length : 0);
 
-    switch (handleType) {
+    switch (handleId) {
       case 'left':
         if (width - widthIncr >= minWidth) {
           x = x + widthIncr * X_SCALE;

@@ -123,7 +123,7 @@ function CanvasWithInput(): JSX.Element {
       });
 
       if (activeHandle) {
-        setCursor(getCursor(activeHandle.handleType));
+        setCursor(getCursor(activeHandle.handleId));
       } else {
         if (!editingContext.id) {
           setCursor('default');
