@@ -79,11 +79,23 @@ export const IdleMode: ModeHandler = {
       }
 
       // Check if clicking on an element
-      const toSelect = _.values(elements).find((element) =>
+      const clickedElements = _.values(elements).filter((element) =>
         inVicinity({ x: e.clientX, y: e.clientY }, element)
       );
 
-      if (toSelect) {
+      if (clickedElements.length > 0) {
+        let toSelect = clickedElements[0];
+
+        // If there are multiple elements and exactly one is selected, cycle through them
+        if (clickedElements.length > 1 && selectedIds.length === 1) {
+          const currentIndex = clickedElements.findIndex(el => el.id === selectedIds[0]);
+          if (currentIndex !== -1) {
+            // Currently selected element is in the clicked elements, select next one
+            const nextIndex = (currentIndex + 1) % clickedElements.length;
+            toSelect = clickedElements[nextIndex];
+          }
+        }
+
         // Select element (stay in idle, dragging will be handled on pointer move)
         // Don't snapshot on multi-select to avoid undo issues
         actions.select(toSelect.id, !e.shiftKey, e.shiftKey ? false : true);
