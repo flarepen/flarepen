@@ -2,7 +2,7 @@ import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 
 import { styled } from '../../stitches.config';
 import ToolGroup from './ToolGroup';
-import ActionGroup from './ActionGroup';
+import ActionGroup, { ExportImportButtons } from './ActionGroup';
 
 const Separator = styled(ToolbarPrimitive.Separator, {
   backgroundColor: '$seperator',
@@ -32,4 +32,4 @@ const ToolBar = styled(ToolbarPrimitive.Root, {
   alignItems: 'center',
 });
 
-export { ToolBar, Separator, ToolGroup, ActionGroup };
+export { ToolBar, Separator, ToolGroup, ActionGroup, ExportImportButtons };

@@ -2,7 +2,7 @@ import './App.css';
 import { useStore, actions } from './state';
 import _ from 'lodash';
 import UndoRedo from './components/UndoRedo';
-import { ToolBar, ToolGroup, ActionGroup } from './components/toolbar';
+import { ToolBar, ToolGroup, ActionGroup, ExportImportButtons } from './components/toolbar';
 import React, { useEffect } from 'react';
 import Editor from './editor';
 import { styled, theme, darkTheme } from './stitches.config';
@@ -137,26 +137,30 @@ function App() {
           }}
         >
           <ToolbarContainer style={{ gridArea: 'toolbar' }}>
-            {/* Left section - Menu bar */}
+            {/* Left section - Menu and File */}
             <ToolbarSection>
               <LeftPanelToggle />
+              <Divider />
+              <ToolBar>
+                <ExportImportButtons />
+              </ToolBar>
             </ToolbarSection>
 
-            {/* Center section - Tools */}
+            {/* Center section - Tools and Actions */}
             <ToolbarSection style={{ flex: 1, justifyContent: 'center' }}>
               <ToolLock />
               <Divider />
               <ToolBar>
                 <ToolGroup selected={selected} />
               </ToolBar>
-            </ToolbarSection>
-
-            {/* Right section - Actions */}
-            <ToolbarSection>
+              <Divider />
               <ToolBar>
                 <ActionGroup />
               </ToolBar>
-              <Divider />
+            </ToolbarSection>
+
+            {/* Right section - History and View */}
+            <ToolbarSection>
               <UndoRedo />
               <Divider />
               <GridSwitcher />
