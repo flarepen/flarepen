@@ -4,7 +4,7 @@ import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { elementIDGenerator, groupIDGenerator } from '../../id';
 import { Tool } from '../../tools';
-import { EditingContext, MouseMove, Point, Theme } from '../../types';
+import { MouseMove, Point, Theme } from '../../types';
 import { parse } from '../parse';
 import { AppState, Elements, getDefaultState, IDimensions, useStore } from '../store';
 
@@ -33,10 +33,6 @@ export const setTool = (tool: Tool) => {
 
 export const setDimensions = (dimensions: IDimensions) => {
   useStore.setState((_state) => ({ dimensions }));
-};
-
-export const setEditingContext = (updates: Partial<EditingContext>) => {
-  useStore.setState((state) => ({ editingContext: { ...state.editingContext, ...updates } }));
 };
 
 export const setDragging = (dragging: boolean) => {
@@ -105,7 +101,6 @@ export function importToCanvas(objs: any[]) {
   if (elements) {
     useStore.setState((state) => ({
       elements,
-      editingContext: { id: null, handleId: null },
       draft: null,
       selectedIds: [],
       groups: {},

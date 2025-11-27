@@ -20,7 +20,6 @@ export function useDraw() {
   const ctx = useStore((state) => state.canvasCtx);
   const dragging = useStore((state) => state.dragging);
   const currentCell = useStore((state) => state.currentCell);
-  const editingContext = useStore((state) => state.editingContext);
   const tool = useStore((state) => state.tool);
   const hoveredElementId = useStore((state) => state.hoveredElementId);
 
@@ -29,8 +28,9 @@ export function useDraw() {
   const selectedElements = _.map(selectedIds, (selectedId) => elements[selectedId]);
   const selectedGroups = _.map(selectedGroupIds, (selectedGroupdId) => groups[selectedGroupdId]);
 
-  // Derive selection box state from interactionMode
+  // Derive states from interactionMode
   const isSelecting = interactionMode.type === 'selecting';
+  const isEditing = interactionMode.type === 'editing';
   const selectionBounds = isSelecting ? interactionMode.bounds : null;
 
   // Refresh scene
@@ -129,9 +129,8 @@ export function useDraw() {
       if (
         currentCell &&
         !isSelecting &&
+        !isEditing &&
         !draft &&
-        !editingContext.id &&
-        !editingContext.handleId &&
         !dragging &&
         !(tool === Tool.Select)
       ) {

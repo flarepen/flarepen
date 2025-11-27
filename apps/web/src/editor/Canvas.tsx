@@ -74,8 +74,6 @@ function CanvasWithInput(): JSX.Element {
 
   const tool = useStore((state) => state.tool);
 
-  const editingContext = useStore((state) => state.editingContext);
-
   const spacePressed = useStore((state) => state.spacePressed);
   const toolTocked = useStore((state) => state.toolLocked);
 

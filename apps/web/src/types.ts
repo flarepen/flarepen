@@ -75,11 +75,6 @@ export interface EditHandle {
   bounds: IBounds;
 }
 
-export interface EditingContext {
-  id: null | string;
-  handleId: null | string;
-}
-
 export interface Point {
   x: number;
   y: number;

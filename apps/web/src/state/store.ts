@@ -2,7 +2,6 @@ import create, { StateCreator } from 'zustand';
 import { Element } from '../element';
 import _ from 'lodash';
 import {
-  EditingContext,
   Theme,
   ElementGroup,
   ElementToGroupMap,
@@ -35,7 +34,6 @@ export interface ClipBoard {
 export interface AppSlice {
   elements: Elements;
   draft: null | Draft;
-  editingContext: EditingContext;
   selectedIds: string[];
   dragging: boolean;
   tool: Tool;
@@ -63,7 +61,6 @@ export type AppState = AppSlice & UndoSlice;
 export const getDefaultState = () => {
   return {
     elements: {},
-    editingContext: { id: null, handleId: null },
     draft: null,
     selectedIds: [],
     dragging: false,

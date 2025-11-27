@@ -83,10 +83,6 @@ export const IdleMode: ModeHandler = {
           useStore.setState({
             interactionMode: { type: 'editing', elementId: selectedElement.id, handleId: editHandleId },
           });
-          actions.setEditingContext({
-            id: selectedElement.id,
-            handleId: editHandleId,
-          });
           return;
         }
       }
@@ -148,7 +144,7 @@ export const IdleMode: ModeHandler = {
     
     // Update hovered element and cursor (only when not dragging)
     if (!dragging) {
-      const { selectedIds, selectedGroupIds, editingContext } = useStore.getState();
+      const { selectedIds, selectedGroupIds } = useStore.getState();
 
       let newCursor = 'default';
 
