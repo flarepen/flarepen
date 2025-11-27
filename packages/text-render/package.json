@@ -4,6 +4,6 @@
     "private": true,
     "dependencies": {},
     "scripts": {
-        "build": "(export PATH=$PATH:~/.cargo/bin && wasm-pack build --target web)"
+        "build": "(export PATH=$PATH:$HOME/.cargo/bin && wasm-pack build --target web)"
     }
 }
