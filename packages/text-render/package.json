@@ -4,6 +4,6 @@
     "private": true,
     "dependencies": {},
     "scripts": {
-        "build": "$HOME/.cargo/bin/wasm-pack build --target web || wasm-pack build --target web"
+        "build": "wasm-pack build --target web || /root/.cargo/bin/wasm-pack build --target web"
     }
 }
