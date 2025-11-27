@@ -1,9 +1,11 @@
 import produce from 'immer';
+import type { Draft as ImmerDraft } from 'immer';
 import _ from 'lodash';
 import { X_SCALE, Y_SCALE } from '../../constants';
 import { Element } from '../../element';
 import { AppState, useStore } from '../store';
-import { snapshot } from './undo';
+import { updateState } from '../index';
+import { snapshot, applySnapshot } from './undo';
 import { Draft } from '../../types';
 
 function clipToScale(value: number, scale: number) {
@@ -68,17 +70,22 @@ export const shiftElements = (x_by: number, y_by: number) => {
   );
 };
 
-export const sanitizeElements = (doSnapshot = true) => {
-  doSnapshot && snapshot();
+/**
+ * Helper that mutates draft state - clips all elements to grid (reusable in updateState)
+ */
+export const applySanitizeElements = (state: ImmerDraft<AppState>) => {
+  _.keys(state.elements).forEach((elementId) => {
+    state.elements[elementId].x = clipToScale(state.elements[elementId].x, X_SCALE);
+    state.elements[elementId].y = clipToScale(state.elements[elementId].y, Y_SCALE);
+  });
+};
 
-  useStore.setState(
-    produce<AppState>((state) => {
-      const elementIds = _.keys(state.elements);
-      elementIds.forEach((elementId) => {
-        let element = state.elements[elementId];
-        element.x = clipToScale(element.x, X_SCALE);
-        element.y = clipToScale(element.y, Y_SCALE);
-      });
-    })
-  );
+// Old API stays for compatibility (uses the helper)
+export const sanitizeElements = (doSnapshot = true) => {
+  updateState((state) => {
+    if (doSnapshot) {
+      applySnapshot(state);
+    }
+    applySanitizeElements(state);
+  });
 };

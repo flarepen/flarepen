@@ -1,12 +1,8 @@
-import { useStore, actions } from '@/state';
-import { X_SCALE, Y_SCALE } from '@/constants';
+import { updateState, useStore, actions } from '@/state';
+import { applySanitizeElements } from '@/state/actions/elements';
 import { MouseMove } from '@/types';
 import { ModeHandler, PointerEvent } from '@/editor/modes/types';
 import { utilFor } from '@/element';
-
-function clipToScale(value: number, scale: number) {
-  return Math.floor(value / scale) * scale;
-}
 
 /**
  * Editing Mode - Handles element resize/edit via edit handles
@@ -37,9 +33,10 @@ export const EditingMode: ModeHandler = {
 
   onPointerUp: (_e: PointerEvent, _mouseMove: MouseMove) => {
     // End editing, sanitize elements
-    actions.sanitizeElements();
-    useStore.setState({
-      interactionMode: { type: 'idle' },
+    updateState((state) => {
+      // TODO: Do we really need to sanitize?
+      applySanitizeElements(state);
+      state.interactionMode = { type: 'idle' };
     });
   },
 };
