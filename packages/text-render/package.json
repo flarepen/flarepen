@@ -4,6 +4,6 @@
     "private": true,
     "dependencies": {},
     "scripts": {
-        "build": "wasm-pack build --target web || (. /root/.cargo/env && wasm-pack build --target web)"
+        "build": "wasm-pack build --target web || (. /root/.cargo/env && export PATH=/root/.cargo/bin:$PATH && wasm-pack build --target web)"
     }
 }
