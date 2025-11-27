@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { X_SCALE, Y_SCALE } from '../../constants';
-import draw, { withOpacity } from '../../draw';
-import { ElementType, handlerFor } from '../../element';
-import { useStore } from '../../state';
+import { X_SCALE, Y_SCALE } from '@/constants';
+import draw, { withOpacity } from '@/draw';
+import { ElementType, handlerFor } from '@/element';
+import { useStore } from '@/state';
 import { useCanvasColors } from './useCanvasColors';
-import * as g from '../../geometry';
+import * as g from '@/geometry';
 import _ from 'lodash';
-import { ElementGroup, Point } from '../../types';
-import { Tool } from '../../tools';
+import { ElementGroup, Point } from '@/types';
+import { Tool } from '@/tools';
 
 export function useDraw() {
   const elements = useStore((state) => state.elements);

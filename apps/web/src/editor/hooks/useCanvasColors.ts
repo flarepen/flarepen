@@ -1,6 +1,6 @@
 import { mauve, mauveDark, tomato } from '@radix-ui/colors';
-import { useStore } from '../../state';
-import { Theme } from '../../types';
+import { useStore } from '@/state';
+import { Theme } from '@/types';
 
 export function useCanvasColors() {
   const theme = useStore((state) => state.theme);
