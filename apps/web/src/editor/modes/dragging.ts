@@ -1,8 +1,8 @@
 import React from 'react';
-import { useStore, actions } from '../../state';
-import { X_SCALE, Y_SCALE } from '../../constants';
-import { MouseMove } from '../../types';
-import { ModeHandler } from './types';
+import { useStore, actions } from '@/state';
+import { X_SCALE, Y_SCALE } from '@/constants';
+import { MouseMove } from '@/types';
+import { ModeHandler } from '@/editor/modes/types';
 
 function clipToScale(value: number, scale: number) {
   return Math.floor(value / scale) * scale;

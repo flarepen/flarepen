@@ -1,14 +1,22 @@
-import { useStore, actions } from '../../state';
-import { X_SCALE, Y_SCALE } from '../../constants';
-import { MouseMove } from '../../types';
-import { ModeHandler, PointerEvent } from './types';
+import { useStore, actions } from '@/state';
+import { X_SCALE, Y_SCALE } from '@/constants';
+import { MouseMove } from '@/types';
+import { ModeHandler, PointerEvent } from '@/editor/modes/types';
 
+/**
+ * Panning Mode - Handles grid-stepped canvas panning
+ *
+ * **Transitions:**
+ * ```txt
+ * pointer up → idle
+ * ```
+ */
 export const PanningMode: ModeHandler = {
-  onPointerDown: (e: PointerEvent, mouseMove: MouseMove) => {
+  onPointerDown: (_e: PointerEvent, _mouseMove: MouseMove) => {
     // Never called - mode transition happens in idle's onPointerDown
   },
 
-  onPointerMove: (e: PointerEvent, mouseMove: MouseMove) => {
+  onPointerMove: (_e: PointerEvent, mouseMove: MouseMove) => {
     // Grid-stepped panning - only move in full grid cells
     const { cols, rows } = mouseMove.getGridCellsMoved();
 
@@ -19,8 +27,7 @@ export const PanningMode: ModeHandler = {
     }
   },
 
-  onPointerUp: (e: PointerEvent, mouseMove: MouseMove) => {
-    // No sanitize needed - already grid-aligned
+  onPointerUp: (_e: PointerEvent, _mouseMove: MouseMove) => {
     useStore.setState({
       interactionMode: { type: 'idle' }
     });

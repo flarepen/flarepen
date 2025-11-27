@@ -1,11 +1,11 @@
 import React from 'react';
-import { useStore, actions } from '../../state';
-import { Tool, ElementTypeForTool } from '../../tools';
-import { createElement, ElementType, Text as TextElement, handlerFor, inVicinity, isPointInsideBound } from '../../element';
-import { X_SCALE, Y_SCALE } from '../../constants';
-import { MouseMove, EditHandle } from '../../types';
-import { ModeHandler } from './types';
-import { getCursor, cursorEnabled } from '../../cursor';
+import { useStore, actions } from '@/state';
+import { Tool, ElementTypeForTool } from '@/tools';
+import { createElement, ElementType, Text as TextElement, handlerFor, inVicinity, isPointInsideBound } from '@/element';
+import { X_SCALE, Y_SCALE } from '@/constants';
+import { MouseMove, EditHandle } from '@/types';
+import { ModeHandler } from '@/editor/modes/types';
+import { getCursor, cursorEnabled } from '@/cursor';
 import _ from 'lodash';
 
 function clipToScale(value: number, scale: number) {
@@ -21,8 +21,15 @@ function getEditHandleId(handles: EditHandle[], clientX: number, clientY: number
 /**
  * Idle Mode - Default state that handles mode transitions
  *
- * Transitions:
- *   space pressed + click  ─→  panning mode
+ * **Transitions:**
+ * ```txt
+ * space + click                     → panning
+ * text tool                         → textEditing
+ * drawing tool                      → drawing
+ * select tool + click element       → stays in idle (dragging)
+ * select tool + click edit handle   → editing
+ * select tool + click empty         → selecting
+ * ```
  */
 export const IdleMode: ModeHandler = {
   onPointerDown: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {

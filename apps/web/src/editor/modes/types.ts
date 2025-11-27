@@ -1,5 +1,5 @@
 import React from 'react';
-import { MouseMove } from '../../types';
+import { MouseMove } from '@/types';
 
 export type PointerEvent = React.MouseEvent<HTMLCanvasElement, MouseEvent>;
 

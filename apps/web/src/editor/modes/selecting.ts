@@ -1,9 +1,9 @@
 import React from 'react';
-import { useStore, actions } from '../../state';
-import { X_SCALE, Y_SCALE } from '../../constants';
-import { MouseMove } from '../../types';
-import { ModeHandler } from './types';
-import { expandIBound, insideBound } from '../../element';
+import { useStore, actions } from '@/state';
+import { X_SCALE, Y_SCALE } from '@/constants';
+import { MouseMove } from '@/types';
+import { ModeHandler } from '@/editor/modes/types';
+import { expandIBound, insideBound } from '@/element';
 import _ from 'lodash';
 
 function clipToScale(value: number, scale: number) {
