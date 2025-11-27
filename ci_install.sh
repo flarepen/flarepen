@@ -2,6 +2,7 @@ echo "Installing Rustup..."
 export HOME=/root
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
+rustup default stable
 echo "Installing wasm-pack..."
 curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh -s -- -y
 export PATH=$PATH:$HOME/.cargo/bin
