@@ -1,8 +1,10 @@
 import produce from 'immer';
+import type { Draft } from 'immer';
 import _ from 'lodash';
 import { Element } from '../../element';
 import { AppState, useStore } from '../store';
-import { snapshot } from './undo';
+import { updateState } from '../index';
+import { snapshot, applySnapshot } from './undo';
 
 export const select = (id: string, only: boolean, doSnapshot = true) => {
   doSnapshot && snapshot();
@@ -47,20 +49,20 @@ export const select = (id: string, only: boolean, doSnapshot = true) => {
   );
 };
 
-export const setSelected = (ids: string[], doSnapshot = true) => {
-  doSnapshot && snapshot();
-
+/**
+ * Helper that mutates draft state - separates element IDs into
+ * standalone elements vs grouped elements (reusable in updateState)
+ */
+export const applySelected = (state: Draft<AppState>, ids: string[]) => {
   const idsToSelect = _.reduce(
     ids,
-    function (result, elementId) {
-      const groupId = useStore.getState().groupForElement[elementId];
-
+    (result, elementId) => {
+      const groupId = state.groupForElement[elementId];
       if (groupId) {
         result.groupIds.push(groupId);
       } else {
         result.elementIds.push(elementId);
       }
-
       return result;
     },
     {
@@ -69,10 +71,18 @@ export const setSelected = (ids: string[], doSnapshot = true) => {
     }
   );
 
-  useStore.setState((state) => ({
-    selectedIds: _.uniq(idsToSelect.elementIds),
-    selectedGroupIds: _.uniq(idsToSelect.groupIds),
-  }));
+  state.selectedIds = _.uniq(idsToSelect.elementIds);
+  state.selectedGroupIds = _.uniq(idsToSelect.groupIds);
+};
+
+// Old API stays for compatibility (uses the helper)
+export const setSelected = (ids: string[], doSnapshot = true) => {
+  updateState((state) => {
+    if (doSnapshot) {
+      applySnapshot(state);
+    }
+    applySelected(state, ids);
+  });
 };
 
 export const unSelectAll = (doSnapshot = true) => {
