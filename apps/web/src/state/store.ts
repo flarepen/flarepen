@@ -3,11 +3,9 @@ import { Element } from '../element';
 import _ from 'lodash';
 import {
   EditingContext,
-  ISelectionBox,
   Theme,
   ElementGroup,
   ElementToGroupMap,
-  SelectionBoxStatus,
   Point,
   Draft,
   InteractionMode,
@@ -45,7 +43,6 @@ export interface AppSlice {
   theme: Theme;
   showGrid: boolean;
   dimensions: IDimensions;
-  selectionBox: ISelectionBox;
   spacePressed: boolean;
   toolLocked: boolean;
   currentCell: null | Point;
@@ -63,8 +60,6 @@ export interface AppSlice {
 
 export type AppState = AppSlice & UndoSlice;
 
-const defaultSelectionBoxStatus: SelectionBoxStatus = 'inactive';
-
 export const getDefaultState = () => {
   return {
     elements: {},
@@ -79,10 +74,6 @@ export const getDefaultState = () => {
     dimensions: {
       width: window.innerWidth,
       height: window.innerHeight - 48, // Subtract toolbar height
-    },
-    selectionBox: {
-      bounds: null,
-      status: defaultSelectionBoxStatus,
     },
     spacePressed: false,
     toolLocked: false,

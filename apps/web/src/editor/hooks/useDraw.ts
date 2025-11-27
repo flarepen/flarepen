@@ -16,7 +16,7 @@ export function useDraw() {
   const selectedIds = useStore((state) => state.selectedIds);
   const selectedGroupIds = useStore((state) => state.selectedGroupIds);
   const dimensions = useStore((state) => state.dimensions);
-  const selectionBox = useStore((state) => state.selectionBox);
+  const interactionMode = useStore((state) => state.interactionMode);
   const ctx = useStore((state) => state.canvasCtx);
   const dragging = useStore((state) => state.dragging);
   const currentCell = useStore((state) => state.currentCell);
@@ -29,10 +29,14 @@ export function useDraw() {
   const selectedElements = _.map(selectedIds, (selectedId) => elements[selectedId]);
   const selectedGroups = _.map(selectedGroupIds, (selectedGroupdId) => groups[selectedGroupdId]);
 
+  // Derive selection box state from interactionMode
+  const isSelecting = interactionMode.type === 'selecting';
+  const selectionBounds = isSelecting ? interactionMode.bounds : null;
+
   // Refresh scene
   useEffect(() => {
     window.requestAnimationFrame(drawScene);
-  }, [elements, draft, dimensions, selectedIds, selectedGroupIds, canvasColors, selectionBox, hoveredElementId]);
+  }, [elements, draft, dimensions, selectedIds, selectedGroupIds, canvasColors, interactionMode, hoveredElementId]);
 
   function getBoundsForGroup(group: ElementGroup) {
     const elementsInGroup = _.map(group.elementIds, (selectedId) => elements[selectedId]);
@@ -96,7 +100,7 @@ export function useDraw() {
     });
 
     // Draw extra dashed outline over all the elements
-    if (selectionBox.status !== 'active') {
+    if (!isSelecting) {
       const bounds = g.getBoundingRectForBounds(allBounds);
 
       draw.dashedRect(
@@ -124,7 +128,7 @@ export function useDraw() {
       // Highlight cell when not in draft or edit mode.
       if (
         currentCell &&
-        !(selectionBox.status === 'active') &&
+        !isSelecting &&
         !draft &&
         !editingContext.id &&
         !editingContext.handleId &&
@@ -164,15 +168,14 @@ export function useDraw() {
       drawSelectionOutlines();
 
       // Selection Box
-      if (selectionBox.status === 'active' && selectionBox.bounds) {
+      if (isSelecting && selectionBounds) {
         ctx &&
-          selectionBox.bounds &&
           draw.dashedRect(
             ctx,
             {
-              ...selectionBox.bounds,
-              width: Math.abs(selectionBox.bounds.width),
-              height: Math.abs(selectionBox.bounds.height),
+              ...selectionBounds,
+              width: Math.abs(selectionBounds.width),
+              height: Math.abs(selectionBounds.height),
             },
             canvasColors.selection,
             canvasColors.selectionBackground,
@@ -184,7 +187,7 @@ export function useDraw() {
       if (
         selectedIds.length === 1 &&
         selectedGroupIds.length === 0 &&
-        selectionBox.status !== 'active'
+        !isSelecting
       ) {
         const element = elements[selectedIds[0]];
         if (element.type !== ElementType.Text) {

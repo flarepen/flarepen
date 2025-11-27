@@ -31,7 +31,6 @@ export const SelectingMode: ModeHandler = {
     // Update selection box and selected elements
     useStore.setState({
       interactionMode: { type: 'selecting', bounds: expandedBounds },
-      selectionBox: { status: 'active', bounds: expandedBounds },
     });
     
     actions.setSelected(toSelect);
@@ -49,7 +48,6 @@ export const SelectingMode: ModeHandler = {
     // End selecting
     useStore.setState({
       interactionMode: { type: 'idle' },
-      selectionBox: { status: 'inactive', bounds: null },
     });
   },
 };

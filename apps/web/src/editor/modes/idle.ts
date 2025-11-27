@@ -127,15 +127,6 @@ export const IdleMode: ModeHandler = {
             height: 0,
           },
         },
-        selectionBox: {
-          status: 'pending',
-          bounds: {
-            x: e.clientX,
-            y: e.clientY,
-            width: 0,
-            height: 0,
-          },
-        },
         dragging: false,
       });
       return;

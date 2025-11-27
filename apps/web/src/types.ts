@@ -70,13 +70,6 @@ export enum Theme {
   light = 'light',
 }
 
-export type SelectionBoxStatus = 'inactive' | 'active' | 'pending';
-
-export interface ISelectionBox {
-  bounds: null | IBounds;
-  status: SelectionBoxStatus;
-}
-
 export interface EditHandle {
   handleId: string;
   bounds: IBounds;
