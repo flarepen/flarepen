@@ -9,6 +9,10 @@ export const { styled, css, theme, createTheme } = createStitches({
       toolbarBorder: mauve.mauve6,
       panelBg: mauve.mauve3,
       panelBorder: mauve.mauve6,
+      panelHeaderBg: mauve.mauve4,
+      panelItemHover: mauve.mauve5,
+      panelItemSelected: tomato.tomato4,
+      panelItemSelectedText: tomato.tomato11,
       seperator: mauve.mauve6,
       actionBg: mauve.mauve3,
       actionBgHover: tomato.tomato4,
@@ -20,6 +24,10 @@ export const { styled, css, theme, createTheme } = createStitches({
       toolTipBg: mauve.mauve9,
       toolTipText: mauve.mauve1,
     },
+    space: {
+      panelPadding: '12px',
+      sectionGap: '8px',
+    },
   },
 });
 
@@ -30,6 +38,10 @@ export const darkTheme = createTheme({
     toolbarBorder: mauveDark.mauve6,
     panelBg: mauveDark.mauve3,
     panelBorder: mauveDark.mauve6,
+    panelHeaderBg: mauveDark.mauve4,
+    panelItemHover: mauveDark.mauve5,
+    panelItemSelected: tomatoDark.tomato4,
+    panelItemSelectedText: tomatoDark.tomato11,
     seperator: mauveDark.mauve6,
     actionBg: mauveDark.mauve3,
     actionBgHover: tomatoDark.tomato4,

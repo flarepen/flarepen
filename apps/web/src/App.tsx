@@ -10,8 +10,8 @@ import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { Theme } from './types';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { GridSwitcher } from './components/GridSwitcher';
-import { SidePanel } from './components/sidepanel';
 import { ToolLock } from './components/ToolLock';
+import { RightPanel } from './components/panels';
 
 import init, { render } from 'text-render';
 
@@ -49,6 +49,31 @@ const Divider = styled('div', {
   opacity: 0.2,
 });
 
+const AppGrid = styled('div', {
+  display: 'grid',
+  height: '100vh',
+  width: '100vw',
+  gridTemplateRows: 'auto 1fr',
+  gridTemplateColumns: '1fr auto',
+  gridTemplateAreas: `
+    "toolbar toolbar"
+    "canvas right-panel"
+  `,
+});
+
+const CanvasArea = styled('div', {
+  gridArea: 'canvas',
+  position: 'relative',
+  overflow: 'hidden',
+});
+
+const RightPanelArea = styled('div', {
+  gridArea: 'right-panel',
+  borderLeft: '1px solid $panelBorder',
+  backgroundColor: '$panelBg',
+  overflow: 'hidden',
+});
+
 const EditorContainer = styled('div', {
   position: 'relative',
   flex: 1,
@@ -70,13 +95,6 @@ function App() {
 
   const selectedIds = useStore((state) => state.selectedIds);
   const selectedGroupIds = useStore((state) => state.selectedGroupIds);
-  const elements = useStore((state) => state.elements);
-
-  const showSidePanel =
-    (selectedIds.length === 1 &&
-      selectedGroupIds.length === 0 &&
-      elements[selectedIds[0]].labelEnabled) ||
-    selectedIds.length + selectedGroupIds.length >= 2;
 
   const canRedo = future.length > 0;
   const canUndo = past.length > 0;
@@ -92,40 +110,53 @@ function App() {
     }
   }
 
+  const rightPanelOpen = useStore((state) => state.rightPanel.isOpen);
+
   const themeClass = selectedTheme === Theme.light ? theme : darkTheme;
 
   return (
-    <div className={`App ${themeClass}`} onKeyDown={handleKeyPress} style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
+    <div className={`App ${themeClass}`} onKeyDown={handleKeyPress}>
       <TooltipProvider>
-        <ToolbarContainer>
-          <ToolbarSection>
-            <ToolLock />
-            <Divider />
-            <ToolBar>
-              <ToolGroup selected={selected} />
-            </ToolBar>
-          </ToolbarSection>
+        <AppGrid
+          style={{
+            gridTemplateColumns: rightPanelOpen ? '1fr 300px' : '1fr 0px',
+          }}
+        >
+          <ToolbarContainer style={{ gridArea: 'toolbar' }}>
+            <ToolbarSection>
+              <ToolLock />
+              <Divider />
+              <ToolBar>
+                <ToolGroup selected={selected} />
+              </ToolBar>
+            </ToolbarSection>
 
-          <ToolbarSection>
-            <AppTitle>ASCII Drawing</AppTitle>
-          </ToolbarSection>
+            <ToolbarSection>
+              <AppTitle>ASCII Drawing</AppTitle>
+            </ToolbarSection>
 
-          <ToolbarSection>
-            <ToolBar>
-              <ActionGroup />
-            </ToolBar>
-            <Divider />
-            <UndoRedo />
-            <Divider />
-            <GridSwitcher />
-            <ThemeSwitcher />
-          </ToolbarSection>
-        </ToolbarContainer>
+            <ToolbarSection>
+              <ToolBar>
+                <ActionGroup />
+              </ToolBar>
+              <Divider />
+              <UndoRedo />
+              <Divider />
+              <GridSwitcher />
+              <ThemeSwitcher />
+            </ToolbarSection>
+          </ToolbarContainer>
 
-        <EditorContainer>
-          {showSidePanel && <SidePanel />}
-          <Editor />
-        </EditorContainer>
+          <CanvasArea>
+            <Editor />
+          </CanvasArea>
+
+          {rightPanelOpen && (
+            <RightPanelArea>
+              <RightPanel />
+            </RightPanelArea>
+          )}
+        </AppGrid>
       </TooltipProvider>
     </div>
   );

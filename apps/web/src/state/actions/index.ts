@@ -14,6 +14,7 @@ export * from './select';
 export * from './elements';
 export * from './group';
 export * from './copy';
+export * from './ui';
 
 export const setShowGrid = (show: boolean) => {
   useStore.setState((_state) => ({ showGrid: show }));

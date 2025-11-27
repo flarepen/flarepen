@@ -56,7 +56,13 @@ export interface AppSlice {
   interactionMode: InteractionMode;
 }
 
-export type AppState = AppSlice & UndoSlice;
+export interface UISlice {
+  rightPanel: {
+    isOpen: boolean;
+  };
+}
+
+export type AppState = AppSlice & UndoSlice & UISlice;
 
 export const getDefaultState = () => {
   return {
@@ -87,6 +93,12 @@ export const getDefaultState = () => {
 
 const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => getDefaultState();
 
+const createUISlice: StateCreatorFor<UISlice> = (set) => ({
+  rightPanel: {
+    isOpen: true,
+  },
+});
+
 // Handle state and actions for Undo Redo
 
 export type Snapshot = Pick<
@@ -111,4 +123,5 @@ type StateCreatorFor<T> = StateCreator<AppState, [], [], T>;
 export const useStore = create<AppState>()((...a) => ({
   ...createAppSlice(...a),
   ...createUndoSlice(...a),
+  ...createUISlice(...a),
 }));

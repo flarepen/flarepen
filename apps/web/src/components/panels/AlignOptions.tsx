@@ -15,14 +15,18 @@ import ToolTip from '../ToolTip';
 
 interface AlignOptionsProps {
   className?: string;
+  disabled?: boolean;
 }
 
 const Row = styled('div', {
   display: 'flex',
 });
 
-function getAlignHandler(alignType: AlignType) {
-  return () => alignElements(alignType);
+function getAlignHandler(alignType: AlignType, disabled: boolean) {
+  return () => {
+    if (disabled) return;
+    alignElements(alignType);
+  };
 }
 
 const ALIGN_OPTION_ICONS = {
@@ -54,32 +58,33 @@ const ALIGN_OFFSET = {
 
 interface AlignOptionProps {
   alignType: AlignType;
+  disabled?: boolean;
 }
 
-function AlignOption({ alignType }: AlignOptionProps): JSX.Element {
+function AlignOption({ alignType, disabled }: AlignOptionProps): JSX.Element {
   return (
     <ToolTip
       toolTip={ALIGN_OPTION_TOOLTIPS[alignType]}
       sideOffset={ALIGN_OFFSET[alignType]}
       side={'bottom'}
     >
-      <Button onClick={getAlignHandler(alignType)}>{ALIGN_OPTION_ICONS[alignType]}</Button>
+      <Button onClick={getAlignHandler(alignType, disabled || false)} inactive={disabled}>
+        {ALIGN_OPTION_ICONS[alignType]}
+      </Button>
     </ToolTip>
   );
 }
 
-function AlignOptions({ className }: AlignOptionsProps): JSX.Element {
+function AlignOptions({ className, disabled }: AlignOptionsProps): JSX.Element {
   return (
     <div className={className}>
       <Row>
-        <AlignOption alignType="left" />
-        <AlignOption alignType="center_x" />
-        <AlignOption alignType="right" />
-      </Row>
-      <Row>
-        <AlignOption alignType="top" />
-        <AlignOption alignType="center_y" />
-        <AlignOption alignType="bottom" />
+        <AlignOption alignType="left" disabled={disabled} />
+        <AlignOption alignType="center_x" disabled={disabled} />
+        <AlignOption alignType="right" disabled={disabled} />
+        <AlignOption alignType="top" disabled={disabled} />
+        <AlignOption alignType="center_y" disabled={disabled} />
+        <AlignOption alignType="bottom" disabled={disabled} />
       </Row>
     </div>
   );
@@ -89,4 +94,6 @@ export default styled(AlignOptions, {
   display: 'flex',
   flexDirection: 'column',
   gap: 2, // Small gap between rows
+  alignItems: 'center',
+  justifyContent: 'center',
 });

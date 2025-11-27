@@ -7,50 +7,53 @@ import * as g from './../../geometry';
 const StyledInput = styled('input', {
   all: 'unset',
   fontFamily: 'Cascadia',
+  fontSize: 12,
   color: '$actionText',
   border: '1px solid $panelBorder',
   backgroundColor: '$panelBg',
-  margin: '8px 4px',
   padding: 6,
   borderRadius: 2,
-  zIndex: 10,
+  flex: 1,
+  minWidth: 0,
+  boxSizing: 'border-box',
   '&:focus': {
     border: `1px solid $panelBorder`,
   },
 });
 
 const StyledSelect = styled('select', {
-  fontSize: 15,
-  paddingRight: 4,
-  borderRight: 2,
+  fontSize: 12,
   fontFamily: 'Cascadia',
   color: '$actionText',
   border: '1px solid $panelBorder',
   backgroundColor: '$panelBg',
-  margin: '8px 4px',
   padding: 6,
   borderRadius: 2,
-  zIndex: 10,
+  flex: 1,
+  minWidth: 0,
+  boxSizing: 'border-box',
   '&:focus': {
     border: `1px solid $panelBorder`,
   },
 });
 
 const OptionName = styled('span', {
-  fontSize: 16,
-  marginRight: 24,
-  marginLeft: 4,
+  fontSize: 11,
   fontWeight: '500',
   fontFamily: 'Cascadia',
   color: '$actionText',
   userSelect: 'none',
+  opacity: 0.7,
+  marginRight: 8,
+  flexShrink: 0,
 });
 
 const Option = styled('div', {
   display: 'flex',
   flexDirection: 'row',
-  justifyContent: 'space-between',
   alignItems: 'center',
+  marginBottom: 8,
+  gap: 4,
 });
 
 interface ElementOptionsProps {

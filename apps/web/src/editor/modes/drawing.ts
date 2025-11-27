@@ -139,14 +139,6 @@ export const DrawingMode: ModeHandler = {
         draft: { element: updated, stage: currentStage },
       });
     });
-
-    // Update current cell
-    useStore.setState({
-      currentCell: {
-        x: clipToScale(e.clientX, X_SCALE),
-        y: clipToScale(e.clientY - Y_SCALE / 2, Y_SCALE) + Y_SCALE / 2,
-      },
-    });
   },
 
   onPointerUp: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>, mouseMove: MouseMove) => {
