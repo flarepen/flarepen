@@ -24,6 +24,7 @@ export interface IBounds {
   height: number;
 }
 
+// TODO: Cleanup
 export function expandIBound(bound: IBounds, mouseMove: MouseMove): IBounds {
   const widthIncr =
     mouseMove.currentEvent!.clientX -
