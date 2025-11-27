@@ -7,3 +7,11 @@ export function toggleRightPanel() {
     },
   }));
 }
+
+export function toggleLeftPanel() {
+  useStore.setState((state) => ({
+    leftPanel: {
+      isOpen: !state.leftPanel.isOpen,
+    },
+  }));
+}

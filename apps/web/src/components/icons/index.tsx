@@ -20,9 +20,12 @@ export {
   DownloadIcon as ExportIcon,
   LockClosedIcon as LockIcon,
   LockOpen2Icon as UnlockIcon,
+  QuestionMarkCircledIcon as QuestionMarkIcon,
 } from '@radix-ui/react-icons';
 
 // Custom icons (Heroicons - not available in Radix)
 export * from './UndoIcon';
 export * from './RedoIcon';
 export * from './GridIcon';
+export * from './SidebarLeftIcon';
+export * from './SidebarRightIcon';

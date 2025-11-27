@@ -60,6 +60,9 @@ export interface UISlice {
   rightPanel: {
     isOpen: boolean;
   };
+  leftPanel: {
+    isOpen: boolean;
+  };
 }
 
 export type AppState = AppSlice & UndoSlice & UISlice;
@@ -95,6 +98,9 @@ const createAppSlice: StateCreatorFor<AppSlice> = (set, get) => getDefaultState(
 
 const createUISlice: StateCreatorFor<UISlice> = (set) => ({
   rightPanel: {
+    isOpen: true,
+  },
+  leftPanel: {
     isOpen: true,
   },
 });

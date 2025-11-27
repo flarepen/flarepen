@@ -11,7 +11,9 @@ import { Theme } from './types';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { GridSwitcher } from './components/GridSwitcher';
 import { ToolLock } from './components/ToolLock';
-import { RightPanel } from './components/panels';
+import { RightPanel, LeftPanel } from './components/panels';
+import { LeftPanelToggle } from './components/LeftPanelToggle';
+import { RightPanelToggle } from './components/RightPanelToggle';
 
 import init, { render } from 'text-render';
 
@@ -21,9 +23,10 @@ const ToolbarContainer = styled('div', {
   alignItems: 'center',
   backgroundColor: '$toolbarBg',
   borderBottom: '1px solid $toolbarBorder',
-  padding: '0 16px',
+  padding: '0 16px 0 8px',
   minHeight: '40px',
-  flexShrink: 0, // Prevent toolbar from shrinking
+  flexShrink: 0,
+  gap: '16px',
 });
 
 const ToolbarSection = styled('div', {
@@ -54,16 +57,23 @@ const AppGrid = styled('div', {
   height: '100vh',
   width: '100vw',
   gridTemplateRows: 'auto 1fr',
-  gridTemplateColumns: '1fr auto',
+  gridTemplateColumns: 'auto 1fr auto',
   gridTemplateAreas: `
-    "toolbar toolbar"
-    "canvas right-panel"
+    "toolbar toolbar toolbar"
+    "left-panel canvas right-panel"
   `,
 });
 
 const CanvasArea = styled('div', {
   gridArea: 'canvas',
   position: 'relative',
+  overflow: 'hidden',
+});
+
+const LeftPanelArea = styled('div', {
+  gridArea: 'left-panel',
+  borderRight: '1px solid $panelBorder',
+  backgroundColor: '$panelBg',
   overflow: 'hidden',
 });
 
@@ -111,19 +121,29 @@ function App() {
   }
 
   const rightPanelOpen = useStore((state) => state.rightPanel.isOpen);
+  const leftPanelOpen = useStore((state) => state.leftPanel.isOpen);
 
   const themeClass = selectedTheme === Theme.light ? theme : darkTheme;
+
+  const leftColWidth = leftPanelOpen ? '200px' : '0px';
+  const rightColWidth = rightPanelOpen ? '300px' : '0px';
 
   return (
     <div className={`App ${themeClass}`} onKeyDown={handleKeyPress}>
       <TooltipProvider>
         <AppGrid
           style={{
-            gridTemplateColumns: rightPanelOpen ? '1fr 300px' : '1fr 0px',
+            gridTemplateColumns: `${leftColWidth} 1fr ${rightColWidth}`,
           }}
         >
           <ToolbarContainer style={{ gridArea: 'toolbar' }}>
+            {/* Left section - Menu bar */}
             <ToolbarSection>
+              <LeftPanelToggle />
+            </ToolbarSection>
+
+            {/* Center section - Tools */}
+            <ToolbarSection style={{ flex: 1, justifyContent: 'center' }}>
               <ToolLock />
               <Divider />
               <ToolBar>
@@ -131,10 +151,7 @@ function App() {
               </ToolBar>
             </ToolbarSection>
 
-            <ToolbarSection>
-              <AppTitle>ASCII Drawing</AppTitle>
-            </ToolbarSection>
-
+            {/* Right section - Actions */}
             <ToolbarSection>
               <ToolBar>
                 <ActionGroup />
@@ -144,8 +161,15 @@ function App() {
               <Divider />
               <GridSwitcher />
               <ThemeSwitcher />
+              <RightPanelToggle />
             </ToolbarSection>
           </ToolbarContainer>
+
+          {leftPanelOpen && (
+            <LeftPanelArea>
+              <LeftPanel />
+            </LeftPanelArea>
+          )}
 
           <CanvasArea>
             <Editor />

@@ -2,8 +2,9 @@ import { styled } from '../stitches.config';
 
 export const buttonStyles = {
   all: 'unset',
-  height: 25,
-  padding: '0 5px',
+  minWidth: 26,
+  minHeight: 26,
+  padding: '4px',
   borderRadius: 4,
   display: 'inline-flex',
   alignItems: 'center',
