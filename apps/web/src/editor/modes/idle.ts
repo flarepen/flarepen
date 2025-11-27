@@ -106,13 +106,13 @@ export const IdleMode: ModeHandler = {
         }
 
         // Select element (stay in idle, dragging will be handled on pointer move)
-        // Don't snapshot on multi-select to avoid undo issues
-        actions.select(toSelect.id, !e.shiftKey, e.shiftKey ? false : true);
+        // Don't snapshot - selection changes shouldn't be in undo history
+        actions.select(toSelect.id, !e.shiftKey, false);
         return;
       }
 
       // Clicking on empty space - start selection box
-      actions.unSelectAll();
+      actions.unSelectAll(false);
       useStore.setState({
         interactionMode: {
           type: 'selecting',

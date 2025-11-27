@@ -2,7 +2,7 @@ import { updateState, useStore, actions } from '@/state';
 import { applySanitizeElements } from '@/state/actions/elements';
 import { MouseMove } from '@/types';
 import { ModeHandler, PointerEvent } from '@/editor/modes/types';
-import { utilFor } from '@/element';
+import { handlerFor } from '@/element';
 
 /**
  * Editing Mode - Handles element resize/edit via edit handles
@@ -26,7 +26,7 @@ export const EditingMode: ModeHandler = {
     if (element) {
       actions.updateElement(
         interactionMode.elementId,
-        utilFor(element).edit(element, mouseMove, interactionMode.handleId)
+        handlerFor(element).edit(element, mouseMove, interactionMode.handleId)
       );
     }
   },
