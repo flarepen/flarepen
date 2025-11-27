@@ -10,7 +10,8 @@
   "scripts": {
     "build": "turbo run build",
     "start": "turbo run start",
-    "build:ci": "./ci_install.sh && turbo run build"
+    "build:ci": "./ci_install.sh && turbo run build",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "^1.6.1"
