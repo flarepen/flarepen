@@ -42,6 +42,11 @@ export const ArrowHandler: ElementHandler<Arrow> = {
       labelEnabled: false,
     };
   },
+
+  getName: function (): string {
+    return 'Arrow';
+  },
+
   outlineBounds: function (arrow: Arrow) {
     return LinearElementHandler.outlineBounds(arrow);
   },

@@ -6,9 +6,8 @@ export function UndoIcon() {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="w-6 h-6"
-      width={18}
-      height={18}
+      width={15}
+      height={15}
     >
       <path
         strokeLinecap="round"

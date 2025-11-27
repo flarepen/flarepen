@@ -22,6 +22,10 @@ export const LineHandler: ElementHandler<Line> = {
     };
   },
 
+  getName: function (): string {
+    return 'Line';
+  },
+
   outlineBounds: function (line: Line) {
     return LinearElementHandler.outlineBounds(line);
   },

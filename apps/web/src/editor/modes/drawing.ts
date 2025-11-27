@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore, actions } from '@/state';
-import { utilFor, ElementType } from '@/element';
+import { handlerFor, ElementType } from '@/element';
 import { X_SCALE, Y_SCALE, DRAGGING_THRESHOLD } from '@/constants';
 import { MouseMove } from '@/types';
 import { Tool } from '@/tools';
@@ -109,7 +109,7 @@ export const DrawingMode: ModeHandler = {
          interactionMode.element.type === ElementType.Arrow) &&
         interactionMode.element.points) {
       
-      utilFor(interactionMode.element).create(interactionMode.element, mouseMove, (updated) => {
+      handlerFor(interactionMode.element).create(interactionMode.element, mouseMove, (updated) => {
         useStore.setState({
           draft: { element: updated, stage: 'pending' },
         });
@@ -133,7 +133,7 @@ export const DrawingMode: ModeHandler = {
     }
 
     // Update element
-    utilFor(interactionMode.element).create(interactionMode.element, mouseMove, (updated) => {
+    handlerFor(interactionMode.element).create(interactionMode.element, mouseMove, (updated) => {
       useStore.setState({
         interactionMode: { type: 'drawing', element: updated, stage: currentStage },
         draft: { element: updated, stage: currentStage },

@@ -98,6 +98,7 @@ export function inLinearVicinity(
 // TODO: Change to class?
 export interface ElementHandler<T extends ElementCommons> {
   new: (x: number, y: number) => T;
+  getName: () => string;
   outlineBounds: (t: T) => IBounds;
   inVicinity: (t: T, p: Point) => boolean;
   create: (t: T, mouseMove: MouseMove, callback: (updated: T) => void) => void;

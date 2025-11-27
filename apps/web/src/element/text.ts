@@ -27,6 +27,11 @@ export const TextHandler: ElementHandler<Text> = {
       labelEnabled: false,
     };
   },
+
+  getName: function (): string {
+    return 'Text';
+  },
+
   outlineBounds: function (text: Text): IBounds {
     let { xMin, xMax, yMin, yMax } = getLinearBounding(
       { x: text.x, y: text.y },
