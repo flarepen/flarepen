@@ -11,7 +11,7 @@ import _ from 'lodash';
 import { ArrowKey, MouseMove } from '../types';
 import { TextInput } from './TextInput';
 import { styled } from '../stitches.config';
-import { useSelectionBox, useHtmlCanvas, useDraw } from './hooks';
+import { useHtmlCanvas, useDraw } from './hooks';
 import { getModeHandler } from './modes';
 import { getCanvasCoordinates } from './utils/coordinates';
 
@@ -54,7 +54,6 @@ const StyledCanvas = styled('canvas', {
 
 // TODO: Clean this up. Improve names, add better abstractions.
 function CanvasWithInput(): JSX.Element {
-  const [selectionBox, selectionBoxHandlers] = useSelectionBox();
   const canvasRef = useHtmlCanvas();
 
   const elements = useStore((state) => state.elements);
